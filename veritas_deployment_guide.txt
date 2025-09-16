@@ -1,0 +1,27 @@
+# Pearl AI "Veritas" Engine v1.0 - Deployment Instructions
+# Target Platform: Replit
+
+# --- STEP 1: RENDER PROJECT SETUP ---
+# Create a new Python Repl.
+
+# --- STEP 2: INSTALL LIBRARIES ---
+# Go to the "Shell" tab and install these ONE BY ONE:
+pip install google-generativeai
+pip install Flask
+pip install Flask-Cors
+pip install Werkzeug
+pip install python-docx
+pip install pypdf
+pip install python-magic # New library for detecting file types
+
+# --- STEP 3: CONFIGURE YOUR API KEY (CRITICAL) ---
+# In render "Secrets," create a secret:
+# Key: GOOGLE_API_KEY
+# Value: [Your Google Gemini API Key]
+
+# --- STEP 4: ADD THE BACKEND CODE ---
+# Copy the entire contents of `veritas_engine_backend.py` into `main.py`.
+
+# --- STEP 5: RUN AND GET YOUR URL ---
+# Click "Run." The URL in the webview is your live API endpoint.
+# Use this URL in your Vercel frontend's `script.js` file.
