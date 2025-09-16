@@ -33,8 +33,9 @@ app = Flask(__name__)
 CORS(app)
 
 # --- AI Model Configuration ---
-text_model = GenerativeModel("gemini-pro")
-vision_model = GenerativeModel("gemini-pro-vision")
+# We now correctly use the full name as imported.
+text_model = vertexai.generative_models.GenerativeModel("gemini-pro")
+vision_model = vertexai.generative_models.GenerativeModel("gemini-pro-vision")
 
 # --- PERSONA PROMPTS (Updated for Pearl AI) ---
 VERITAS_TEXT_PROMPT = """
