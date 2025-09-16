@@ -16,7 +16,6 @@ from PIL import Image
 
 # --- Import Google Cloud AI Platform Library ---
 import vertexai
-from vertexai.preview.generative_models import GenerativeModel, Part
 
 # --- Configuration ---
 # For Render, you will set these as Environment Variables in your service dashboard.
