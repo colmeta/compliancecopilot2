@@ -29,9 +29,8 @@ app = Flask(__name__)
 CORS(app)
 
 # --- AI Model Configuration ---
-# Using the final, official, production-grade model names.
-text_model = vertexai.generative_models.GenerativeModel("gemini-1.0-pro")
-vision_model = vertexai.generative_models.GenerativeModel("gemini-1.0-pro-vision")
+text_model = genai.GenerativeModel('gemini-1.0-pro')
+vision_model = genai.GenerativeModel('gemini-pro-vision')
 
 # --- PERSONA PROMPTS ---
 VERITAS_TEXT_PROMPT = """You are the Clarity Engine from Pearl AI, operating as a lead intelligence analyst for a national security agency. Your designation is 'Veritas.' Your sole directive is to analyze a chaotic, unstructured data dossier related to a major criminal investigation. You must synthesize all provided reports, witness statements, and geographic data to produce an 'Actionable Intelligence Briefing.'
