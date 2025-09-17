@@ -6,4 +6,4 @@ gunicorn==21.2.0
 Werkzeug==3.0.1
 python-magic==0.4.27
 Pillow==10.1.0
-google-generativeai==0.4.1
+google-generativeai==0.5.4
