@@ -29,9 +29,17 @@ CORS(app)
 text_model = genai.GenerativeModel('gemini-1.5-flash')
 vision_model = genai.GenerativeModel('gemini-1.5-flash')
 
-# --- PERSONA PROMPTS (Unchanged) ---
-VERITAS_TEXT_PROMPT = """You are the Clarity Engine from Pearl AI..."""
-VERITAS_VISION_SIMULATION_PROMPT = """You are the Clarity Engine from Pearl AI..."""
+# --- PERSONA PROMPTS ---
+VERITAS_TEXT_PROMPT = """You are the Clarity Engine from Pearl AI, operating as a lead intelligence analyst for a national security agency. Your designation is 'Veritas.' Your sole directive is to analyze a chaotic, unstructured data dossier related to a major criminal investigation. You must synthesize all provided reports, witness statements, and geographic data to produce an 'Actionable Intelligence Briefing.'
+
+YOUR METHODOLOGY:
+1. Entity Extraction: Identify all key persons, vehicles, locations, and times mentioned in the dossier.
+2. Pattern Recognition: Correlate recurring details across multiple, independent reports.
+3. Hypothesis Generation: Based on the correlated patterns, generate the most probable hypotheses regarding suspect description, escape routes, and potential motives.
+4. Intelligence Gaps: Crucially, identify the most critical pieces of *missing* information that would be required to advance the investigation.
+5. Actionable Directives: Formulate your output as a series of direct, actionable intelligence tasks for investigative units to execute immediately."
+"""
+# Note: A separate vision simulation prompt is no longer needed with gemini-1.5-flash's native capabilities.
 
 # --- Helper Function for File Reading (Upgraded for Excel) ---
 def read_text_from_file(file_storage):
@@ -45,10 +53,8 @@ def read_text_from_file(file_storage):
         elif filename.endswith('.pdf'):
             pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_storage.read()))
             return "".join([page.extract_text() or "" for page in pdf_reader.pages])
-        # --- NEW EXCEL HANDLING LOGIC ---
         elif filename.endswith('.xlsx'):
             df = pd.read_excel(io.BytesIO(file_storage.read()))
-            # Convert the entire dataframe to a clean, string representation
             return df.to_string()
         else:
             return f"[Unsupported Text File Type: {filename}]"
@@ -65,7 +71,7 @@ def process_directive():
     print("Received request at /process endpoint...")
     
     if 'knowledgeBase' not in request.files or 'questionnaire' not in request.files:
-        return jsonify({"error": "Request must contain 'knowledgeBase' and 'questionnaire' parts."}), 400
+        return jsonify({"error": "Request must contain both 'knowledgeBase' and 'questionnaire' parts."}), 400
 
     knowledge_base_files = request.files.getlist('knowledgeBase')
     directive_file = request.files.get('questionnaire')
@@ -80,8 +86,8 @@ def process_directive():
             print("Image file detected. Initiating Vision Analysis...")
             image_data = directive_file.read()
             image_part = {'mime_type': mime_type, 'data': image_data}
-            # NOTE: We now use the REAL Vision prompt, not a simulation prompt.
-            response = vision_model.generate_content(image_part) 
+            # Simple prompt for direct image analysis
+            response = vision_model.generate_content(["Describe this image in detail from a security and intelligence perspective.", image_part]) 
             result_text = response.text
         else:
             print("Text/Data document detected. Initiating Intelligence Analysis...")
@@ -99,23 +105,3 @@ def process_directive():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
-```**Note:** In the `app.py` above, I have removed the "Vision Simulation" prompt. With `gemini-1.5-flash`, we no longer need to simulate. It will perform a **real** analysis of the image you provide.
-
-#### **Asset 3: The Final `index.html`**
-
-**Description:** The text has been updated to explicitly mention Excel and Image analysis.
-
-```html
-<!-- ... (header and other sections are the same) ... -->
-<div class="mb-6">
-    <label for="knowledgeBase" class="label-text">1. Upload Knowledge Base</label>
-    <p class="label-description">Upload policies, logs, reports, etc. (.txt, .pdf, .docx, .xlsx). Multiple files allowed.</p>
-    <input type="file" id="knowledgeBase" multiple required class="custom-file-input" />
-</div>
-
-<div id="input-dossier" class="mb-8">
-    <label for="questionnaire" class="label-text">2. Upload Your Task File</label>
-    <p class="label-description">Upload a questionnaire OR a single image (.jpg, .png) for analysis.</p>
-    <input type="file" id="questionnaire" required class="custom-file-input" />
-</div>
-<!-- ... (rest of the file is the same) ... -->
