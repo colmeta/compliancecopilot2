@@ -30,8 +30,8 @@ CORS(app)
 
 # --- AI Model Configuration (FINAL & CORRECTED) ---
 # The correct model names for the current SDK version.
-text_model = genai.GenerativeModel('gemini-1.5-pro')
-vision_model = genai.GenerativeModel('gemini-1.5-pro')
+text_model = genai.GenerativeModel('gemini-1.5-flash')
+vision_model = genai.GenerativeModel('gemini-1.5-flash')
 
 # --- PERSONA PROMPTS ---
 VERITAS_TEXT_PROMPT = """You are the Clarity Engine from Pearl AI... [Identical to previous versions]"""
