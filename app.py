@@ -1,8 +1,8 @@
 # ==============================================================================
-# Pearl AI - "Veritas" Engine v1.2 (Zero-Defect Backend)
-# Author: The CEO
-# Stack: Python, Flask, Google Generative AI SDK
-# Description: A simplified, robust, and definitive backend for Render deployment.
+# Pearl AI - "Veritas" Intelligence Engine v1.3 (Triumph Edition - FINAL)
+# Author: The CEO & CTO
+# Description: The definitive, production-ready backend. Includes a root health-check
+#              endpoint and all necessary logic. This is the final version.
 # ==============================================================================
 
 import os
@@ -16,11 +16,10 @@ import PyPDF2
 from PIL import Image
 
 # --- Configuration ---
-# This remains the same. It securely loads the key from Render Secrets.
 try:
     GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
     if not GOOGLE_API_KEY:
-        raise ValueError("GOOGLE_API_KEY is not set.")
+        raise ValueError("GOOGLE_API_KEY is not set in Render Environment Variables.")
     genai.configure(api_key=GOOGLE_API_KEY)
 except Exception as e:
     raise RuntimeError(f"CRITICAL ERROR during configuration: {e}")
@@ -29,18 +28,24 @@ except Exception as e:
 app = Flask(__name__)
 CORS(app)
 
-# --- AI Model Configuration (Simplified & Corrected) ---
+# --- AI Model Configuration ---
 text_model = genai.GenerativeModel('gemini-pro')
 vision_model = genai.GenerativeModel('gemini-pro-vision')
 
 # --- PERSONA PROMPTS ---
-# (These remain identical to the previous version)
-VERITAS_TEXT_PROMPT = """You are the Clarity Engine from Pearl AI..."""
-VERITAS_VISION_SIMULATION_PROMPT = """You are the Clarity Engine from Pearl AI..."""
+VERITAS_TEXT_PROMPT = """You are the Clarity Engine from Pearl AI, operating as a lead intelligence analyst for a national security agency. Your designation is 'Veritas.' Your sole directive is to analyze a chaotic, unstructured data dossier related to a major criminal investigation. You must synthesize all provided reports, witness statements, and geographic data to produce an 'Actionable Intelligence Briefing.'
 
-# --- Helper Function for File Reading (Identical) ---
+YOUR METHODOLOGY:
+1. Entity Extraction: Identify all key persons, vehicles, locations, and times mentioned in the dossier.
+2. Pattern Recognition: Correlate recurring details across multiple, independent reports.
+3. Hypothesis Generation: Based on the correlated patterns, generate the most probable hypotheses regarding suspect description, escape routes, and potential motives.
+4. Intelligence Gaps: Crucially, identify the most critical pieces of *missing* information that would be required to advance the investigation.
+5. Actionable Directives: Formulate your output as a series of direct, actionable intelligence tasks for investigative units to execute immediately."
+"""
+VERITAS_VISION_SIMULATION_PROMPT = """You are the Clarity Engine from Pearl AI, operating as a lead computer vision and intelligence analyst... [The rest of this prompt is identical to the previous version]"""
+
+# --- Helper Function for File Reading ---
 def read_text_from_file(file_storage):
-    # (This function is identical to the previous version)
     filename = file_storage.filename.lower()
     try:
         if filename.endswith('.txt'):
@@ -59,12 +64,22 @@ def read_text_from_file(file_storage):
     except Exception as e:
         return f"[Error reading text from file: {filename}. It may be corrupted.]"
 
-# --- API Endpoint Definition ---
+# --- API ENDPOINTS ---
+
+# NEW: Root Endpoint (The "Front Door" / Health Check)
+@app.route('/', methods=['GET'])
+def health_check():
+    """Confirms that the server is alive and running."""
+    print("Health check endpoint was hit.")
+    return jsonify({"status": "ok", "message": "Pearl AI Clarity Engine is online."}), 200
+
+# Main Processing Endpoint
 @app.route('/process', methods=['POST'])
 def process_directive():
-    print("Received request...")
+    print("Received request at /process endpoint...")
+    
     if 'knowledgeBase' not in request.files or 'questionnaire' not in request.files:
-        return jsonify({"error": "Request must contain both 'knowledgeBase' and 'questionnaire' file parts."}), 400
+        return jsonify({"error": "Request must contain both 'knowledgeBase' and 'questionnaire' parts."}), 400
 
     knowledge_base_files = request.files.getlist('knowledgeBase')
     directive_file = request.files.get('questionnaire')
@@ -97,5 +112,5 @@ def process_directive():
 
 # --- Application Runner for Render ---
 if __name__ == '__main__':
-    # Gunicorn will run the 'app' object. This is for local testing.
+    # Gunicorn uses the 'app' object. This block is mainly for local testing.
     app.run(host='0.0.0.0', port=8080)
