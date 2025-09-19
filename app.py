@@ -1,5 +1,5 @@
 # ==============================================================================
-# Pearl AI - "NEXUS" Intelligence Engine v3.1 (Fixed Visual Intelligence)
+# Pearl AI - "CLARITY" Engine v3.1 (Fixed Visual Intelligence)
 # Classified-Level Intelligence Analysis Platform
 # ==============================================================================
 
@@ -38,7 +38,7 @@ vision_model = genai.GenerativeModel('gemini-1.5-flash')
 audio_model = genai.GenerativeModel('gemini-1.5-flash')
 
 # --- UPDATED FUSION ANALYST PROMPT ---
-NEXUS_FUSION_ANALYST_PROMPT = """You are NEXUS, the world's most advanced Multi-Source Intelligence Fusion system. Your sole purpose is to synthesize ALL sources of intelligence—text (INTEL), images (IMINT), and audio (AUDINT)—into a single, unified, and actionable brief.
+CLARITY_FUSION_ANALYST_PROMPT = """You are CLARITY, the world's most advanced Multi-Source Intelligence Fusion system. Your sole purpose is to synthesize ALL sources of intelligence—text (INTEL), images (IMINT), and audio (AUDINT)—into a single, unified, and actionable brief.
 
 🔥 CRITICAL FUSION DIRECTIVE:
 You will receive a package of mixed-media intelligence files and a primary directive. Your analysis MUST treat all sources as interconnected. A detail in an image may be the key to understanding a text report. A word in a transcript may explain an action in an image.
@@ -94,7 +94,7 @@ OUTPUT FORMAT - CLASSIFIED FUSION BRIEF:
 Analyze with the understanding that national security depends on your accuracy."""
 
 # --- VISUAL-ONLY ANALYSIS PROMPT ---
-NEXUS_VISUAL_ONLY_PROMPT = """You are NEXUS Visual Intelligence Division, conducting surveillance analysis on provided images.
+CLARITY_VISUAL_ONLY_PROMPT = """You are CLARITY Engine, conducting surveillance analysis on provided images.
 
 🔍 COMPREHENSIVE VISUAL INTELLIGENCE ANALYSIS:
 
@@ -132,7 +132,7 @@ def generate_operation_id():
     """Generate unique operation ID for tracking"""
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     random_hex = hashlib.md5(str(random.random()).encode()).hexdigest()[:6].upper()
-    return f"NEXUS-{timestamp}-{random_hex}"
+    return f" CLARITY-{timestamp}-{random_hex}"
 
 def classify_content_sensitivity(content):
     """Assess information sensitivity level"""
@@ -167,15 +167,15 @@ def generate_with_retry(model, prompt, max_retries=3):
             if "429" in error_str or "quota" in error_str.lower():
                 if attempt < max_retries - 1:
                     wait_time = 2 ** attempt + random.uniform(0, 1)
-                    print(f"[NEXUS] System overload. Retry in {wait_time:.1f}s... [{attempt + 1}/{max_retries}]")
+                    print(f"[ CLARITY] System overload. Retry in {wait_time:.1f}s... [{attempt + 1}/{max_retries}]")
                     time.sleep(wait_time)
                     continue
                 else:
-                    return "🚨 NEXUS SYSTEM OVERLOAD - ANALYSIS UNAVAILABLE"
+                    return "🚨 CLARITY SYSTEM OVERLOAD - ANALYSIS UNAVAILABLE"
             else:
                 raise e
     
-    return "NEXUS ANALYSIS FAILED - TECHNICAL MALFUNCTION"
+    return " CLARITY ANALYSIS FAILED - TECHNICAL MALFUNCTION"
 
 def detect_file_type_advanced(file_storage):
     """Advanced file type detection with security assessment"""
@@ -201,7 +201,7 @@ def detect_file_type_advanced(file_storage):
         else:
             return 'document_intelligence'
     except Exception as e:
-        print(f"[NEXUS] File type detection error: {e}")
+        print(f"[CLARITY] File type detection error: {e}")
         return 'unknown'
 
 def advanced_text_extraction(file_storage):
@@ -220,7 +220,7 @@ def advanced_text_extraction(file_storage):
             char_count = len(content)
             
             metadata = f"""
-[NEXUS DOCUMENT ANALYSIS]
+[CLARITY DOCUMENT ANALYSIS]
 Filename: {file_storage.filename}
 File Hash: {file_hash}
 Processed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
@@ -237,7 +237,7 @@ Security Assessment: TEXT FILE - LOW RISK
             word_count = len(content.split())
             
             metadata = f"""
-[NEXUS DOCUMENT ANALYSIS]
+[CLARITY DOCUMENT ANALYSIS]
 Filename: {file_storage.filename}
 File Hash: {file_hash}
 Processed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
@@ -258,7 +258,7 @@ Security Assessment: DOCX FILE - METADATA PRESENT (POTENTIAL ATTRIBUTION)
                 text += f"\n--- PAGE {page_num} ---\n{page_text}"
             
             metadata = f"""
-[NEXUS DOCUMENT ANALYSIS]
+[CLARITY DOCUMENT ANALYSIS]
 Filename: {file_storage.filename}
 File Hash: {file_hash}
 Processed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
@@ -271,7 +271,7 @@ Security Assessment: PDF FILE - POTENTIAL METADATA/TRACKING PRESENT
             
         else:
             return f"""
-[NEXUS SECURITY ALERT]
+[CLARITY SECURITY ALERT]
 Filename: {file_storage.filename}
 File Hash: {file_hash}
 Status: UNSUPPORTED FILE TYPE
@@ -280,7 +280,7 @@ Recommendation: QUARANTINE FOR MANUAL ANALYSIS
 """
     except Exception as e:
         return f"""
-[NEXUS CRITICAL ERROR]
+[CLARITY CRITICAL ERROR]
 Filename: {file_storage.filename}
 Error: {str(e)}
 Security Assessment: POTENTIALLY MALICIOUS OR CORRUPTED
@@ -289,9 +289,9 @@ Recommendation: IMMEDIATE ISOLATION AND FORENSIC ANALYSIS
 
 # --- API ENDPOINTS ---
 @app.route('/', methods=['GET'])
-def nexus_status():
+def clarity_status():
     return jsonify({
-        "system": "NEXUS Intelligence Analysis Platform",
+        "system": " CLARITY Intelligence Analysis Platform",
         "status": "OPERATIONAL",
         "security_level": "CLASSIFIED",
         "capabilities": [
@@ -312,9 +312,9 @@ def nexus_status():
     }), 200
 
 @app.route('/process', methods=['POST'])
-def nexus_analysis():
+def clarity_analysis():
     operation_id = generate_operation_id()
-    print(f"[NEXUS] {operation_id} - INTELLIGENCE OPERATION INITIATED")
+    print(f"[CLARITY] {operation_id} - INTELLIGENCE OPERATION INITIATED")
     
     # Handle the case where only knowledgeBase is provided (images only scenario)
     if 'knowledgeBase' not in request.files:
@@ -330,7 +330,7 @@ def nexus_analysis():
     
     # NEW: Handle images-only scenario
     if not primary_target and knowledge_base_files:
-        print(f"[NEXUS] {operation_id} - VISUAL-ONLY INTELLIGENCE ANALYSIS")
+        print(f"[CLARITY] {operation_id} - VISUAL-ONLY INTELLIGENCE ANALYSIS")
         
         try:
             # Check if we have visual intelligence files
@@ -365,7 +365,7 @@ def nexus_analysis():
             
             if context_intel:
                 analysis_prompt_parts.append(f"""
-{NEXUS_FUSION_ANALYST_PROMPT}
+{CLARITY_FUSION_ANALYST_PROMPT}
 
 OPERATION ID: {operation_id}
 CLASSIFICATION: TOP SECRET
@@ -378,7 +378,7 @@ Analyze all provided images in conjunction with the above intelligence context. 
 """)
             else:
                 analysis_prompt_parts.append(f"""
-{NEXUS_VISUAL_ONLY_PROMPT}
+{CLARITY_VISUAL_ONLY_PROMPT}
 
 OPERATION ID: {operation_id}
 CLASSIFICATION: CONFIDENTIAL
@@ -388,7 +388,7 @@ No contextual intelligence provided. Conduct standalone visual intelligence anal
 """)
             
             # Add all images to the analysis
-            print(f"[NEXUS] {operation_id} - Processing {len(image_files)} visual intelligence sources")
+            print(f"[CLARITY] {operation_id} - Processing {len(image_files)} visual intelligence sources")
             for idx, image_file in enumerate(image_files, 1):
                 try:
                     image_data = image_file.read()
@@ -396,7 +396,7 @@ No contextual intelligence provided. Conduct standalone visual intelligence anal
                     analysis_prompt_parts.append(f"\n--- VISUAL INTELLIGENCE SOURCE {idx}: {image_file.filename} ---")
                     analysis_prompt_parts.append(image)
                 except Exception as e:
-                    print(f"[NEXUS] {operation_id} - Error processing image {image_file.filename}: {e}")
+                    print(f"[CLARITY] {operation_id} - Error processing image {image_file.filename}: {e}")
                     continue
             
             # Generate analysis
@@ -408,12 +408,12 @@ No contextual intelligence provided. Conduct standalone visual intelligence anal
 🔒 CLASSIFICATION: {classification_level}
 🆔 OPERATION ID: {operation_id}
 📅 ANALYSIS COMPLETED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
-🏛️ ORIGINATING AGENCY: NEXUS Intelligence Division
+🏛️ ORIGINATING AGENCY: CLARITY Engine
 📊 SOURCES ANALYZED: {len(knowledge_base_files)}
 🎯 PRIMARY TARGET TYPE: Visual Intelligence
 
 {'='*80}
-NEXUS INTELLIGENCE BRIEF
+CLARITY INTELLIGENCE BRIEF
 {'='*80}
 
 {analysis_result}
@@ -426,16 +426,16 @@ END INTELLIGENCE BRIEF
 Distribution is restricted to authorized personnel with appropriate security clearances.
 Unauthorized disclosure is prohibited and punishable under applicable law.
 
-🔐 NEXUS-{operation_id}
-📞 For technical support or escalation: Contact NEXUS Operations Center
+🔐 CLARITY-{operation_id}
+📞 For technical support or escalation: Contact CLARITY Operations Center
 ⚠️ Report security incidents immediately to Counter-Intelligence Division
 """
             
-            print(f"[NEXUS] {operation_id} - VISUAL ANALYSIS COMPLETE - CLASSIFICATION: {classification_level}")
+            print(f"[CLARITY] {operation_id} - VISUAL ANALYSIS COMPLETE - CLASSIFICATION: {classification_level}")
             return jsonify({"completedQuestionnaire": final_brief})
             
         except Exception as e:
-            print(f"[NEXUS] {operation_id} - VISUAL ANALYSIS ERROR: {e}")
+            print(f"[CLARITY] {operation_id} - VISUAL ANALYSIS ERROR: {e}")
             return jsonify({
                 "error": f"VISUAL INTELLIGENCE ANALYSIS FAILED: {str(e)}",
                 "operation_id": operation_id,
@@ -483,11 +483,11 @@ Unauthorized disclosure is prohibited and punishable under applicable law.
 
         # Execute analysis based on primary target type with multi-modal fusion
         if target_file_type == 'visual_intelligence':
-            print(f"[NEXUS] {operation_id} - VISUAL INTELLIGENCE ANALYSIS WITH FUSION")
+            print(f"[CLARITY] {operation_id} - VISUAL INTELLIGENCE ANALYSIS WITH FUSION")
             
             analysis_prompt_parts = []
             analysis_prompt_parts.append(f"""
-{NEXUS_FUSION_ANALYST_PROMPT}
+{CLARITY_FUSION_ANALYST_PROMPT}
 
 OPERATION ID: {operation_id}
 CLASSIFICATION: {classify_content_sensitivity(combined_intelligence)}
@@ -514,20 +514,20 @@ MULTI-SOURCE FUSION DIRECTIVE: Analyze primary visual target in conjunction with
                     analysis_prompt_parts.append(f"\n--- SUPPORTING VISUAL INTELLIGENCE: {image_file.filename} ---")
                     analysis_prompt_parts.append(img)
                 except Exception as e:
-                    print(f"[NEXUS] Error processing supporting image {image_file.filename}: {e}")
+                    print(f"[CLARITY] Error processing supporting image {image_file.filename}: {e}")
             
             analysis_result = generate_with_retry(vision_model, analysis_prompt_parts)
             
         else:
             # Handle text-based analysis (existing functionality)
-            print(f"[NEXUS] {operation_id} - COMPREHENSIVE INTELLIGENCE ANALYSIS")
+            print(f"[CLARITY] {operation_id} - COMPREHENSIVE INTELLIGENCE ANALYSIS")
             target_content = advanced_text_extraction(primary_target)
             
             if image_sources:
                 # Multi-modal analysis with text primary and visual supporting
                 analysis_prompt_parts = []
                 analysis_prompt_parts.append(f"""
-{NEXUS_FUSION_ANALYST_PROMPT}
+{CLARITY_FUSION_ANALYST_PROMPT}
 
 OPERATION ID: {operation_id}
 TIMESTAMP: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
@@ -550,7 +550,7 @@ MULTI-SOURCE FUSION DIRECTIVE: Analyze all sources together. Cross-reference tex
                         analysis_prompt_parts.append(f"\n--- VISUAL INTELLIGENCE: {image_file.filename} ---")
                         analysis_prompt_parts.append(img)
                     except Exception as e:
-                        print(f"[NEXUS] Error processing image {image_file.filename}: {e}")
+                        print(f"[CLARITY] Error processing image {image_file.filename}: {e}")
                 
                 analysis_result = generate_with_retry(vision_model, analysis_prompt_parts)
             else:
@@ -560,7 +560,7 @@ MULTI-SOURCE FUSION DIRECTIVE: Analyze all sources together. Cross-reference tex
                     combined_intelligence = combined_intelligence[:max_content_length] + "\n\n[ADDITIONAL INTELLIGENCE SOURCES TRUNCATED]"
                 
                 analysis_prompt = f"""
-{NEXUS_FUSION_ANALYST_PROMPT}
+{CLARITY_FUSION_ANALYST_PROMPT}
 
 OPERATION ID: {operation_id}
 TIMESTAMP: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
@@ -583,12 +583,12 @@ Execute full-spectrum intelligence analysis. Cross-reference all sources. Provid
 🔒 CLASSIFICATION: {classification_level}
 🆔 OPERATION ID: {operation_id}
 📅 ANALYSIS COMPLETED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
-🏛️ ORIGINATING AGENCY: NEXUS Intelligence Division
+🏛️ ORIGINATING AGENCY: CLARITY Engine
 📊 SOURCES ANALYZED: {len(knowledge_base_files) + 1}
 🎯 PRIMARY TARGET TYPE: {target_file_type.replace('_', ' ').title()}
 
 {'='*80}
-NEXUS INTELLIGENCE BRIEF
+CLARITY INTELLIGENCE BRIEF
 {'='*80}
 
 {analysis_result}
@@ -601,27 +601,27 @@ END INTELLIGENCE BRIEF
 Distribution is restricted to authorized personnel with appropriate security clearances.
 Unauthorized disclosure is prohibited and punishable under applicable law.
 
-🔐 NEXUS-{operation_id}
-📞 For technical support or escalation: Contact NEXUS Operations Center
+🔐 CLARITY-{operation_id}
+📞 For technical support or escalation: Contact CLARITY Operations Center
 ⚠️ Report security incidents immediately to Counter-Intelligence Division
         """
         
-        print(f"[NEXUS] {operation_id} - ANALYSIS COMPLETE - CLASSIFICATION: {classification_level}")
+        print(f"[CLARITY] {operation_id} - ANALYSIS COMPLETE - CLASSIFICATION: {classification_level}")
         return jsonify({"completedQuestionnaire": final_brief})
         
     except Exception as e:
-        print(f"[NEXUS] {operation_id} - CRITICAL SYSTEM ERROR: {e}")
+        print(f"[CLARITY] {operation_id} - CRITICAL SYSTEM ERROR: {e}")
         return jsonify({
-            "error": f"NEXUS SYSTEM MALFUNCTION: {str(e)}",
+            "error": f"CLARITY SYSTEM MALFUNCTION: {str(e)}",
             "operation_id": operation_id,
             "classification": "SYSTEM ERROR",
-            "action": "Contact NEXUS Technical Support immediately"
+            "action": "Contact CLARITY Technical Support immediately"
         }), 500
 
 # --- Application Runner ---
 if __name__ == '__main__':
-    print("[NEXUS] Intelligence Analysis Platform initializing...")
-    print("[NEXUS] Security protocols active")
-    print("[NEXUS] Multi-modal fusion capabilities enabled")
-    print("[NEXUS] System ready for classified operations")
+    print("[CLARITY] Intelligence Analysis Platform initializing...")
+    print("[CLARITY] Security protocols active")
+    print("[CLARITY] Multi-modal fusion capabilities enabled")
+    print("[CLARITY] System ready for classified operations")
     app.run(host='0.0.0.0', port=8080)
