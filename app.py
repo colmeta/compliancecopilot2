@@ -8,6 +8,7 @@ import os
 import io
 import magic
 import google.generativeai as genai
+import asyncio
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import docx
