@@ -35,7 +35,7 @@ CORS(app)
 
 # --- AI Model Configuration (UPGRADED: v5.1 improvement - single powerful model) ---
 # Using the most advanced model available for all operations
-model = genai.GenerativeModel('gemini-1.5-pro-latest')
+model = genai.GenerativeModel('gemini-1.5-pro')
 
 # --- DOMAIN-SPECIFIC INTELLIGENCE ACCELERATORS (COMPLETE: from v5.0) ---
 
