@@ -604,14 +604,6 @@ DELIVERABLE REQUIREMENTS:
     total_sources = len(knowledge_base_files) + (1 if primary_target else 0)
     
     final_brief = f"""
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                     PEARL AI CLARITY INTELLIGENCE PLATFORM                  ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║ 🔒 CLASSIFICATION: {classification_level:<20} 🆔 OPERATION: {operation_id}     ║
-║ 📅 COMPLETED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC'):<25} 🎯 TYPE: {domain.upper():<15} ║
-║ 🏛️  PLATFORM: Pearl AI CLARITY v5.2 Ultimate   📊 SOURCES: {total_sources:<3} files analyzed ║
-║ 🔧 ENGINE: Gemini 1.5 Pro Latest               ⚡ FUSION: Multi-modal      ║
-╚══════════════════════════════════════════════════════════════════════════════╝
 
 {'='*80}
 CLARITY INTELLIGENCE BRIEF - {domain.upper()} ANALYSIS
@@ -622,12 +614,6 @@ CLARITY INTELLIGENCE BRIEF - {domain.upper()} ANALYSIS
 {'='*80}
 END INTELLIGENCE BRIEF
 {'='*80}
-
-🔐 Pearl AI CLARITY Engine v5.2 Ultimate - Operation {operation_id}
-📞 Technical Support: Pearl AI Intelligence Operations Division
-⚠️  AUTHORIZED USE ONLY: This analysis is intended for qualified {domain} professionals
-🎯 Next Steps: Review findings and implement recommended actions as appropriate
-📊 Quality Assurance: All analyses undergo continuous improvement protocols
 
 System Performance: ✅ Optimal | Security Status: ✅ Secure | Classification: {classification_level}
 """
