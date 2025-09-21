@@ -1,6 +1,6 @@
 # ==============================================================================
-# Pearl AI - "CLARITY" Engine v3.1 (Fixed Visual Intelligence)
-# Classified-Level Intelligence Analysis Platform
+# Pearl AI - "CLARITY" Engine v5.0 (Multi-Domain Intelligence Platform)
+# Universal Intelligence Analysis for Legal, Financial, Security & Corporate Sectors
 # ==============================================================================
 
 import os
@@ -37,102 +37,162 @@ text_model = genai.GenerativeModel('gemini-1.5-flash')
 vision_model = genai.GenerativeModel('gemini-1.5-flash')
 audio_model = genai.GenerativeModel('gemini-1.5-flash')
 
-# --- UPDATED FUSION ANALYST PROMPT ---
-CLARITY_FUSION_ANALYST_PROMPT = """You are CLARITY, the world's most advanced Multi-Source Intelligence Fusion system. Your sole purpose is to synthesize ALL sources of intelligence—text (INTEL), images (IMINT), and audio (AUDINT)—into a single, unified, and actionable brief.
+# --- DOMAIN-SPECIFIC INTELLIGENCE ACCELERATORS ---
 
-🔥 CRITICAL FUSION DIRECTIVE:
-You will receive a package of mixed-media intelligence files and a primary directive. Your analysis MUST treat all sources as interconnected. A detail in an image may be the key to understanding a text report. A word in a transcript may explain an action in an image.
+CLARITY_SECURITY_INTELLIGENCE = """You are CLARITY Security Intelligence Accelerator, Pearl AI's advanced multi-source intelligence fusion system for law enforcement and security operations.
 
-🚨 **FAILURE TO FUSE ALL SOURCES IS A MISSION-CRITICAL FAILURE.** 🚨
+🚨 SECURITY & LAW ENFORCEMENT FRAMEWORK:
+- Multi-source intelligence fusion (HUMINT, SIGINT, IMINT, FININT)
+- Threat assessment and risk scoring
+- Behavioral analysis and psychological profiling
+- Network mapping and relationship analysis
+- Operational timeline reconstruction
+- Evidence correlation and chain of custody considerations
+- Actionable tactical recommendations for field deployment
 
-ANALYTICAL FRAMEWORK (APPLY ACROSS ALL SOURCES):
+OUTPUT: Professional intelligence briefings suitable for command-level decision making."""
 
-1.  **ENTITY EXTRACTION & CORRELATION:**
-    - Identify all persons, organizations, vehicles, locations, and assets from ALL sources.
-    - **CRITICAL:** Correlate entities across all files. If a vehicle appears in IMINT, find mentions of it in INTEL. If a person is named in INTEL, find them in IMINT.
+CLARITY_LEGAL_INTELLIGENCE = """You are CLARITY Legal Intelligence Accelerator, Pearl AI's advanced case analysis system for legal professionals.
 
-2.  **TIMELINE RECONSTRUCTION:**
-    - Build a chronological event log. Use timestamps from reports, visual cues from images (shadows, clocks, known events), and conversation times from transcripts. Map the entire operational flow.
+⚖️ LEGAL ANALYSIS FRAMEWORK:
+- Case law research and precedent analysis
+- Evidence evaluation and strength assessment
+- Contract analysis and risk identification
+- Discovery document review and correlation
+- Legal strategy formulation and risk assessment
+- Compliance verification and regulatory analysis
+- Litigation timeline reconstruction
+- Settlement probability and damage assessments
 
-3.  **GEOSPATIAL ANALYSIS:**
-    - Identify all locations from ALL sources. Use architectural clues in images, location names in reports, and background sounds in audio.
-    - **CRITICAL:** Plot the movement of entities between these identified locations to map the operational geography.
+LEGAL REASONING STANDARDS:
+- Apply appropriate burden of proof standards
+- Identify key legal issues and potential defenses
+- Assess jurisdictional considerations
+- Evaluate evidence admissibility
+- Provide cite-worthy legal analysis with supporting precedents
 
-4.  **BEHAVIORAL ANALYSIS (Multi-Modal):**
-    - Synthesize psychological profiles. Use text reports for background, IMINT for body language and micro-expressions (stress, deception), and AUDINT for vocal stress indicators.
+OUTPUT: Professional legal memoranda suitable for attorney decision making."""
 
-5.  **NETWORK ANALYSIS:**
-    - Map the relationships between all identified entities. Use text reports for known affiliations and IMINT/AUDINT to confirm meetings and communications.
+CLARITY_FINANCIAL_INTELLIGENCE = """You are CLARITY Financial Intelligence Accelerator, Pearl AI's advanced financial analysis system for auditors, accountants, and financial professionals.
 
-OUTPUT FORMAT - CLASSIFIED FUSION BRIEF:
+💰 FINANCIAL ANALYSIS FRAMEWORK:
+- Financial statement analysis and ratio calculations
+- Audit trail reconstruction and verification
+- Fraud detection and risk assessment
+- Tax compliance verification and optimization
+- Cash flow analysis and forecasting
+- Internal control evaluation
+- Regulatory compliance assessment (SOX, GAAP, IFRS)
+- Financial risk modeling and scenario analysis
 
-🏴 **EXECUTIVE SUMMARY**: [30-word critical assessment, fusing all intelligence sources.]
+ACCOUNTING STANDARDS:
+- Apply relevant accounting principles (GAAP/IFRS)
+- Calculate standard financial ratios and metrics
+- Identify material misstatements and irregularities
+- Assess going concern and liquidity issues
+- Evaluate internal controls effectiveness
 
-⏳ **RECONSTRUCTED OPERATIONAL TIMELINE**: [A chronological list of events, citing the source for each entry (e.g., "H-72: Subject Alpha arrives EBB - Source: INTEL_REPORT_01, IMINT_01").]
+OUTPUT: Professional financial analysis suitable for CPA and executive decision making."""
 
-🔗 **CRITICAL INTELLIGENCE FUSION POINTS**:
-    - **ENTITY CORRELATION:** [List all key entities (people, vehicles) and cite every file in which they appear. E.g., "Toyota Hilux (UBE 882X): Sighted in IMINT_02 (Cafe) and IMINT_03 (Warehouse)."]
-    - **GEOSPATIAL LINK:** [State the critical location link. E.g., "The vehicle linking the suspect meeting to the operational staging area is the Toyota Hilux, proving the warehouse is the 'final party' location."]
+CLARITY_CORPORATE_INTELLIGENCE = """You are CLARITY Corporate Intelligence Accelerator, Pearl AI's advanced strategic analysis system for executives and corporate decision makers.
 
-👤 **SUBJECT PROFILES (Fused Intelligence)**: [Profiles synthesized from both text and visual/audio intelligence.]
+🏢 CORPORATE STRATEGY FRAMEWORK:
+- Market analysis and competitive intelligence
+- Strategic planning and scenario modeling
+- Risk assessment and mitigation strategies
+- Merger & acquisition due diligence
+- Compliance audit and gap analysis
+- Operational efficiency analysis
+- Crisis management and response planning
+- Stakeholder analysis and communication strategies
 
-🌐 **NETWORK ANALYSIS**: [Relationship map based on all sources.]
+STRATEGIC ANALYSIS STANDARDS:
+- SWOT analysis and competitive positioning
+- Financial modeling and valuation techniques
+- Risk-adjusted decision frameworks
+- Stakeholder impact assessment
+- Implementation feasibility analysis
 
-🚨 **IMMEDIATE THREATS & OPERATIONAL WINDOWS**: [Fused assessment.]
+OUTPUT: Executive-level strategic briefings suitable for C-suite decision making."""
 
-🎯 **ACTIONABLE RECOMMENDATIONS (Prioritized)**:
-    1.  **SURVEILLANCE:** [Specific targets and locations derived from the fusion.]
-    2.  **INTERDICTION:** [Specific targets and locations.]
-    3.  **WARRANTS/LEGAL:** [Specific evidence points to use for probable cause (e.g., "The visual correlation of the vehicle from a known criminal meeting to the warehouse location...")]
+CLARITY_HEALTHCARE_INTELLIGENCE = """You are CLARITY Healthcare Intelligence Accelerator, Pearl AI's advanced medical and healthcare analysis system.
 
-📋 **COLLECTION REQUIREMENTS**: [Intelligence gaps requiring field teams.]
+🏥 HEALTHCARE ANALYSIS FRAMEWORK:
+- Medical record analysis and pattern recognition
+- Clinical trial data evaluation
+- Healthcare compliance assessment (HIPAA, FDA)
+- Pharmaceutical safety and efficacy analysis
+- Healthcare fraud detection
+- Treatment outcome analysis
+- Medical device safety assessment
+- Public health trend analysis
 
-🎯 **TARGET PACKAGES**: [Prioritized subjects for further investigation.]
+MEDICAL STANDARDS:
+- Apply evidence-based medicine principles
+- Evaluate clinical significance vs statistical significance
+- Assess patient safety and risk factors
+- Consider medical ethics and patient privacy
+- Apply relevant regulatory frameworks
 
-⚖️ **LEGAL CONSIDERATIONS**: [Jurisdictional and evidence requirements.]
+OUTPUT: Medical intelligence suitable for healthcare professional decision making."""
 
-Analyze with the understanding that national security depends on your accuracy."""
+# --- DOMAIN DETECTION AND ROUTING ---
+def detect_domain_context(files, directive_text=""):
+    """Analyze uploaded files and directive to determine appropriate domain accelerator"""
+    
+    # Analyze file names and content for domain indicators
+    legal_indicators = ['contract', 'lawsuit', 'litigation', 'agreement', 'court', 'legal', 'case', 'brief', 'deposition', 'discovery']
+    financial_indicators = ['audit', 'financial', 'accounting', 'tax', 'balance', 'income', 'cash flow', 'budget', 'expense', 'revenue']
+    security_indicators = ['intelligence', 'surveillance', 'threat', 'security', 'investigation', 'suspect', 'criminal', 'police']
+    healthcare_indicators = ['medical', 'patient', 'clinical', 'healthcare', 'diagnosis', 'treatment', 'pharma', 'hospital']
+    corporate_indicators = ['strategy', 'business', 'corporate', 'merger', 'acquisition', 'compliance', 'risk', 'market']
+    
+    # Combine all text for analysis
+    all_text = directive_text.lower()
+    for file in files:
+        all_text += f" {file.filename.lower()}"
+    
+    # Score each domain
+    domain_scores = {
+        'legal': sum(1 for indicator in legal_indicators if indicator in all_text),
+        'financial': sum(1 for indicator in financial_indicators if indicator in all_text),
+        'security': sum(1 for indicator in security_indicators if indicator in all_text),
+        'healthcare': sum(1 for indicator in healthcare_indicators if indicator in all_text),
+        'corporate': sum(1 for indicator in corporate_indicators if indicator in all_text)
+    }
+    
+    # Return the domain with highest score, default to corporate for general business
+    max_domain = max(domain_scores.items(), key=lambda x: x[1])
+    return max_domain[0] if max_domain[1] > 0 else 'corporate'
 
-# --- VISUAL-ONLY ANALYSIS PROMPT ---
-CLARITY_VISUAL_ONLY_PROMPT = """You are CLARITY Engine, conducting surveillance analysis on provided images.
+def get_domain_accelerator(domain):
+    """Return the appropriate domain-specific prompt"""
+    accelerators = {
+        'legal': CLARITY_LEGAL_INTELLIGENCE,
+        'financial': CLARITY_FINANCIAL_INTELLIGENCE, 
+        'security': CLARITY_SECURITY_INTELLIGENCE,
+        'healthcare': CLARITY_HEALTHCARE_INTELLIGENCE,
+        'corporate': CLARITY_CORPORATE_INTELLIGENCE
+    }
+    return accelerators.get(domain, CLARITY_CORPORATE_INTELLIGENCE)
 
-🔍 COMPREHENSIVE VISUAL INTELLIGENCE ANALYSIS:
-
-For each image provided, conduct detailed analysis of:
-
-1. **SUBJECT IDENTIFICATION**
-   - Physical descriptions (age, gender, build, clothing)
-   - Behavioral indicators (stress, alertness, operational awareness)
-   - Professional assessment (likely occupation, skills, threat level)
-
-2. **VEHICLE/ASSET IDENTIFICATION**
-   - Vehicle make, model, color, license plates
-   - Condition, modifications, operational significance
-   - Movement patterns and positioning
-
-3. **LOCATION ANALYSIS**
-   - Geographic indicators and architectural features
-   - Operational significance of location choice
-   - Security considerations and tactical assessment
-
-4. **OPERATIONAL ASSESSMENT**
-   - Meeting dynamics and relationship indicators
-   - Surveillance awareness and counter-surveillance
-   - Threat level and immediate concerns
-
-5. **INTELLIGENCE CORRELATIONS**
-   - Cross-reference subjects, vehicles, and locations between images
-   - Establish operational timeline and movement patterns
-   - Identify the complete operational picture
-
-Provide tactical intelligence suitable for immediate field deployment."""
+def get_domain_title(domain):
+    """Return professional title for the domain"""
+    titles = {
+        'legal': 'Legal Intelligence Analysis',
+        'financial': 'Financial Intelligence Analysis',
+        'security': 'Security Intelligence Analysis', 
+        'healthcare': 'Healthcare Intelligence Analysis',
+        'corporate': 'Corporate Intelligence Analysis'
+    }
+    return titles.get(domain, 'Corporate Intelligence Analysis')
 
 # --- Enhanced Helper Functions ---
 def generate_operation_id():
     """Generate unique operation ID for tracking"""
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     random_hex = hashlib.md5(str(random.random()).encode()).hexdigest()[:6].upper()
-    return f" CLARITY-{timestamp}-{random_hex}"
+    return f"CLARITY-{timestamp}-{random_hex}"
 
 def classify_content_sensitivity(content):
     """Assess information sensitivity level"""
@@ -140,21 +200,19 @@ def classify_content_sensitivity(content):
         return "RESTRICTED"
         
     high_sensitivity_keywords = [
-        'classified', 'secret', 'confidential', 'weapon', 'bomb', 'attack', 
-        'target', 'operation', 'asset', 'source', 'intelligence', 'surveillance'
+        'classified', 'secret', 'confidential', 'privileged', 'attorney-client',
+        'financial', 'audit', 'investigation', 'medical', 'patient', 'hipaa'
     ]
     
     content_lower = content.lower()
     sensitivity_score = sum(1 for keyword in high_sensitivity_keywords if keyword in content_lower)
     
     if sensitivity_score >= 5:
-        return "TOP SECRET"
-    elif sensitivity_score >= 3:
-        return "SECRET"  
-    elif sensitivity_score >= 1:
         return "CONFIDENTIAL"
+    elif sensitivity_score >= 2:
+        return "RESTRICTED"  
     else:
-        return "RESTRICTED"
+        return "INTERNAL USE"
 
 def generate_with_retry(model, prompt, max_retries=3):
     """Generate content with exponential backoff retry logic"""
@@ -167,18 +225,18 @@ def generate_with_retry(model, prompt, max_retries=3):
             if "429" in error_str or "quota" in error_str.lower():
                 if attempt < max_retries - 1:
                     wait_time = 2 ** attempt + random.uniform(0, 1)
-                    print(f"[ CLARITY] System overload. Retry in {wait_time:.1f}s... [{attempt + 1}/{max_retries}]")
+                    print(f"[CLARITY] System overload. Retry in {wait_time:.1f}s... [{attempt + 1}/{max_retries}]")
                     time.sleep(wait_time)
                     continue
                 else:
-                    return "🚨 CLARITY SYSTEM OVERLOAD - ANALYSIS UNAVAILABLE"
+                    return "🚨 CLARITY SYSTEM OVERLOAD - ANALYSIS UNAVAILABLE\n\nThe analysis system is experiencing critical load. Please retry in 60 seconds."
             else:
                 raise e
     
-    return " CLARITY ANALYSIS FAILED - TECHNICAL MALFUNCTION"
+    return "CLARITY ANALYSIS FAILED - TECHNICAL MALFUNCTION"
 
 def detect_file_type_advanced(file_storage):
-    """Advanced file type detection with security assessment"""
+    """Advanced file type detection"""
     try:
         file_bytes = file_storage.read(2048)
         file_storage.seek(0)
@@ -217,7 +275,6 @@ def advanced_text_extraction(file_storage):
         if filename.endswith('.txt'):
             content = file_storage.read().decode('utf-8', errors='ignore')
             word_count = len(content.split())
-            char_count = len(content)
             
             metadata = f"""
 [CLARITY DOCUMENT ANALYSIS]
@@ -225,9 +282,7 @@ Filename: {file_storage.filename}
 File Hash: {file_hash}
 Processed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
 Word Count: {word_count}
-Character Count: {char_count}
 Classification: {classify_content_sensitivity(content)}
-Security Assessment: TEXT FILE - LOW RISK
 """
             return metadata + "\n" + content
             
@@ -244,7 +299,6 @@ Processed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
 Document Type: Microsoft Word Document
 Word Count: {word_count}
 Classification: {classify_content_sensitivity(content)}
-Security Assessment: DOCX FILE - METADATA PRESENT (POTENTIAL ATTRIBUTION)
 """
             return metadata + "\n" + content
             
@@ -265,81 +319,96 @@ Processed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
 Document Type: PDF Document
 Page Count: {page_count}
 Classification: {classify_content_sensitivity(text)}
-Security Assessment: PDF FILE - POTENTIAL METADATA/TRACKING PRESENT
 """
             return metadata + text
             
         else:
             return f"""
-[CLARITY SECURITY ALERT]
+[CLARITY PROCESSING NOTE]
 Filename: {file_storage.filename}
 File Hash: {file_hash}
-Status: UNSUPPORTED FILE TYPE
-Security Risk: UNKNOWN
-Recommendation: QUARANTINE FOR MANUAL ANALYSIS
+Status: PROCESSED AS TEXT CONTENT
 """
     except Exception as e:
         return f"""
-[CLARITY CRITICAL ERROR]
+[CLARITY PROCESSING ERROR]
 Filename: {file_storage.filename}
 Error: {str(e)}
-Security Assessment: POTENTIALLY MALICIOUS OR CORRUPTED
-Recommendation: IMMEDIATE ISOLATION AND FORENSIC ANALYSIS
+Recommendation: MANUAL REVIEW REQUIRED
 """
 
 # --- API ENDPOINTS ---
 @app.route('/', methods=['GET'])
 def clarity_status():
     return jsonify({
-        "system": " CLARITY Intelligence Analysis Platform",
+        "system": "Pearl AI CLARITY Intelligence Analysis Platform",
+        "version": "5.0 - Multi-Domain Intelligence",
         "status": "OPERATIONAL",
-        "security_level": "CLASSIFIED",
         "capabilities": [
             "Multi-Source Intelligence Fusion",
+            "Legal Intelligence Analysis", 
+            "Financial Intelligence Analysis",
+            "Security Intelligence Analysis",
+            "Corporate Intelligence Analysis",
+            "Healthcare Intelligence Analysis",
             "Visual Intelligence Analysis",
             "Audio Intelligence Analysis",
-            "Behavioral Analysis & Psychological Profiling", 
-            "Signals Intelligence (SIGINT)",
-            "Counterintelligence Operations",
-            "Financial Intelligence (FININT)",
-            "Social Network Analysis",
-            "Predictive Intelligence",
-            "Technical Intelligence (TECHINT)"
+            "Document Analysis & Review",
+            "Cross-Domain Correlation"
         ],
-        "clearance_required": "TOP SECRET/SCI",
-        "timestamp": datetime.now().isoformat(),
-        "next_maintenance": (datetime.now() + timedelta(days=7)).isoformat()
+        "domains_supported": [
+            "Legal & Law Firms",
+            "Financial Services & Accounting", 
+            "Law Enforcement & Security",
+            "Corporate Strategy & Compliance",
+            "Healthcare & Life Sciences"
+        ],
+        "timestamp": datetime.now().isoformat()
     }), 200
 
 @app.route('/process', methods=['POST'])
 def clarity_analysis():
     operation_id = generate_operation_id()
-    print(f"[CLARITY] {operation_id} - INTELLIGENCE OPERATION INITIATED")
+    print(f"[CLARITY] {operation_id} - MULTI-DOMAIN INTELLIGENCE OPERATION INITIATED")
     
-    # Handle the case where only knowledgeBase is provided (images only scenario)
     if 'knowledgeBase' not in request.files:
         return jsonify({
             "error": "NO INTELLIGENCE SOURCES PROVIDED",
             "operation_id": operation_id,
             "required": ["knowledgeBase (at minimum)"],
-            "security_note": "Intelligence operations require source materials"
+            "note": "Upload documents, images, or other files for analysis"
         }), 400
 
     knowledge_base_files = request.files.getlist('knowledgeBase')
     primary_target = request.files.get('questionnaire')
     
-    # NEW: Handle images-only scenario
+    # Extract directive text for domain detection
+    directive_text = ""
+    if primary_target:
+        try:
+            if primary_target.filename.endswith('.txt'):
+                directive_text = primary_target.read().decode('utf-8', errors='ignore')
+                primary_target.seek(0)
+        except:
+            pass
+    
+    # Detect appropriate domain
+    domain = detect_domain_context(knowledge_base_files + ([primary_target] if primary_target else []), directive_text)
+    domain_accelerator = get_domain_accelerator(domain)
+    domain_title = get_domain_title(domain)
+    
+    print(f"[CLARITY] {operation_id} - DOMAIN DETECTED: {domain.upper()}")
+    
+    # Handle images-only scenario
     if not primary_target and knowledge_base_files:
-        print(f"[CLARITY] {operation_id} - VISUAL-ONLY INTELLIGENCE ANALYSIS")
+        print(f"[CLARITY] {operation_id} - VISUAL-ONLY {domain.upper()} ANALYSIS")
         
         try:
-            # Check if we have visual intelligence files
             image_files = []
             text_files = []
             
             for source_file in knowledge_base_files:
                 source_type = detect_file_type_advanced(source_file)
-                
                 if source_type == 'visual_intelligence':
                     image_files.append(source_file)
                 elif source_type == 'document_intelligence':
@@ -347,248 +416,207 @@ def clarity_analysis():
             
             if not image_files:
                 return jsonify({
-                    "error": "NO VISUAL INTELLIGENCE DETECTED",
+                    "error": "NO VISUAL INTELLIGENCE DETECTED", 
                     "operation_id": operation_id,
-                    "files_received": [f.filename for f in knowledge_base_files],
-                    "note": "Visual intelligence analysis requires image files"
+                    "note": "Visual analysis requires image files"
                 }), 400
             
-            # Process any text files for context
+            # Process context files
             context_intel = ""
             if text_files:
                 for text_file in text_files:
                     content = advanced_text_extraction(text_file)
-                    context_intel += f"\n{'='*60}\nCONTEXT FILE: {text_file.filename}\n{'='*60}\n{content}"
+                    context_intel += f"\n{'='*60}\nCONTEXT: {text_file.filename}\n{'='*60}\n{content}"
             
-            # Build multi-modal prompt for visual analysis
+            # Build analysis prompt
             analysis_prompt_parts = []
-            
-            if context_intel:
-                analysis_prompt_parts.append(f"""
-{CLARITY_FUSION_ANALYST_PROMPT}
+            analysis_prompt_parts.append(f"""
+{domain_accelerator}
 
 OPERATION ID: {operation_id}
-CLASSIFICATION: TOP SECRET
+DOMAIN: {domain_title}
+CLASSIFICATION: {classify_content_sensitivity(context_intel)}
 
-CONTEXTUAL INTELLIGENCE:
-{context_intel[:20000]}
+CONTEXTUAL INFORMATION:
+{context_intel[:25000]}
 
-VISUAL INTELLIGENCE ANALYSIS:
-Analyze all provided images in conjunction with the above intelligence context. Correlate all visual elements with the textual intelligence to provide a comprehensive operational assessment.
-""")
-            else:
-                analysis_prompt_parts.append(f"""
-{CLARITY_VISUAL_ONLY_PROMPT}
-
-OPERATION ID: {operation_id}
-CLASSIFICATION: CONFIDENTIAL
-
-VISUAL INTELLIGENCE ANALYSIS:
-No contextual intelligence provided. Conduct standalone visual intelligence analysis of all provided surveillance images. Extract maximum intelligence value from visual sources alone.
+VISUAL {domain.upper()} ANALYSIS:
+Analyze all provided images using {domain} intelligence framework. Apply domain-specific analytical standards and provide professional {domain} analysis suitable for expert decision making.
 """)
             
-            # Add all images to the analysis
-            print(f"[CLARITY] {operation_id} - Processing {len(image_files)} visual intelligence sources")
+            # Add images
             for idx, image_file in enumerate(image_files, 1):
                 try:
                     image_data = image_file.read()
                     image = Image.open(io.BytesIO(image_data))
-                    analysis_prompt_parts.append(f"\n--- VISUAL INTELLIGENCE SOURCE {idx}: {image_file.filename} ---")
+                    analysis_prompt_parts.append(f"\n--- VISUAL SOURCE {idx}: {image_file.filename} ---")
                     analysis_prompt_parts.append(image)
                 except Exception as e:
-                    print(f"[CLARITY] {operation_id} - Error processing image {image_file.filename}: {e}")
-                    continue
+                    print(f"[CLARITY] Error processing image {image_file.filename}: {e}")
             
-            # Generate analysis
             analysis_result = generate_with_retry(vision_model, analysis_prompt_parts)
-            
-            # Format final intelligence brief
-            classification_level = "TOP SECRET" if context_intel else "CONFIDENTIAL"
-            final_brief = f"""
-🔒 CLASSIFICATION: {classification_level}
-🆔 OPERATION ID: {operation_id}
-📅 ANALYSIS COMPLETED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
-🏛️ ORIGINATING AGENCY: CLARITY Engine
-📊 SOURCES ANALYZED: {len(knowledge_base_files)}
-🎯 PRIMARY TARGET TYPE: Visual Intelligence
-
-{'='*80}
-CLARITY INTELLIGENCE BRIEF
-{'='*80}
-
-{analysis_result}
-
-{'='*80}
-END INTELLIGENCE BRIEF
-{'='*80}
-
-🚨 SECURITY NOTICE: This intelligence product is classified {classification_level}. 
-Distribution is restricted to authorized personnel with appropriate security clearances.
-Unauthorized disclosure is prohibited and punishable under applicable law.
-
-🔐 CLARITY-{operation_id}
-📞 For technical support or escalation: Contact CLARITY Operations Center
-⚠️ Report security incidents immediately to Counter-Intelligence Division
-"""
-            
-            print(f"[CLARITY] {operation_id} - VISUAL ANALYSIS COMPLETE - CLASSIFICATION: {classification_level}")
-            return jsonify({"completedQuestionnaire": final_brief})
             
         except Exception as e:
             print(f"[CLARITY] {operation_id} - VISUAL ANALYSIS ERROR: {e}")
             return jsonify({
-                "error": f"VISUAL INTELLIGENCE ANALYSIS FAILED: {str(e)}",
-                "operation_id": operation_id,
-                "classification": "SYSTEM ERROR"
+                "error": f"VISUAL ANALYSIS FAILED: {str(e)}",
+                "operation_id": operation_id
             }), 500
-
-    # EXISTING: Handle cases with questionnaire file
-    if not primary_target:
-        return jsonify({
-            "error": "INCOMPLETE INTELLIGENCE PACKAGE",
-            "operation_id": operation_id,
-            "required": ["questionnaire OR visual intelligence in knowledgeBase"],
-            "security_note": "Intelligence operations require target specification"
-        }), 400
-
-    # Advanced file analysis
-    target_file_type = detect_file_type_advanced(primary_target)
     
-    if target_file_type == 'suspicious_executable':
-        return jsonify({
-            "error": "SECURITY BREACH ATTEMPT DETECTED",
-            "operation_id": operation_id,
-            "threat_level": "CRITICAL",
-            "action": "FILE QUARANTINED - SECURITY TEAM NOTIFIED"
-        }), 403
+    else:
+        # Handle full analysis with directive
+        if not primary_target:
+            return jsonify({
+                "error": "INCOMPLETE ANALYSIS PACKAGE",
+                "operation_id": operation_id,
+                "required": ["questionnaire OR visual files in knowledgeBase"]
+            }), 400
 
-    try:
-        # Process intelligence sources
-        intelligence_sources = []
-        image_sources = []
+        target_file_type = detect_file_type_advanced(primary_target)
         
-        for idx, source_file in enumerate(knowledge_base_files, 1):
-            source_type = detect_file_type_advanced(source_file)
-            
-            if source_type == 'document_intelligence':
-                content = advanced_text_extraction(source_file)
-                intelligence_sources.append(f"\n{'='*60}\nINTELLIGENCE SOURCE {idx}: {source_file.filename}\n{'='*60}\n{content}")
-            elif source_type == 'visual_intelligence':
-                image_sources.append(source_file)
-                intelligence_sources.append(f"\n{'='*60}\nVISUAL SOURCE {idx}: {source_file.filename}\nTYPE: VISUAL INTELLIGENCE\nSTATUS: PROCESSED IN MULTI-MODAL ANALYSIS\n{'='*60}")
-            else:
-                intelligence_sources.append(f"\n{'='*60}\nINTELLIGENCE SOURCE {idx}: {source_file.filename}\nFILE TYPE: {source_type.upper()}\nSTATUS: QUEUED FOR SPECIALIZED ANALYSIS\n{'='*60}")
+        if target_file_type == 'suspicious_executable':
+            return jsonify({
+                "error": "SECURITY BREACH ATTEMPT DETECTED",
+                "operation_id": operation_id,
+                "action": "FILE QUARANTINED"
+            }), 403
 
-        combined_intelligence = "".join(intelligence_sources)
-
-        # Execute analysis based on primary target type with multi-modal fusion
-        if target_file_type == 'visual_intelligence':
-            print(f"[CLARITY] {operation_id} - VISUAL INTELLIGENCE ANALYSIS WITH FUSION")
+        try:
+            # Process all source files
+            intelligence_sources = []
+            image_sources = []
             
-            analysis_prompt_parts = []
-            analysis_prompt_parts.append(f"""
-{CLARITY_FUSION_ANALYST_PROMPT}
+            for idx, source_file in enumerate(knowledge_base_files, 1):
+                source_type = detect_file_type_advanced(source_file)
+                
+                if source_type == 'document_intelligence':
+                    content = advanced_text_extraction(source_file)
+                    intelligence_sources.append(f"\n{'='*60}\nSOURCE {idx}: {source_file.filename}\n{'='*60}\n{content}")
+                elif source_type == 'visual_intelligence':
+                    image_sources.append(source_file)
+                    intelligence_sources.append(f"\n{'='*60}\nVISUAL SOURCE {idx}: {source_file.filename}\nTYPE: VISUAL INTELLIGENCE\n{'='*60}")
+                else:
+                    intelligence_sources.append(f"\n{'='*60}\nSOURCE {idx}: {source_file.filename}\nTYPE: {source_type.upper()}\n{'='*60}")
+
+            combined_intelligence = "".join(intelligence_sources)
+
+            # Execute domain-specific analysis
+            if target_file_type == 'visual_intelligence':
+                print(f"[CLARITY] {operation_id} - VISUAL {domain.upper()} ANALYSIS WITH FUSION")
+                
+                analysis_prompt_parts = []
+                analysis_prompt_parts.append(f"""
+{domain_accelerator}
 
 OPERATION ID: {operation_id}
+DOMAIN: {domain_title}
 CLASSIFICATION: {classify_content_sensitivity(combined_intelligence)}
 
-INTELLIGENCE CONTEXT:
+SUPPORTING INTELLIGENCE:
 {combined_intelligence[:35000]}
 
 PRIMARY VISUAL TARGET: {primary_target.filename}
 
-MULTI-SOURCE FUSION DIRECTIVE: Analyze primary visual target in conjunction with all intelligence sources. Cross-reference subjects, vehicles, locations between visual and textual intelligence. Provide comprehensive operational assessment.
-""")
-            
-            # Add primary target image
-            image_data = primary_target.read()
-            image = Image.open(io.BytesIO(image_data))
-            analysis_prompt_parts.append(f"\n--- PRIMARY VISUAL TARGET: {primary_target.filename} ---")
-            analysis_prompt_parts.append(image)
-            
-            # Add additional visual sources
-            for image_file in image_sources:
-                try:
-                    img_data = image_file.read()
-                    img = Image.open(io.BytesIO(img_data))
-                    analysis_prompt_parts.append(f"\n--- SUPPORTING VISUAL INTELLIGENCE: {image_file.filename} ---")
-                    analysis_prompt_parts.append(img)
-                except Exception as e:
-                    print(f"[CLARITY] Error processing supporting image {image_file.filename}: {e}")
-            
-            analysis_result = generate_with_retry(vision_model, analysis_prompt_parts)
-            
-        else:
-            # Handle text-based analysis (existing functionality)
-            print(f"[CLARITY] {operation_id} - COMPREHENSIVE INTELLIGENCE ANALYSIS")
-            target_content = advanced_text_extraction(primary_target)
-            
-            if image_sources:
-                # Multi-modal analysis with text primary and visual supporting
-                analysis_prompt_parts = []
-                analysis_prompt_parts.append(f"""
-{CLARITY_FUSION_ANALYST_PROMPT}
-
-OPERATION ID: {operation_id}
-TIMESTAMP: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
-CLASSIFICATION: {classify_content_sensitivity(combined_intelligence + target_content)}
-
-INTELLIGENCE DATABASE:
-{combined_intelligence}
-
-PRIMARY INTELLIGENCE TARGET:
-{target_content}
-
-MULTI-SOURCE FUSION DIRECTIVE: Analyze all sources together. Cross-reference textual intelligence with visual sources. Correlate subjects, vehicles, locations across all intelligence types.
+{domain.upper()} ANALYSIS DIRECTIVE: Analyze primary visual target in conjunction with all supporting intelligence. Apply {domain} professional standards and analytical frameworks. Provide expert-level {domain} analysis.
 """)
                 
-                # Add visual sources
+                # Add primary image
+                image_data = primary_target.read()
+                image = Image.open(io.BytesIO(image_data))
+                analysis_prompt_parts.append(f"\n--- PRIMARY VISUAL TARGET: {primary_target.filename} ---")
+                analysis_prompt_parts.append(image)
+                
+                # Add supporting images
                 for image_file in image_sources:
                     try:
                         img_data = image_file.read()
                         img = Image.open(io.BytesIO(img_data))
-                        analysis_prompt_parts.append(f"\n--- VISUAL INTELLIGENCE: {image_file.filename} ---")
+                        analysis_prompt_parts.append(f"\n--- SUPPORTING VISUAL: {image_file.filename} ---")
                         analysis_prompt_parts.append(img)
                     except Exception as e:
                         print(f"[CLARITY] Error processing image {image_file.filename}: {e}")
                 
                 analysis_result = generate_with_retry(vision_model, analysis_prompt_parts)
-            else:
-                # Text-only analysis (original functionality)
-                max_content_length = 45000
-                if len(combined_intelligence) > max_content_length:
-                    combined_intelligence = combined_intelligence[:max_content_length] + "\n\n[ADDITIONAL INTELLIGENCE SOURCES TRUNCATED]"
                 
-                analysis_prompt = f"""
-{CLARITY_FUSION_ANALYST_PROMPT}
+            else:
+                # Text-based analysis
+                print(f"[CLARITY] {operation_id} - COMPREHENSIVE {domain.upper()} ANALYSIS")
+                target_content = advanced_text_extraction(primary_target)
+                
+                if image_sources:
+                    # Multi-modal analysis
+                    analysis_prompt_parts = []
+                    analysis_prompt_parts.append(f"""
+{domain_accelerator}
 
 OPERATION ID: {operation_id}
+DOMAIN: {domain_title}
+CLASSIFICATION: {classify_content_sensitivity(combined_intelligence + target_content)}
+
+SUPPORTING INTELLIGENCE:
+{combined_intelligence}
+
+PRIMARY DIRECTIVE/DOCUMENT:
+{target_content}
+
+MULTI-SOURCE {domain.upper()} ANALYSIS: Analyze all sources together using {domain} professional standards. Cross-reference textual and visual intelligence. Provide comprehensive {domain} analysis.
+""")
+                    
+                    # Add visual sources
+                    for image_file in image_sources:
+                        try:
+                            img_data = image_file.read()
+                            img = Image.open(io.BytesIO(img_data))
+                            analysis_prompt_parts.append(f"\n--- VISUAL INTELLIGENCE: {image_file.filename} ---")
+                            analysis_prompt_parts.append(img)
+                        except Exception as e:
+                            print(f"[CLARITY] Error processing image {image_file.filename}: {e}")
+                    
+                    analysis_result = generate_with_retry(vision_model, analysis_prompt_parts)
+                else:
+                    # Text-only analysis
+                    max_content_length = 45000
+                    if len(combined_intelligence) > max_content_length:
+                        combined_intelligence = combined_intelligence[:max_content_length] + "\n\n[ADDITIONAL SOURCES TRUNCATED]"
+                    
+                    analysis_prompt = f"""
+{domain_accelerator}
+
+OPERATION ID: {operation_id}
+DOMAIN: {domain_title}
 TIMESTAMP: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
 CLASSIFICATION: {classify_content_sensitivity(combined_intelligence + target_content)}
 
-INTELLIGENCE DATABASE:
+SUPPORTING INTELLIGENCE:
 {combined_intelligence}
 
-PRIMARY INTELLIGENCE TARGET:
+PRIMARY DIRECTIVE/DOCUMENT:
 {target_content}
 
-COMPREHENSIVE ANALYSIS DIRECTIVE:
-Execute full-spectrum intelligence analysis. Cross-reference all sources. Provide actionable intelligence for immediate deployment.
+COMPREHENSIVE {domain.upper()} ANALYSIS DIRECTIVE:
+Execute comprehensive {domain} analysis using professional standards and analytical frameworks. Cross-reference all sources and provide expert-level analysis suitable for professional decision making.
 """
-                analysis_result = generate_with_retry(text_model, analysis_prompt)
+                    analysis_result = generate_with_retry(text_model, analysis_prompt)
 
-        # Format final intelligence brief
-        classification_level = classify_content_sensitivity(combined_intelligence)
-        final_brief = f"""
+        except Exception as e:
+            print(f"[CLARITY] {operation_id} - CRITICAL SYSTEM ERROR: {e}")
+            return jsonify({
+                "error": f"CLARITY SYSTEM MALFUNCTION: {str(e)}",
+                "operation_id": operation_id
+            }), 500
+    
+    # Format final output
+    classification_level = classify_content_sensitivity(combined_intelligence if 'combined_intelligence' in locals() else "")
+    final_brief = f"""
 🔒 CLASSIFICATION: {classification_level}
 🆔 OPERATION ID: {operation_id}
 📅 ANALYSIS COMPLETED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
-🏛️ ORIGINATING AGENCY: CLARITY Engine
-📊 SOURCES ANALYZED: {len(knowledge_base_files) + 1}
-🎯 PRIMARY TARGET TYPE: {target_file_type.replace('_', ' ').title()}
+🏛️ ORIGINATING SYSTEM: Pearl AI CLARITY Intelligence Platform
+📊 SOURCES ANALYZED: {len(knowledge_base_files) + (1 if primary_target else 0)}
+🎯 ANALYSIS TYPE: {domain_title}
 
 {'='*80}
-CLARITY INTELLIGENCE BRIEF
+CLARITY INTELLIGENCE BRIEF - {domain.upper()} ANALYSIS
 {'='*80}
 
 {analysis_result}
@@ -597,31 +625,22 @@ CLARITY INTELLIGENCE BRIEF
 END INTELLIGENCE BRIEF
 {'='*80}
 
-🚨 SECURITY NOTICE: This intelligence product is classified {classification_level}. 
-Distribution is restricted to authorized personnel with appropriate security clearances.
-Unauthorized disclosure is prohibited and punishable under applicable law.
-
-🔐 CLARITY-{operation_id}
-📞 For technical support or escalation: Contact CLARITY Operations Center
-⚠️ Report security incidents immediately to Counter-Intelligence Division
-        """
-        
-        print(f"[CLARITY] {operation_id} - ANALYSIS COMPLETE - CLASSIFICATION: {classification_level}")
-        return jsonify({"completedQuestionnaire": final_brief})
-        
-    except Exception as e:
-        print(f"[CLARITY] {operation_id} - CRITICAL SYSTEM ERROR: {e}")
-        return jsonify({
-            "error": f"CLARITY SYSTEM MALFUNCTION: {str(e)}",
-            "operation_id": operation_id,
-            "classification": "SYSTEM ERROR",
-            "action": "Contact CLARITY Technical Support immediately"
-        }), 500
+🔐 Pearl AI CLARITY Engine - {operation_id}
+📞 For technical support: Contact Pearl AI CLARITY Operations
+⚠️ This analysis is for authorized use by qualified {domain} professionals
+"""
+    
+    print(f"[CLARITY] {operation_id} - {domain.upper()} ANALYSIS COMPLETE")
+    return jsonify({"completedQuestionnaire": final_brief})
 
 # --- Application Runner ---
 if __name__ == '__main__':
-    print("[CLARITY] Intelligence Analysis Platform initializing...")
-    print("[CLARITY] Security protocols active")
-    print("[CLARITY] Multi-modal fusion capabilities enabled")
-    print("[CLARITY] System ready for classified operations")
+    print("[CLARITY] Pearl AI Multi-Domain Intelligence Platform initializing...")
+    print("[CLARITY] Security Intelligence Accelerator: ACTIVE")
+    print("[CLARITY] Legal Intelligence Accelerator: ACTIVE") 
+    print("[CLARITY] Financial Intelligence Accelerator: ACTIVE")
+    print("[CLARITY] Corporate Intelligence Accelerator: ACTIVE")
+    print("[CLARITY] Healthcare Intelligence Accelerator: ACTIVE")
+    print("[CLARITY] Multi-modal fusion capabilities: ENABLED")
+    print("[CLARITY] System ready for multi-domain operations")
     app.run(host='0.0.0.0', port=8080)
