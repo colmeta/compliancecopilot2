@@ -22,7 +22,7 @@ flower==2.0.1      # Optional but highly recommended: monitoring dashboard for C
 
 # --- AI Memory (Vector Database & Embeddings) ---
 sentence-transformers==2.7.0 # For creating text embeddings
-chromadb-client==0.4.24      # The client for the ChromaDB vector store
+chromadb-client
 
 # --- API Structure & Validation ---
 pydantic==2.5.3    # For data validation and enforcing structured JSON
