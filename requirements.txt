@@ -1,37 +1,37 @@
 setuptools
 # --- Web Server & Framework ---
-Flask==3.0.0
-Flask-CORS==4.0.0
-gunicorn==21.2.0
-Werkzeug==3.0.1
+Flask
+Flask-CORS
+gunicorn
+Werkzeug
 
 # --- Document & Data Processing ---
-python-docx==1.1.0
-PyPDF2==3.0.1
-python-magic==0.4.27
+python-docx
+PyPDF2
+python-magic
 Pillow
-pandas==2.2.0      # For handling tabular data if needed
-openpyxl==3.1.2    # For reading .xlsx files with pandas
+pandas     # For handling tabular data if needed
+openpyxl    # For reading .xlsx files with pandas
 
 # --- Core AI Engine ---
 google-generativeai>=0.7.0
 
 # --- Asynchronous Task Queue ---
-celery==5.2.7
-redis==4.5.4
-flower==2.0.1      # Optional but highly recommended: monitoring dashboard for Celery
+celery
+redis
+flower      # Optional but highly recommended: monitoring dashboard for Celery
 
 # --- AI Memory (Vector Database & Embeddings) ---
-sentence-transformers==2.7.0 # For creating text embeddings
+sentence-transformers # For creating text embeddings
 chromadb-client
 
 # --- API Structure & Validation ---
-pydantic==2.5.3    # For data validation and enforcing structured JSON
+pydantic    # For data validation and enforcing structured JSON
 
 # --- Security & Configuration ---
-Flask-Limiter==3.5.1 # For rate-limiting your API endpoints
-python-dotenv==1.0.1 # For managing environment variables from a .env file
-cryptography==41.0.3 # For security-related operations
-numpy==1.24.3
-scipy==1.10.1
-nltk==3.8.1
+Flask-Limiter # For rate-limiting your API endpoints
+python-dotenv # For managing environment variables from a .env file
+cryptography # For security-related operations
+numpy
+scipy
+nltk
