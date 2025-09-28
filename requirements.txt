@@ -35,3 +35,68 @@ cryptography # For security-related operations
 numpy
 scipy
 nltk
+# --- Database & Authentication ---
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.25
+psycopg2-binary==2.9.9   # The "driver" that allows Python to speak PostgreSQL
+Flask-Login==0.6.3       # For managing user login sessions
+werkzeug>=2.2.3          # For password hashing (usually installed with Flask)
+Flask-Migrate==4.0.5     # For managing changes to your database schema```
+
+After adding these, run the installation in your terminal:
+
+`pip install -r requirements.txt`
+
+#### **2. Create the `models.py` file**
+
+This is the most important part. We will create the `User` model, complete with secure password handling.
+
+**Create a new file** in the root of your project called **`models.py`**. Paste the following code into it:
+
+```python
+# ==============================================================================
+# models.py
+# This file defines the database structure (the "schema") for our application.
+# ==============================================================================
+
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
+from datetime import datetime
+
+# Initialize SQLAlchemy so we can use it in other files
+db = SQLAlchemy()
+
+# The UserMixin is a special class from Flask-Login that includes
+# built-in methods that we will need for user session management.
+class User(UserMixin, db.Model):
+    """The User model."""
+    
+    __tablename__ = 'users' # Good practice to name your tables in plural
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    def __init__(self, email, password):
+        """Constructor for the user model."""
+        self.email = email
+        self.set_password(password)
+
+    def set_password(self, password):
+        """
+        Creates a secure hash of a given password.
+        We will NEVER store the plain password.
+        """
+        self.password_hash = generate_password_hash(password, method='pbkdf2:sha256')
+
+    def check_password(self, password):
+        """
+        Checks if the provided password matches the stored hash.
+        Returns True or False.
+        """
+        return check_password_hash(self.password_hash, password)
+
+    def __repr__(self):
+        """String representation of the user for debugging."""
+        return f'<User {self.email}>'
