@@ -100,3 +100,4 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         """String representation of the user for debugging."""
         return f'<User {self.email}>'
+Flask-WTF==1.2.1
