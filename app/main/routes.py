@@ -1,16 +1,24 @@
-
+# ==============================================================================
 # app/main/routes.py
+# COMPLETE FILE with the temporary setup route included.
+# ==============================================================================
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
+
+# Imports needed for our setup route
+from app import db
+from app.models import User, APIKey
 
 main = Blueprint('main', __name__)
 
 @main.route('/')
 @main.route('/index')
-@login_required # This is the crucial part: this page is now protected.
+@login_required
 def index():
     """This will be the user's dashboard after they log in."""
     return f"<h1>Welcome to the Clarity Engine, {current_user.email}!</h1> You are now logged in."
+
+
 # ==============================================================================
 # !! TEMPORARY ADMIN SETUP ROUTE !!
 # This is a temporary, secret endpoint to create the first user and API key.
@@ -23,7 +31,6 @@ def setup_initial_user():
     This is a one-time use endpoint and should be deleted after running.
     """
     # --- The Safety Latch ---
-    # First, check if the user already exists to prevent errors.
     if User.query.filter_by(email="founder@clarityengine.com").first():
         return "<h1>Setup Error</h1><p>The founder account already exists. This setup can only be run once. You should delete this code block from app/main/routes.py now.</p>", 400
 
@@ -44,7 +51,6 @@ def setup_initial_user():
         print(f"Successfully generated API key for {user.email}")
         
         # --- The Critical Output ---
-        # This returns an HTML page showing you the key.
         return f"""
         <h1>Fortress Setup Complete!</h1>
         <p>The first user and API key have been successfully generated.</p>
@@ -63,5 +69,3 @@ def setup_initial_user():
 
     except Exception as e:
         return f"<h1>An Error Occurred</h1><p>Could not complete setup: {e}</p>", 500
-
-```    *Note: I have added the imports for `db`, `User`, and `APIKey` at the top of the file in the full code block below for you.*
