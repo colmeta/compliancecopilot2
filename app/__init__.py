@@ -1,5 +1,7 @@
-
+# ==============================================================================
 # /app/__init__.py
+# Final, correct version with all three blueprints registered and active.
+# ==============================================================================
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -45,8 +47,9 @@ def create_app(config_class=Config):
     from .api.routes import api as api_blueprint
     app.register_blueprint(api_blueprint, url_prefix='/api')
     
-    # You could also add a 'main' blueprint for simple routes like a homepage
-    # from .main.routes import main as main_blueprint
-    # app.register_blueprint(main_blueprint)
+    # --- THIS BLOCK IS NOW ACTIVE ---
+    # This imports the 'main' blueprint from our new file and registers it.
+    from .main.routes import main as main_blueprint
+    app.register_blueprint(main_blueprint)
 
     return app
