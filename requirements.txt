@@ -43,3 +43,4 @@ Flask-Login==0.6.3       # For managing user login sessions
 werkzeug>=2.2.3          # For password hashing (usually installed with Flask)
 Flask-Migrate==4.0.5     # For managing changes to your database schema```
 Flask-WTF==1.2.1
+email-validator==2.1.1
