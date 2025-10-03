@@ -9,6 +9,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
 
+
+
 # Step 1: Create the extension instances WITHOUT an app
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -28,6 +30,7 @@ def create_app(config_class=Config):
     from . import models
     from .auth.routes import auth as auth_blueprint
     from .api.routes import api as api_blueprint
+    from .api.setup_routes import setup as setup_blueprint  # TEMPORARY SETUP
     from .main.routes import main as main_blueprint
 
     # --- Configure Flask-Login ---
@@ -39,6 +42,7 @@ def create_app(config_class=Config):
     # --- Register Blueprints ---
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
     app.register_blueprint(api_blueprint, url_prefix='/api')
+    app.register_blueprint(setup_blueprint, url_prefix='/api/setup')  # TEMPORARY
     app.register_blueprint(main_blueprint)
     
     return app
