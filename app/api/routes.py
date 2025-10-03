@@ -7,10 +7,15 @@ from flask import Blueprint, jsonify, request
 from functools import wraps
 from app import db
 from app.models import APIKey, User
-from celery_worker import celery as celery_app
 import base64
 
 api = Blueprint('api', __name__)
+
+# We'll import celery lazily inside functions to avoid circular import
+def get_celery_app():
+    """Lazy import of celery to avoid circular dependency."""
+    from celery_worker import celery
+    return celery
 
 # ==============================================================================
 # STRIKE 2: The Guard - Bulletproof API Key Protection
