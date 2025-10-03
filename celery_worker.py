@@ -1,4 +1,9 @@
+# ==============================================================================
 # celery_worker.py
+# Creates a Celery instance integrated with our Flask application factory.
+# This allows background tasks to access the database and app context.
+# ==============================================================================
+
 from app import create_app
 from celery import Celery
 
@@ -6,6 +11,10 @@ from celery import Celery
 flask_app = create_app()
 
 def make_celery(app):
+    """
+    Factory function that creates a Celery instance properly configured
+    to work with our Flask application.
+    """
     celery = Celery(
         app.import_name,
         backend=app.config['CELERY_RESULT_BACKEND'],
@@ -14,6 +23,10 @@ def make_celery(app):
     celery.conf.update(app.config)
 
     class ContextTask(celery.Task):
+        """
+        Custom task class that ensures tasks run within Flask app context.
+        This is critical for database access.
+        """
         def __call__(self, *args, **kwargs):
             with app.app_context():
                 return self.run(*args, **kwargs)
@@ -23,14 +36,3 @@ def make_celery(app):
 
 # Create the final Celery instance using our factory
 celery = make_celery(flask_app)
-```*Self-correction: The previous `celery_worker.py` was too simple. This new version correctly integrates with our application factory, which is essential for tasks to access the database.*
-
----
-
-### **You Have Now Built a Professional Application Structure.**
-
-This was a big step, but your project is now organized like a real, scalable web application.
-
-**Our final mission for today is to give the command to the "construction crew" (`Flask-Migrate`) to build our tables.**
-
-This will be a few simple commands in your terminal. Are you ready?
