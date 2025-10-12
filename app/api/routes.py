@@ -5,9 +5,10 @@
 
 from flask import Blueprint, jsonify, request
 from functools import wraps
-from app import db
-from app.models import APIKey, User
+from app import db, limiter
+from app.models import APIKey, User, AnalysisFeedback, FinalizedBriefing
 import base64
+import json
 
 api = Blueprint('api', __name__)
 
@@ -76,6 +77,7 @@ def generate_key(user_id):
 # ==============================================================================
 
 @api.route('/analyze/start', methods=['POST'])
+@limiter.limit("10 per minute")  # Rate limit: 10 requests per minute per IP
 @api_key_required
 def start_analysis():
     """
@@ -104,7 +106,7 @@ def start_analysis():
     
     # Dispatch the background task
     from app.tasks import run_clarity_analysis
-    task = run_clarity_analysis.delay(user_directive, files_data)
+    task = run_clarity_analysis.delay(user_directive, files_data, current_user.id)
     
     return jsonify({
         'message': 'Analysis initiated',
@@ -114,13 +116,15 @@ def start_analysis():
 
 
 @api.route('/analyze/status/<job_id>', methods=['GET'])
+@limiter.limit("30 per minute")  # Rate limit: 30 status checks per minute per IP
 @api_key_required
 def check_analysis_status(job_id):
     """
     Check the status of a background analysis job.
     """
     from celery.result import AsyncResult
-    task = AsyncResult(job_id, app=celery_app)
+    celery = get_celery_app()
+    task = AsyncResult(job_id, app=celery)
     
     if task.state == 'PENDING':
         response = {'state': task.state, 'status': 'Task is queued...'}
@@ -147,3 +151,122 @@ def test_protected_route():
         'message': 'Success! You have accessed a protected route.',
         'authenticated_user': request.current_user.email
     })
+
+
+# ==============================================================================
+# PHASE 3: HUMAN-AI SYMBIOSIS - FEEDBACK & COLLABORATION ENDPOINTS
+# ==============================================================================
+
+@api.route('/feedback', methods=['POST'])
+@limiter.limit("20 per minute")  # Rate limit: 20 feedback submissions per minute per IP
+@api_key_required
+def submit_feedback():
+    """
+    Submit user feedback on CLARITY analysis results.
+    
+    This endpoint enables the accountability layer - users can tell us when
+    CLARITY is right or wrong, building trust through transparency.
+    """
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data:
+            return jsonify({'error': 'No JSON data provided'}), 400
+        
+        job_id = data.get('job_id')
+        rating = data.get('rating')
+        feedback_text = data.get('feedback_text', '')
+        
+        if not job_id:
+            return jsonify({'error': 'job_id is required'}), 400
+        
+        if rating not in [1, -1]:
+            return jsonify({'error': 'rating must be 1 (thumbs up) or -1 (thumbs down)'}), 400
+        
+        # Create feedback record
+        feedback = AnalysisFeedback(
+            job_id=job_id,
+            user_id=request.current_user.id,
+            rating=rating,
+            feedback_text=feedback_text
+        )
+        
+        db.session.add(feedback)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Feedback submitted successfully',
+            'feedback_id': feedback.id,
+            'job_id': job_id,
+            'rating': rating
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': f'Failed to submit feedback: {str(e)}'
+        }), 500
+
+
+@api.route('/briefings/finalize', methods=['POST'])
+@limiter.limit("10 per minute")  # Rate limit: 10 finalizations per minute per IP
+@api_key_required
+def finalize_briefing():
+    """
+    Finalize and save a user-edited briefing.
+    
+    This endpoint enables the co-worker paradigm - users can edit CLARITY's
+    draft and save their final, approved version.
+    """
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data:
+            return jsonify({'error': 'No JSON data provided'}), 400
+        
+        job_id = data.get('job_id')
+        final_content = data.get('final_content')
+        
+        if not job_id:
+            return jsonify({'error': 'job_id is required'}), 400
+        
+        if not final_content:
+            return jsonify({'error': 'final_content is required'}), 400
+        
+        # Validate final_content structure
+        required_fields = ['executive_summary', 'key_findings', 'actionable_recommendations']
+        for field in required_fields:
+            if field not in final_content:
+                return jsonify({'error': f'final_content must include {field}'}), 400
+        
+        # Convert final_content to JSON string for storage
+        final_content_json = json.dumps(final_content)
+        
+        # Create finalized briefing record
+        finalized_briefing = FinalizedBriefing(
+            original_job_id=job_id,
+            user_id=request.current_user.id,
+            final_content=final_content_json
+        )
+        
+        db.session.add(finalized_briefing)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Briefing finalized and saved successfully',
+            'finalized_id': finalized_briefing.id,
+            'job_id': job_id,
+            'timestamp': finalized_briefing.timestamp.isoformat()
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': f'Failed to finalize briefing: {str(e)}'
+        }), 500

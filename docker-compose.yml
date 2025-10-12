@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # ChromaDB Vector Database for Intelligence Vault
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: clarity_chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      - chromadb_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    restart: unless-stopped
+    networks:
+      - clarity_network
+
+  # Redis for Celery (if not running separately)
+  redis:
+    image: redis:7-alpine
+    container_name: clarity_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    networks:
+      - clarity_network
+
+volumes:
+  chromadb_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  clarity_network:
+    driver: bridge

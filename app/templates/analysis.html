@@ -1,0 +1,878 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-900 text-white">
+    <!-- Navigation Header -->
+    <nav class="bg-gray-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-white">CLARITY Engine</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-300">{{ current_user.email }}</span>
+                    <a href="{{ url_for('main.dashboard') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        Dashboard
+                    </a>
+                    <a href="{{ url_for('main.about') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        About
+                    </a>
+                    <a href="{{ url_for('auth.logout') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    <div class="bg-green-600 text-white px-4 py-3 rounded-md mb-2">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Analysis Form -->
+        <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold text-white mb-6">CLARITY Draft Briefing Generator</h2>
+            
+            <form id="analysisForm" enctype="multipart/form-data">
+                <!-- File Upload Section -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Upload Documents</label>
+                    <div id="dropZone" class="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center hover:border-gray-500 transition-colors cursor-pointer">
+                        <div class="space-y-2">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <p class="text-gray-400">Drag and drop files here, or click to select</p>
+                            <p class="text-sm text-gray-500">Supports PDF, DOCX, images, and text files</p>
+                        </div>
+                        <input type="file" id="fileInput" name="files" multiple accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" class="hidden">
+                    </div>
+                    
+                    <!-- Selected Files Display -->
+                    <div id="selectedFiles" class="mt-4 space-y-2"></div>
+                </div>
+
+                <!-- Directive Input -->
+                <div class="mb-6">
+                    <label for="directive" class="block text-sm font-medium text-gray-300 mb-2">Analysis Directive</label>
+                    <textarea id="directive" name="directive" rows="4" 
+                        class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Describe what you want CLARITY to analyze. For example: 'Review this contract for liability risks and compliance issues' or 'Analyze these financial statements for anomalies and red flags'"></textarea>
+                </div>
+
+                <!-- Domain Selection (Optional) -->
+                <div class="mb-6">
+                    <label for="domain" class="block text-sm font-medium text-gray-300 mb-2">Domain Override (Optional)</label>
+                    <select id="domain" name="domain" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Auto-detect domain</option>
+                        <option value="legal">Legal Intelligence</option>
+                        <option value="financial">Financial Intelligence</option>
+                        <option value="security">Security Intelligence</option>
+                        <option value="healthcare">Healthcare Intelligence</option>
+                        <option value="proposal">Government Proposal Intelligence</option>
+                        <option value="engineering">Engineering Intelligence</option>
+                        <option value="grant_proposal">Grant Proposal Intelligence</option>
+                        <option value="market_analysis">Market Analysis Intelligence</option>
+                        <option value="pitch_deck">Pitch Deck Intelligence</option>
+                        <option value="investor_diligence">Investor Diligence Intelligence</option>
+                        <option value="corporate">Corporate Intelligence</option>
+                    </select>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end">
+                    <button type="submit" id="submitBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        Generate Draft Briefing
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Status Display -->
+        <div id="statusDisplay" class="hidden bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+            <h3 class="text-lg font-semibold text-white mb-4">Analysis Status</h3>
+            <div id="statusContent" class="space-y-4">
+                <!-- Status will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2">
+            <!-- Toasts will be dynamically added here -->
+        </div>
+
+        <!-- Source Details Modal -->
+        <div id="sourceModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-white">Source Details</h3>
+                        <button id="closeSourceModal" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="sourceModalContent" class="space-y-3">
+                        <!-- Content will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Display -->
+        <div id="resultsDisplay" class="hidden bg-gray-800 rounded-lg shadow-lg p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-white">Draft Briefing Results</h3>
+                <div class="space-x-2">
+                    <button id="copyResultsBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm transition-colors">
+                        Copy JSON
+                    </button>
+                    <button id="downloadResultsBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors">
+                        Download
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Vault Context Information -->
+            <div id="vaultContextInfo" class="mb-4 p-3 bg-blue-900 rounded-lg hidden">
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-database text-blue-400 mr-2"></i>
+                    <span class="text-blue-300 font-medium">Intelligence Vault Enhanced</span>
+                </div>
+                <div id="vaultContextDetails" class="text-sm text-gray-300">
+                    <!-- Vault context details will be populated here -->
+                </div>
+            </div>
+            
+            <div id="resultsContent" class="space-y-4">
+                <!-- Results will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const selectedFiles = document.getElementById('selectedFiles');
+    const analysisForm = document.getElementById('analysisForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusDisplay = document.getElementById('statusDisplay');
+    const statusContent = document.getElementById('statusContent');
+    const resultsDisplay = document.getElementById('resultsDisplay');
+    const resultsContent = document.getElementById('resultsContent');
+    const copyResultsBtn = document.getElementById('copyResultsBtn');
+    const downloadResultsBtn = document.getElementById('downloadResultsBtn');
+    const vaultContextInfo = document.getElementById('vaultContextInfo');
+    const vaultContextDetails = document.getElementById('vaultContextDetails');
+
+    let currentJobId = null;
+    let pollInterval = null;
+
+    // Toast notification functions
+    function showToast(message, type = 'info') {
+        const toastContainer = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        
+        const colors = {
+            success: 'bg-green-600',
+            error: 'bg-red-600',
+            warning: 'bg-yellow-600',
+            info: 'bg-blue-600'
+        };
+        
+        toast.className = `${colors[type]} text-white px-6 py-3 rounded-md shadow-lg transform transition-all duration-300 translate-x-full`;
+        toast.innerHTML = `
+            <div class="flex items-center justify-between">
+                <span>${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        // Animate in
+        setTimeout(() => {
+            toast.classList.remove('translate-x-full');
+        }, 100);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            toast.classList.add('translate-x-full');
+            setTimeout(() => toast.remove(), 300);
+        }, 5000);
+    }
+
+    // Loading spinner function
+    function showLoadingSpinner(element) {
+        element.innerHTML = `
+            <div class="flex items-center justify-center space-x-2">
+                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>Processing...</span>
+            </div>
+        `;
+    }
+
+    // File upload handling
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-blue-500', 'bg-gray-700');
+    });
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-blue-500', 'bg-gray-700');
+    });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-blue-500', 'bg-gray-700');
+        handleFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+    function handleFiles(files) {
+        Array.from(files).forEach(file => {
+            const fileDiv = document.createElement('div');
+            fileDiv.className = 'flex items-center justify-between p-2 bg-gray-700 rounded';
+            fileDiv.innerHTML = `
+                <span class="text-sm text-gray-300">${file.name}</span>
+                <button type="button" class="text-red-400 hover:text-red-300 text-sm" onclick="this.parentElement.remove()">Remove</button>
+            `;
+            selectedFiles.appendChild(fileDiv);
+        });
+    }
+
+    // Form submission
+    analysisForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData();
+        const files = fileInput.files;
+        const directive = document.getElementById('directive').value;
+        const domain = document.getElementById('domain').value;
+
+        if (files.length === 0) {
+            showToast('Please select at least one file to analyze.', 'warning');
+            return;
+        }
+
+        if (!directive.trim()) {
+            showToast('Please provide an analysis directive.', 'warning');
+            return;
+        }
+
+        // Add files to form data
+        Array.from(files).forEach(file => {
+            formData.append('files', file);
+        });
+        formData.append('directive', directive);
+        if (domain) {
+            formData.append('domain', domain);
+        }
+
+        // Get API key from localStorage or prompt user
+        let apiKey = localStorage.getItem('clarity_api_key');
+        if (!apiKey) {
+            apiKey = prompt('Please enter your API key:');
+            if (!apiKey) return;
+            localStorage.setItem('clarity_api_key', apiKey);
+        }
+
+        try {
+            submitBtn.disabled = true;
+            showLoadingSpinner(submitBtn);
+            
+            statusDisplay.classList.remove('hidden');
+            showToast('Submitting analysis request...', 'info');
+
+            const response = await fetch('/api/analyze/start', {
+                method: 'POST',
+                headers: {
+                    'X-API-KEY': apiKey
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                currentJobId = data.job_id;
+                showToast('Draft briefing generation started!', 'success');
+                statusContent.innerHTML = '<div class="text-green-400">Draft briefing generation started! Job ID: ' + currentJobId + '</div>';
+                startPolling();
+            } else {
+                showToast('Error: ' + data.error, 'error');
+                statusContent.innerHTML = '<div class="text-red-400">Error: ' + data.error + '</div>';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Generate Draft Briefing';
+            }
+        } catch (error) {
+            showToast('Error: ' + error.message, 'error');
+            statusContent.innerHTML = '<div class="text-red-400">Error: ' + error.message + '</div>';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Execute Analysis';
+        }
+    });
+
+    function startPolling() {
+        pollInterval = setInterval(async () => {
+            try {
+                const apiKey = localStorage.getItem('clarity_api_key');
+                const response = await fetch(`/api/analyze/status/${currentJobId}`, {
+                    headers: {
+                        'X-API-KEY': apiKey
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.state === 'SUCCESS') {
+                    clearInterval(pollInterval);
+                    showToast('Draft briefing completed successfully!', 'success');
+                    displayResults(data.result);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Generate Draft Briefing';
+                } else if (data.state === 'FAILURE') {
+                    clearInterval(pollInterval);
+                    showToast('Draft briefing failed: ' + data.error, 'error');
+                    statusContent.innerHTML = '<div class="text-red-400">Analysis failed: ' + data.error + '</div>';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Generate Draft Briefing';
+                } else {
+                    statusContent.innerHTML = '<div class="text-yellow-400">Status: ' + data.status + '</div>';
+                }
+            } catch (error) {
+                clearInterval(pollInterval);
+                showToast('Error checking status: ' + error.message, 'error');
+                statusContent.innerHTML = '<div class="text-red-400">Error checking status: ' + error.message + '</div>';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Generate Draft Briefing';
+            }
+        }, 2000);
+    }
+
+    function displayResults(result) {
+        resultsDisplay.classList.remove('hidden');
+        
+        // Store current job ID for feedback and finalization
+        window.currentJobId = currentJobId;
+        
+        // Display vault context if available
+        if (result.vault_context && result.vault_context.vault_enhanced) {
+            vaultContextInfo.classList.remove('hidden');
+            vaultContextDetails.innerHTML = `
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <span class="text-blue-400 font-medium">Context Documents:</span>
+                        <span class="text-white">${result.vault_context.context_documents}</span>
+                    </div>
+                    <div>
+                        <span class="text-blue-400 font-medium">Search Query:</span>
+                        <span class="text-white">"${result.vault_context.search_query}"</span>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <span class="text-blue-400 font-medium">Sources:</span>
+                    <span class="text-white">${result.vault_context.context_sources.join(', ') || 'Unknown'}</span>
+                </div>
+            `;
+        } else {
+            vaultContextInfo.classList.add('hidden');
+        }
+        
+        // Helper function to render findings with source attribution
+        function renderFinding(finding, index) {
+            if (typeof finding === 'object' && finding.finding) {
+                // New structured format with source attribution
+                const confidence = finding.confidence || 'Unknown';
+                const confidenceClass = confidence.includes('9') ? 'text-green-400' : 
+                                      confidence.includes('7') || confidence.includes('8') ? 'text-yellow-400' : 'text-orange-400';
+                
+                return `
+                    <div class="flex items-start space-x-2 mb-2">
+                        <span class="text-gray-300 mt-1">•</span>
+                        <div class="flex-1">
+                            <div class="text-gray-300">${finding.finding}</div>
+                            <div class="flex items-center space-x-2 mt-1">
+                                <button onclick="showSourceDetails('${finding.source_document}', '${finding.source_details}', '${confidence}')" 
+                                        class="text-blue-400 hover:text-blue-300 text-xs bg-blue-900 px-2 py-1 rounded cursor-pointer">
+                                    📄 Source
+                                </button>
+                                <span class="text-xs ${confidenceClass}">(${confidence} confident)</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Legacy string format - make it editable
+                return `
+                    <div class="flex items-start space-x-2 mb-2">
+                        <span class="text-gray-300 mt-1">•</span>
+                        <div contenteditable="true" class="flex-1 text-gray-300 bg-gray-700 p-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none" 
+                             data-field="key_findings" data-index="${index}">${finding}</div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Helper function to render recommendations
+        function renderRecommendation(rec, index) {
+            if (typeof rec === 'object' && rec.recommendation) {
+                // New structured format
+                const priorityClass = rec.priority === 'High' ? 'text-red-400' : 
+                                    rec.priority === 'Medium' ? 'text-yellow-400' : 'text-green-400';
+                
+                return `
+                    <div class="flex items-start space-x-2 mb-2">
+                        <span class="text-gray-300 mt-1">•</span>
+                        <div class="flex-1">
+                            <div class="text-gray-300">${rec.recommendation}</div>
+                            <div class="text-sm text-gray-400 mt-1">${rec.justification}</div>
+                            <div class="text-xs ${priorityClass} mt-1">Priority: ${rec.priority}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Legacy string format - make it editable
+                return `
+                    <div class="flex items-start space-x-2 mb-2">
+                        <span class="text-gray-300 mt-1">•</span>
+                        <div contenteditable="true" class="flex-1 text-gray-300 bg-gray-700 p-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none" 
+                             data-field="actionable_recommendations" data-index="${index}">${rec}</div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Display structured results with editing capabilities
+        resultsContent.innerHTML = `
+            <div class="space-y-6">
+                <!-- Finalize & Save Button -->
+                <div class="flex justify-between items-center p-4 bg-blue-900 rounded-lg">
+                    <div>
+                        <h4 class="font-semibold text-blue-300">Draft Briefing Ready for Review</h4>
+                        <p class="text-sm text-blue-200">Edit the content below and finalize when ready</p>
+                    </div>
+                    <button id="finalizeBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium transition-colors">
+                        Finalize & Save
+                    </button>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-white mb-2">Executive Summary</h4>
+                    <div contenteditable="true" id="executiveSummary" class="text-gray-300 bg-gray-700 p-3 rounded border border-gray-600 focus:border-blue-500 focus:outline-none min-h-[100px]" 
+                         data-field="executive_summary">${result.executive_summary || 'No summary provided'}</div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-white mb-2">Key Findings</h4>
+                    <div id="keyFindings" class="space-y-2">
+                        ${(result.key_findings || []).map((finding, index) => renderFinding(finding, index)).join('')}
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-white mb-2">Actionable Recommendations</h4>
+                    <div id="actionableRecommendations" class="space-y-2">
+                        ${(result.actionable_recommendations || []).map((rec, index) => renderRecommendation(rec, index)).join('')}
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="font-semibold text-white mb-2">Confidence Score</h4>
+                        <div contenteditable="true" id="confidenceScore" class="text-gray-300 bg-gray-700 p-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none" 
+                             data-field="confidence_score">${result.confidence_score || 'Not provided'}</div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-white mb-2">Data Gaps</h4>
+                        <div contenteditable="true" id="dataGaps" class="text-gray-300 bg-gray-700 p-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none min-h-[60px]" 
+                             data-field="data_gaps">${(result.data_gaps || []).join(', ') || 'None identified'}</div>
+                    </div>
+                </div>
+                
+                <!-- Feedback Section -->
+                <div class="mt-8 p-4 bg-gray-700 rounded-lg">
+                    <h4 class="font-semibold text-white mb-3">How was this draft briefing?</h4>
+                    <div class="flex items-center space-x-4">
+                        <button id="thumbsUpBtn" class="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-colors">
+                            <span>👍</span>
+                            <span>Good</span>
+                        </button>
+                        <button id="thumbsDownBtn" class="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors">
+                            <span>👎</span>
+                            <span>Needs Improvement</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Feedback textarea (hidden by default) -->
+                    <div id="feedbackTextarea" class="mt-4 hidden">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">What could be improved?</label>
+                        <textarea id="feedbackText" rows="3" class="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                  placeholder="Please provide specific feedback..."></textarea>
+                        <div class="mt-2 flex space-x-2">
+                            <button id="submitFeedbackBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm transition-colors">
+                                Submit Feedback
+                            </button>
+                            <button id="cancelFeedbackBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm transition-colors">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 p-4 bg-gray-700 rounded-md">
+                    <h4 class="font-semibold text-white mb-2">Raw JSON Output</h4>
+                    <pre class="text-xs text-gray-300 overflow-x-auto"><code>${JSON.stringify(result, null, 2)}</code></pre>
+                </div>
+            </div>
+        `;
+        
+        // Add event listeners for new functionality
+        setupPhase3EventListeners();
+    }
+
+    // Copy and download functionality
+    copyResultsBtn.addEventListener('click', () => {
+        const jsonText = JSON.stringify(JSON.parse(resultsContent.querySelector('code').textContent), null, 2);
+        navigator.clipboard.writeText(jsonText).then(() => {
+            showToast('Results copied to clipboard!', 'success');
+            copyResultsBtn.textContent = 'Copied!';
+            setTimeout(() => {
+                copyResultsBtn.textContent = 'Copy JSON';
+            }, 2000);
+        });
+    });
+
+    downloadResultsBtn.addEventListener('click', () => {
+        const jsonText = JSON.stringify(JSON.parse(resultsContent.querySelector('code').textContent), null, 2);
+        const blob = new Blob([jsonText], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `clarity-analysis-${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Results downloaded successfully!', 'success');
+    });
+
+    // ==============================================================================
+    // PHASE 3: HUMAN-AI SYMBIOSIS - EVENT LISTENERS AND HELPER FUNCTIONS
+    // ==============================================================================
+    
+    function setupPhase3EventListeners() {
+        // Finalize & Save functionality
+        const finalizeBtn = document.getElementById('finalizeBtn');
+        if (finalizeBtn) {
+            finalizeBtn.addEventListener('click', finalizeBriefing);
+        }
+        
+        // Feedback functionality
+        const thumbsUpBtn = document.getElementById('thumbsUpBtn');
+        const thumbsDownBtn = document.getElementById('thumbsDownBtn');
+        const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
+        const cancelFeedbackBtn = document.getElementById('cancelFeedbackBtn');
+        
+        if (thumbsUpBtn) {
+            thumbsUpBtn.addEventListener('click', () => submitFeedback(1));
+        }
+        
+        if (thumbsDownBtn) {
+            thumbsDownBtn.addEventListener('click', () => showFeedbackTextarea());
+        }
+        
+        if (submitFeedbackBtn) {
+            submitFeedbackBtn.addEventListener('click', () => submitFeedback(-1));
+        }
+        
+        if (cancelFeedbackBtn) {
+            cancelFeedbackBtn.addEventListener('click', hideFeedbackTextarea);
+        }
+    }
+    
+    function finalizeBriefing() {
+        try {
+            // Collect all edited content
+            const finalContent = {
+                executive_summary: document.getElementById('executiveSummary').textContent.trim(),
+                key_findings: collectEditableContent('key_findings'),
+                actionable_recommendations: collectEditableContent('actionable_recommendations'),
+                confidence_score: document.getElementById('confidenceScore').textContent.trim(),
+                data_gaps: document.getElementById('dataGaps').textContent.trim().split(',').map(gap => gap.trim()).filter(gap => gap)
+            };
+            
+            // Enhanced validation
+            const validationErrors = validateFinalContent(finalContent);
+            if (validationErrors.length > 0) {
+                showToast('Please fix the following issues before finalizing:', 'warning');
+                validationErrors.forEach(error => {
+                    showToast(error, 'warning');
+                });
+                return;
+            }
+            
+            // Show confirmation dialog
+            if (!confirm('Are you sure you want to finalize this briefing? This will save your edited version permanently.')) {
+                return;
+            }
+            
+            // Submit to API
+            submitFinalizedBriefing(finalContent);
+            
+        } catch (error) {
+            showToast('Error collecting content: ' + error.message, 'error');
+        }
+    }
+    
+    function validateFinalContent(content) {
+        const errors = [];
+        
+        // Validate executive summary
+        if (!content.executive_summary || content.executive_summary.length < 10) {
+            errors.push('Executive summary must be at least 10 characters long');
+        }
+        
+        if (content.executive_summary && content.executive_summary.length > 2000) {
+            errors.push('Executive summary is too long (max 2000 characters)');
+        }
+        
+        // Validate key findings
+        if (!content.key_findings || content.key_findings.length === 0) {
+            errors.push('At least one key finding is required');
+        }
+        
+        content.key_findings.forEach((finding, index) => {
+            if (!finding || finding.length < 5) {
+                errors.push(`Key finding ${index + 1} must be at least 5 characters long`);
+            }
+            if (finding && finding.length > 500) {
+                errors.push(`Key finding ${index + 1} is too long (max 500 characters)`);
+            }
+        });
+        
+        // Validate actionable recommendations
+        if (!content.actionable_recommendations || content.actionable_recommendations.length === 0) {
+            errors.push('At least one actionable recommendation is required');
+        }
+        
+        content.actionable_recommendations.forEach((rec, index) => {
+            if (!rec || rec.length < 10) {
+                errors.push(`Recommendation ${index + 1} must be at least 10 characters long`);
+            }
+            if (rec && rec.length > 500) {
+                errors.push(`Recommendation ${index + 1} is too long (max 500 characters)`);
+            }
+        });
+        
+        // Validate confidence score format
+        if (content.confidence_score && !content.confidence_score.match(/\d+%/)) {
+            errors.push('Confidence score should be in format "XX%" (e.g., "85%")');
+        }
+        
+        return errors;
+    }
+    
+    function collectEditableContent(field) {
+        const elements = document.querySelectorAll(`[data-field="${field}"]`);
+        return Array.from(elements).map(el => el.textContent.trim()).filter(content => content);
+    }
+    
+    async function submitFinalizedBriefing(finalContent) {
+        try {
+            const apiKey = localStorage.getItem('clarity_api_key');
+            if (!apiKey) {
+                showToast('API key not found. Please refresh and try again.', 'error');
+                return;
+            }
+            
+            const response = await fetch('/api/briefings/finalize', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-KEY': apiKey
+                },
+                body: JSON.stringify({
+                    job_id: window.currentJobId,
+                    final_content: finalContent
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                showToast('Briefing finalized and saved successfully!', 'success');
+                document.getElementById('finalizeBtn').textContent = 'Finalized ✓';
+                document.getElementById('finalizeBtn').disabled = true;
+            } else {
+                showToast('Error: ' + data.error, 'error');
+            }
+            
+        } catch (error) {
+            showToast('Error: ' + error.message, 'error');
+        }
+    }
+    
+    function showFeedbackTextarea() {
+        document.getElementById('feedbackTextarea').classList.remove('hidden');
+        document.getElementById('feedbackText').focus();
+    }
+    
+    function hideFeedbackTextarea() {
+        document.getElementById('feedbackTextarea').classList.add('hidden');
+        document.getElementById('feedbackText').value = '';
+    }
+    
+    async function submitFeedback(rating) {
+        try {
+            // Validate inputs
+            if (!window.currentJobId) {
+                showToast('No active job found. Please refresh and try again.', 'error');
+                return;
+            }
+            
+            const apiKey = localStorage.getItem('clarity_api_key');
+            if (!apiKey) {
+                showToast('API key not found. Please refresh and try again.', 'error');
+                return;
+            }
+            
+            // Validate feedback text for negative ratings
+            const feedbackText = rating === -1 ? document.getElementById('feedbackText').value.trim() : '';
+            if (rating === -1 && !feedbackText) {
+                showToast('Please provide feedback when rating negatively.', 'warning');
+                document.getElementById('feedbackText').focus();
+                return;
+            }
+            
+            // Check if feedback was already submitted
+            const feedbackBtn = rating === 1 ? document.getElementById('thumbsUpBtn') : document.getElementById('thumbsDownBtn');
+            if (feedbackBtn.disabled) {
+                showToast('Feedback already submitted for this briefing.', 'info');
+                return;
+            }
+            
+            // Disable buttons during submission
+            document.getElementById('thumbsUpBtn').disabled = true;
+            document.getElementById('thumbsDownBtn').disabled = true;
+            
+            const response = await fetch('/api/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-KEY': apiKey
+                },
+                body: JSON.stringify({
+                    job_id: window.currentJobId,
+                    rating: rating,
+                    feedback_text: feedbackText
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                const message = rating === 1 ? 'Thank you for the positive feedback!' : 'Thank you for your feedback!';
+                showToast(message, 'success');
+                
+                // Visual feedback
+                document.getElementById('thumbsUpBtn').classList.add('opacity-50');
+                document.getElementById('thumbsDownBtn').classList.add('opacity-50');
+                
+                hideFeedbackTextarea();
+            } else {
+                // Re-enable buttons on error
+                document.getElementById('thumbsUpBtn').disabled = false;
+                document.getElementById('thumbsDownBtn').disabled = false;
+                
+                if (response.status === 401) {
+                    showToast('Authentication failed. Please refresh and try again.', 'error');
+                } else if (response.status === 429) {
+                    showToast('Too many requests. Please wait a moment and try again.', 'warning');
+                } else if (response.status === 400) {
+                    showToast('Invalid feedback data: ' + (data.error || 'Unknown error'), 'error');
+                } else {
+                    showToast('Error submitting feedback: ' + (data.error || 'Unknown error'), 'error');
+                }
+            }
+            
+        } catch (error) {
+            // Re-enable buttons on error
+            document.getElementById('thumbsUpBtn').disabled = false;
+            document.getElementById('thumbsDownBtn').disabled = false;
+            
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                showToast('Network error. Please check your connection and try again.', 'error');
+            } else {
+                showToast('Unexpected error: ' + error.message, 'error');
+            }
+        }
+    }
+    
+    // Source details modal functionality
+    function showSourceDetails(document, details, confidence) {
+        const modal = document.getElementById('sourceModal');
+        const content = document.getElementById('sourceModalContent');
+        
+        const confidenceClass = confidence.includes('9') ? 'text-green-400' : 
+                              confidence.includes('7') || confidence.includes('8') ? 'text-yellow-400' : 'text-orange-400';
+        
+        content.innerHTML = `
+            <div>
+                <label class="text-sm font-medium text-gray-400">Document:</label>
+                <p class="text-white font-mono text-sm">${document}</p>
+            </div>
+            <div>
+                <label class="text-sm font-medium text-gray-400">Location:</label>
+                <p class="text-gray-300">${details}</p>
+            </div>
+            <div>
+                <label class="text-sm font-medium text-gray-400">Confidence:</label>
+                <p class="${confidenceClass} font-semibold">${confidence}</p>
+            </div>
+            <div class="mt-4 p-3 bg-gray-700 rounded">
+                <p class="text-xs text-gray-400">This information was extracted from the source document and verified by CLARITY's analysis engine.</p>
+            </div>
+        `;
+        
+        modal.classList.remove('hidden');
+    }
+    
+    // Close modal functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('sourceModal');
+        const closeBtn = document.getElementById('closeSourceModal');
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+        }
+        
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

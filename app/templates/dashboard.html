@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-900 text-white">
+    <!-- Navigation Header -->
+    <nav class="bg-gray-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-white">CLARITY Engine</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-300">Welcome, {{ current_user.email }}</span>
+                    <a href="{{ url_for('main.analysis') }}" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                        New Analysis
+                    </a>
+                    <a href="{{ url_for('main.about') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        About
+                    </a>
+                    <a href="{{ url_for('auth.logout') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    <div class="bg-green-600 text-white px-4 py-3 rounded-md mb-2">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Dashboard Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Intelligence Vault Section -->
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-white">Intelligence Vault</h2>
+                    <span class="text-gray-400 text-sm">Your Knowledge Base</span>
+                </div>
+                <p class="text-gray-300 mb-4">Store and manage your documents for persistent AI memory.</p>
+                <div class="space-y-3">
+                    <a href="{{ url_for('main.vault') }}" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center">
+                        <i class="fas fa-database mr-2"></i>
+                        Manage Vault
+                    </a>
+                    <button onclick="checkVaultStats()" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center">
+                        <i class="fas fa-chart-bar mr-2"></i>
+                        View Stats
+                    </button>
+                </div>
+                <div id="vaultStats" class="mt-4 text-sm text-gray-400 hidden">
+                    <!-- Vault stats will be loaded here -->
+                </div>
+            </div>
+
+            <!-- API Key Management Section -->
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-white">API Key Management</h2>
+                    <button id="generateKeyBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                        Generate New Key
+                    </button>
+                </div>
+                
+                <!-- New Key Display (hidden by default) -->
+                <div id="newKeyDisplay" class="hidden mb-4 p-4 bg-gray-700 rounded-md">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-300 mb-2">Your new API key (save this now - you won't see it again):</p>
+                            <code id="newApiKey" class="text-green-400 font-mono text-sm break-all"></code>
+                        </div>
+                        <button id="copyKeyBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs">
+                            Copy
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Existing Keys List -->
+                <div class="space-y-3">
+                    {% for key in api_keys %}
+                    <div class="flex items-center justify-between p-3 bg-gray-700 rounded-md">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-2 h-2 rounded-full {{ 'bg-green-500' if key.is_active else 'bg-red-500' }}"></div>
+                            <div>
+                                <p class="text-sm text-gray-300">
+                                    Key ending in: ...{{ key.key_hash[-8:] }}
+                                </p>
+                                <p class="text-xs text-gray-400">
+                                    Created: {{ key.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                </p>
+                            </div>
+                        </div>
+                        {% if key.is_active %}
+                        <form method="POST" action="{{ url_for('main.revoke_key', key_id=key.id) }}" class="inline">
+                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs transition-colors"
+                                    onclick="return confirm('Are you sure you want to revoke this API key?')">
+                                Revoke
+                            </button>
+                        </form>
+                        {% else %}
+                        <span class="text-red-400 text-xs">Revoked</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Quick Actions Section -->
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                <h2 class="text-lg font-semibold text-white mb-4">Quick Actions</h2>
+                
+                <div class="space-y-4">
+                    <a href="{{ url_for('main.analysis') }}" class="block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-md text-center font-medium transition-colors">
+                        🚀 Start New Analysis
+                    </a>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <a href="{{ url_for('main.view_briefings') }}" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-3 rounded-md text-center text-sm transition-colors">
+                            📊 View Briefings
+                        </a>
+                        <a href="#" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-3 rounded-md text-center text-sm transition-colors">
+                            ⚙️ Settings
+                        </a>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="mt-6 pt-4 border-t border-gray-700">
+                    <h3 class="text-sm font-medium text-gray-300 mb-2">System Status</h3>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span class="text-sm text-gray-400">All systems operational</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Domain Accelerators Info -->
+        <div class="mt-8 bg-gray-800 rounded-lg shadow-lg p-6">
+            <h2 class="text-lg font-semibold text-white mb-4">Available Intelligence Domains</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="bg-gray-700 p-4 rounded-md">
+                    <h3 class="font-medium text-white mb-2">Legal Intelligence</h3>
+                    <p class="text-sm text-gray-400">Contract analysis, evidence identification, risk assessment</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-md">
+                    <h3 class="font-medium text-white mb-2">Financial Intelligence</h3>
+                    <p class="text-sm text-gray-400">Audit financial statements, detect anomalies, compliance verification</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-md">
+                    <h3 class="font-medium text-white mb-2">Security Intelligence</h3>
+                    <p class="text-sm text-gray-400">Threat assessment, timeline reconstruction, evidence correlation</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-md">
+                    <h3 class="font-medium text-white mb-2">Healthcare Intelligence</h3>
+                    <p class="text-sm text-gray-400">Medical records analysis, clinical trial evaluation, compliance auditing</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-md">
+                    <h3 class="font-medium text-white mb-2">Proposal Intelligence</h3>
+                    <p class="text-sm text-gray-400">Government contract proposals, RFP analysis, compliance mapping</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-md">
+                    <h3 class="font-medium text-white mb-2">Engineering Intelligence</h3>
+                    <p class="text-sm text-gray-400">Technical drawing analysis, specification verification, risk assessment</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-md">
+                    <h3 class="font-medium text-white mb-2">Grant Proposal Intelligence</h3>
+                    <p class="text-sm text-gray-400">NGO funding applications, Theory of Change, impact metrics</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-md">
+                    <h3 class="font-medium text-white mb-2">Market Analysis Intelligence</h3>
+                    <p class="text-sm text-gray-400">TAM calculation, competitive analysis, value proposition definition</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-md">
+                    <h3 class="font-medium text-white mb-2">Pitch Deck Intelligence</h3>
+                    <p class="text-sm text-gray-400">Investor presentations, 10-slide structure, fundraising strategy</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-md">
+                    <h3 class="font-medium text-white mb-2">Investor Diligence Intelligence</h3>
+                    <p class="text-sm text-gray-400">Due diligence prep, weakness identification, risk mitigation</p>
+                </div>
+                <div class="bg-gray-700 p-4 rounded-md">
+                    <h3 class="font-medium text-white mb-2">Corporate Intelligence</h3>
+                    <p class="text-sm text-gray-400">Strategic planning, M&A due diligence, market analysis</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const generateKeyBtn = document.getElementById('generateKeyBtn');
+    const newKeyDisplay = document.getElementById('newKeyDisplay');
+    const newApiKey = document.getElementById('newApiKey');
+    const copyKeyBtn = document.getElementById('copyKeyBtn');
+
+    generateKeyBtn.addEventListener('click', async function() {
+        try {
+            const response = await fetch('/dashboard/generate-key', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                newApiKey.textContent = data.api_key;
+                newKeyDisplay.classList.remove('hidden');
+                generateKeyBtn.textContent = 'Key Generated';
+                generateKeyBtn.disabled = true;
+                
+                // Scroll to the new key
+                newKeyDisplay.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                alert('Error generating API key: ' + data.error);
+            }
+        } catch (error) {
+            alert('Error generating API key: ' + error.message);
+        }
+    });
+
+    copyKeyBtn.addEventListener('click', function() {
+        navigator.clipboard.writeText(newApiKey.textContent).then(function() {
+            copyKeyBtn.textContent = 'Copied!';
+            setTimeout(() => {
+                copyKeyBtn.textContent = 'Copy';
+            }, 2000);
+        });
+    });
+});
+</script>
+{% endblock %}

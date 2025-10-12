@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-900 text-white">
+    <!-- Navigation Header -->
+    <nav class="bg-gray-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-white">CLARITY Engine</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-300">{{ current_user.email }}</span>
+                    <a href="{{ url_for('main.dashboard') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        Dashboard
+                    </a>
+                    <a href="{{ url_for('main.analysis') }}" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                        New Analysis
+                    </a>
+                    <a href="{{ url_for('auth.logout') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    <div class="bg-green-600 text-white px-4 py-3 rounded-md mb-2">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Header -->
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-white mb-2">Finalized Briefings</h2>
+            <p class="text-gray-300">Your saved and finalized CLARITY briefings</p>
+        </div>
+
+        <!-- Briefings List -->
+        {% if briefings %}
+            <div class="space-y-4">
+                {% for briefing in briefings %}
+                <div class="bg-gray-800 rounded-lg shadow-lg p-6 hover:bg-gray-750 transition-colors">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-white mb-2">
+                                Briefing #{{ briefing.id }}
+                            </h3>
+                            <p class="text-sm text-gray-400 mb-3">
+                                Job ID: {{ briefing.job_id }} | 
+                                Finalized: {{ briefing.timestamp.strftime('%Y-%m-%d %H:%M') }}
+                            </p>
+                            
+                            <!-- Executive Summary Preview -->
+                            <div class="mb-3">
+                                <h4 class="text-sm font-medium text-gray-300 mb-1">Executive Summary:</h4>
+                                <p class="text-gray-300 text-sm line-clamp-2">
+                                    {{ briefing.content.executive_summary[:200] }}{% if briefing.content.executive_summary|length > 200 %}...{% endif %}
+                                </p>
+                            </div>
+                            
+                            <!-- Key Findings Count -->
+                            <div class="flex items-center space-x-4 text-sm text-gray-400">
+                                <span>{{ briefing.content.key_findings|length }} Key Findings</span>
+                                <span>{{ briefing.content.actionable_recommendations|length }} Recommendations</span>
+                                <span>Confidence: {{ briefing.content.confidence_score or 'N/A' }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2 ml-4">
+                            <a href="{{ url_for('main.view_briefing', briefing_id=briefing.id) }}" 
+                               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm transition-colors">
+                                View Details
+                            </a>
+                            <button onclick="exportBriefing({{ briefing.id }})" 
+                                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm transition-colors">
+                                Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <div class="text-gray-400 mb-4">
+                    <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-300 mb-2">No finalized briefings yet</h3>
+                <p class="text-gray-400 mb-4">Create your first briefing by running an analysis and finalizing it.</p>
+                <a href="{{ url_for('main.analysis') }}" 
+                   class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium transition-colors">
+                    Start New Analysis
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function exportBriefing(briefingId) {
+    // This would typically make an API call to get the briefing data and export it
+    // For now, we'll redirect to the detail view where export functionality can be added
+    window.location.href = `/briefings/${briefingId}`;
+}
+</script>
+{% endblock %}

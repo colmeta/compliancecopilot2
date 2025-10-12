@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-900 text-white">
+    <!-- Navigation Header -->
+    <nav class="bg-gray-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-white">CLARITY Engine</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-300">{{ current_user.email }}</span>
+                    <a href="{{ url_for('main.briefings') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        All Briefings
+                    </a>
+                    <a href="{{ url_for('main.dashboard') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        Dashboard
+                    </a>
+                    <a href="{{ url_for('auth.logout') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    <div class="bg-green-600 text-white px-4 py-3 rounded-md mb-2">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-white mb-2">Finalized Briefing #{{ briefing.id }}</h2>
+                <p class="text-gray-300">
+                    Job ID: {{ briefing.original_job_id }} | 
+                    Finalized: {{ briefing.timestamp.strftime('%Y-%m-%d %H:%M') }}
+                </p>
+            </div>
+            <div class="flex space-x-2">
+                <button onclick="exportBriefing()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm transition-colors">
+                    Export PDF
+                </button>
+                <button onclick="copyBriefing()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm transition-colors">
+                    Copy Text
+                </button>
+            </div>
+        </div>
+
+        <!-- Briefing Content -->
+        <div class="bg-gray-800 rounded-lg shadow-lg p-6 space-y-6">
+            <!-- Executive Summary -->
+            <div>
+                <h3 class="text-lg font-semibold text-white mb-3">Executive Summary</h3>
+                <div class="bg-gray-700 p-4 rounded-md">
+                    <p class="text-gray-300">{{ content.executive_summary }}</p>
+                </div>
+            </div>
+
+            <!-- Key Findings -->
+            <div>
+                <h3 class="text-lg font-semibold text-white mb-3">Key Findings</h3>
+                <div class="space-y-3">
+                    {% for finding in content.key_findings %}
+                    <div class="bg-gray-700 p-3 rounded-md">
+                        <div class="flex items-start space-x-2">
+                            <span class="text-gray-400 mt-1">•</span>
+                            <p class="text-gray-300">{{ finding }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Actionable Recommendations -->
+            <div>
+                <h3 class="text-lg font-semibold text-white mb-3">Actionable Recommendations</h3>
+                <div class="space-y-3">
+                    {% for rec in content.actionable_recommendations %}
+                    <div class="bg-gray-700 p-3 rounded-md">
+                        <div class="flex items-start space-x-2">
+                            <span class="text-gray-400 mt-1">•</span>
+                            <p class="text-gray-300">{{ rec }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Confidence Score and Data Gaps -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-3">Confidence Score</h3>
+                    <div class="bg-gray-700 p-3 rounded-md">
+                        <p class="text-gray-300">{{ content.confidence_score or 'Not provided' }}</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-3">Data Gaps</h3>
+                    <div class="bg-gray-700 p-3 rounded-md">
+                        {% if content.data_gaps %}
+                            <ul class="list-disc list-inside space-y-1 text-gray-300">
+                                {% for gap in content.data_gaps %}
+                                <li>{{ gap }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-gray-300">None identified</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Raw JSON (Collapsible) -->
+            <div>
+                <button onclick="toggleRawJson()" class="text-gray-400 hover:text-white text-sm mb-2">
+                    <span id="rawJsonToggle">Show</span> Raw JSON
+                </button>
+                <div id="rawJsonContent" class="hidden bg-gray-700 p-4 rounded-md">
+                    <pre class="text-xs text-gray-300 overflow-x-auto"><code>{{ content | tojson(indent=2) }}</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleRawJson() {
+    const content = document.getElementById('rawJsonContent');
+    const toggle = document.getElementById('rawJsonToggle');
+    
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        toggle.textContent = 'Hide';
+    } else {
+        content.classList.add('hidden');
+        toggle.textContent = 'Show';
+    }
+}
+
+function exportBriefing() {
+    // Create a simple text export
+    const briefingText = generateBriefingText();
+    const blob = new Blob([briefingText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `clarity-briefing-{{ briefing.id }}-{{ briefing.timestamp.strftime('%Y%m%d') }}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function copyBriefing() {
+    const briefingText = generateBriefingText();
+    navigator.clipboard.writeText(briefingText).then(() => {
+        alert('Briefing copied to clipboard!');
+    });
+}
+
+function generateBriefingText() {
+    const content = {{ content | tojson }};
+    
+    let text = `CLARITY Finalized Briefing #{{ briefing.id }}\n`;
+    text += `Job ID: {{ briefing.original_job_id }}\n`;
+    text += `Finalized: {{ briefing.timestamp.strftime('%Y-%m-%d %H:%M') }}\n\n`;
+    
+    text += `EXECUTIVE SUMMARY\n`;
+    text += `${content.executive_summary}\n\n`;
+    
+    text += `KEY FINDINGS\n`;
+    content.key_findings.forEach((finding, index) => {
+        text += `${index + 1}. ${finding}\n`;
+    });
+    text += `\n`;
+    
+    text += `ACTIONABLE RECOMMENDATIONS\n`;
+    content.actionable_recommendations.forEach((rec, index) => {
+        text += `${index + 1}. ${rec}\n`;
+    });
+    text += `\n`;
+    
+    text += `CONFIDENCE SCORE: ${content.confidence_score || 'Not provided'}\n\n`;
+    
+    if (content.data_gaps && content.data_gaps.length > 0) {
+        text += `DATA GAPS\n`;
+        content.data_gaps.forEach((gap, index) => {
+            text += `${index + 1}. ${gap}\n`;
+        });
+    }
+    
+    return text;
+}
+</script>
+{% endblock %}

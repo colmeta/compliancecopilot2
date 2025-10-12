@@ -23,24 +23,89 @@ flower      # Optional but highly recommended: monitoring dashboard for Celery
 
 # --- AI Memory (Vector Database & Embeddings) ---
 sentence-transformers # For creating text embeddings
-chromadb-client
+chromadb>=0.4.22 # Vector database for persistent memory
+langchain>=0.1.0 # For document chunking and text splitting
+langchain-community # Additional langchain components
+tiktoken # Tokenizer for chunking
 
 # --- API Structure & Validation ---
 pydantic    # For data validation and enforcing structured JSON
 
 # --- Security & Configuration ---
 Flask-Limiter # For rate-limiting your API endpoints
+Flask-CORS # For Cross-Origin Resource Sharing
 python-dotenv # For managing environment variables from a .env file
 cryptography # For security-related operations
 numpy
 scipy
 nltk
+
 # --- Database & Authentication ---
 Flask-SQLAlchemy==3.1.1
 SQLAlchemy==2.0.25
 psycopg2-binary==2.9.9   # The "driver" that allows Python to speak PostgreSQL
 Flask-Login==0.6.3       # For managing user login sessions
 werkzeug>=2.2.3          # For password hashing (usually installed with Flask)
-Flask-Migrate==4.0.5     # For managing changes to your database schema```
+Flask-Migrate==4.0.5     # For managing changes to your database schema
 Flask-WTF==1.2.1
 email-validator==2.1.1
+
+# ==============================================================================
+# PHASE 4: ADVANCED FEATURES DEPENDENCIES
+# ==============================================================================
+
+# --- Audio Processing ---
+openai-whisper>=20231117
+google-cloud-speech>=2.23.0
+assemblyai>=0.17.0
+pydub>=0.25.1
+
+# --- Vision/OCR ---
+pytesseract>=0.3.10
+google-cloud-vision>=3.4.5
+boto3>=1.28.0
+pdf2image>=1.16.3
+
+# --- Video Processing ---
+opencv-python>=4.8.0
+moviepy>=1.0.3
+scenedetect>=0.6.2
+
+# --- Real-Time Collaboration ---
+flask-socketio>=5.3.5
+python-socketio>=5.10.0
+
+# --- Analytics & Visualization ---
+plotly>=5.17.0
+
+# --- Additional NLP & ML ---
+spacy>=3.7.0
+transformers>=4.35.0
+scikit-learn>=1.3.0
+
+# --- Enhanced Security ---
+python-jose>=3.3.0
+
+# ==============================================================================
+# PHASE 4E: AI MODEL OPTIMIZATION DEPENDENCIES
+# ==============================================================================
+
+# --- AI Model Optimization ---
+sentence-transformers>=2.2.2
+redis>=5.0.1
+
+# --- Cost Optimization and Analytics ---
+pandas>=2.1.4
+numpy>=1.24.4
+
+# --- A/B Testing and Statistical Analysis ---
+scipy>=1.11.4
+statsmodels>=0.14.0
+
+# --- Performance Monitoring ---
+psutil>=5.9.6
+memory-profiler>=0.61.0
+
+# --- Additional Utilities ---
+python-dateutil>=2.8.2
+pytz>=2023.3
