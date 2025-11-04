@@ -257,6 +257,34 @@ ANALYSIS STANDARDS:
 
 OUTPUT REQUIREMENTS: Provide executive summary, key findings, actionable recommendations, confidence score, and data gaps in structured JSON format."""
 
+CLARITY_EDUCATION_INTELLIGENCE = """You are CLARITY Education Intelligence Accelerator, the AI intelligence layer for School Management Systems and educational institutions worldwide.
+
+MISSION: Transform educational data into actionable insights, automate compliance reporting, and provide strategic intelligence for schools, from primary education to universities.
+
+OPERATIONAL FRAMEWORK:
+1. ACCREDITATION COMPLIANCE: Analyze school documents against accreditation standards to identify compliance gaps and generate evidence-backed reports
+2. STUDENT PERFORMANCE ANALYSIS: Correlate curriculum, teaching methods, attendance, and outcomes to identify improvement opportunities
+3. CURRICULUM GAP ANALYSIS: Compare school curriculum against state/national standards to find missing or weak areas
+4. POLICY COMPLIANCE MONITORING: Analyze new government mandates and provide actionable compliance checklists
+5. FUNDING ALIGNMENT: Match school capabilities with educational grants and funding opportunities
+6. PREDICTIVE INTERVENTION: Identify at-risk students early based on data patterns for proactive support
+
+ANALYSIS STANDARDS:
+- Maintain strict student privacy and data protection (FERPA compliance)
+- Provide evidence-based, data-driven recommendations
+- Consider pedagogical best practices and research
+- Balance academic excellence with student well-being
+- Support equitable education for all students
+- Align with educational standards and regulations
+
+USE CASES:
+FOR PRINCIPALS: Accreditation report generation, compliance monitoring, strategic planning
+FOR DEPARTMENT HEADS: Curriculum analysis, performance trend identification, teaching effectiveness
+FOR SCHOOL BOARDS: Financial oversight, policy compliance, governance support
+FOR TEACHERS: Data-driven insights on student performance and curriculum effectiveness
+
+OUTPUT REQUIREMENTS: Provide executive summary, key findings, actionable recommendations, confidence score, and data gaps in structured JSON format."""
+
 
 def detect_domain_context(filenames, directive_text=""):
     """Enhanced v7.0 domain detection for all document types - now supports 11 domains"""
@@ -271,6 +299,7 @@ def detect_domain_context(filenames, directive_text=""):
     market_indicators = ['market analysis', 'market research', 'tam', 'total addressable market', 'competitive analysis', 'market size']
     pitch_indicators = ['pitch deck', 'investor presentation', 'fundraising', 'venture capital', 'startup pitch', 'investor deck']
     diligence_indicators = ['due diligence', 'investor questions', 'business plan review', 'startup analysis', 'investment prep']
+    education_indicators = ['school', 'education', 'student', 'curriculum', 'accreditation', 'teacher', 'classroom', 'academic', 'learning', 'enrollment']
 
     all_text = directive_text.lower() + " ".join(filenames)
 
@@ -285,7 +314,8 @@ def detect_domain_context(filenames, directive_text=""):
         'grant_proposal': sum(1 for indicator in grant_indicators if indicator in all_text),
         'market_analysis': sum(1 for indicator in market_indicators if indicator in all_text),
         'pitch_deck': sum(1 for indicator in pitch_indicators if indicator in all_text),
-        'investor_diligence': sum(1 for indicator in diligence_indicators if indicator in all_text)
+        'investor_diligence': sum(1 for indicator in diligence_indicators if indicator in all_text),
+        'education': sum(1 for indicator in education_indicators if indicator in all_text)
     }
 
     max_domain = max(domain_scores, key=domain_scores.get)
@@ -300,7 +330,7 @@ def get_domain_accelerator(domain):
         'corporate': CLARITY_CORPORATE_INTELLIGENCE, 'proposal': CLARITY_PROPOSAL_INTELLIGENCE,
         'engineering': CLARITY_ENGINEERING_INTELLIGENCE, 'grant_proposal': CLARITY_GRANT_PROPOSAL_INTELLIGENCE,
         'market_analysis': CLARITY_MARKET_ANALYSIS_INTELLIGENCE, 'pitch_deck': CLARITY_PITCH_DECK_INTELLIGENCE,
-        'investor_diligence': CLARITY_INVESTOR_DILIGENCE_INTELLIGENCE,
+        'investor_diligence': CLARITY_INVESTOR_DILIGENCE_INTELLIGENCE, 'education': CLARITY_EDUCATION_INTELLIGENCE,
     }
     return accelerators.get(domain, CLARITY_CORPORATE_INTELLIGENCE)
 
@@ -313,7 +343,7 @@ def get_domain_title(domain):
         'corporate': 'Corporate Intelligence Analysis', 'proposal': 'Proposal Intelligence Generation',
         'engineering': 'Engineering Document Analysis', 'grant_proposal': 'Grant Proposal Intelligence Generation',
         'market_analysis': 'Market Analysis Intelligence', 'pitch_deck': 'Pitch Deck Intelligence Generation',
-        'investor_diligence': 'Investor Diligence Intelligence Analysis',
+        'investor_diligence': 'Investor Diligence Intelligence Analysis', 'education': 'Education Intelligence Analysis',
     }
     return titles.get(domain, 'Corporate Intelligence Analysis')
 
