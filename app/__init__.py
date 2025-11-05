@@ -55,11 +55,11 @@ def create_app(config_class=Config):
 
     # --- Register Blueprints (STAGED - Only Core Ones First) ---
     
-    # Core Routes (Required)
+    # Core Routes (Required) - MUST BE FIRST to handle root route
     try:
         from .main.routes import main as main_blueprint
-        app.register_blueprint(main_blueprint)
-        app.logger.info("✅ Main routes registered")
+        app.register_blueprint(main_blueprint)  # NO url_prefix - handles root /
+        app.logger.info("✅ Main routes registered (handling root /)")
     except Exception as e:
         app.logger.error(f"❌ Could not load main routes: {e}")
     
