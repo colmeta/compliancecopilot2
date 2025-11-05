@@ -124,23 +124,7 @@ def create_app(config_class=Config):
         except Exception as e:
             app.logger.debug(f"⏸️  {name.title()} routes not available: {e}")
     
-    # --- Root Route (Landing Page) ---
-    @app.route('/')
-    def home():
-        """CLARITY Engine Landing Page"""
-        return jsonify({
-            'status': 'CLARITY Engine is LIVE! 🚀',
-            'version': '5.0-Deployed',
-            'features': {
-                'multi_llm_router': True,
-                'funding_readiness_engine': True,
-                'outstanding_writing_system': True,
-                'api_management': True,
-                'auth': True,
-            },
-            'mode': 'PRODUCTION',
-            'message': 'Fortune 500 Grade Intelligence Platform'
-        })
+    # Root route is handled by main blueprint (main.homepage)
     
     # --- Health Check ---
     @app.route('/health')
