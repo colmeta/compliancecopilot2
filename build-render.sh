@@ -8,8 +8,12 @@ echo "========================================"
 python --version
 
 echo "📦 Installing Python Dependencies..."
-# Use render-optimized requirements for faster builds
-if [ -f "requirements-render.txt" ]; then
+# Use minimal requirements first to ensure build succeeds
+if [ -f "requirements-render-minimal.txt" ]; then
+    echo "Using requirements-render-minimal.txt (minimal for guaranteed build)"
+    pip install --upgrade pip
+    pip install -r requirements-render-minimal.txt
+elif [ -f "requirements-render.txt" ]; then
     echo "Using requirements-render.txt (optimized for Render)"
     pip install --upgrade pip
     pip install -r requirements-render.txt
