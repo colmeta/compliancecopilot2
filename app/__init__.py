@@ -124,16 +124,30 @@ def create_app(config_class=Config):
         except Exception as e:
             app.logger.debug(f"⏸️  {name.title()} routes not available: {e}")
     
-    # TEST: Direct root route to debug
+    # API-only root route (frontend will be on Vercel)
     @app.route('/')
-    def root_test():
-        """Temporary test route"""
-        return render_template('landing_presidential.html')
+    def root():
+        """API root - Frontend is deployed separately on Vercel"""
+        return jsonify({
+            'name': 'CLARITY Engine API',
+            'version': '5.0',
+            'status': 'live',
+            'features': {
+                'multi_llm_router': True,
+                'funding_readiness_engine': True,
+                'outstanding_writing_system': True,
+                'api_management': True,
+                'auth': True,
+            },
+            'frontend_url': 'https://clarity-frontend.vercel.app',
+            'api_docs': '/api/docs',
+            'health': '/health'
+        })
     
     # --- Health Check ---
     @app.route('/health')
     def health():
-        return jsonify({'status': 'healthy', 'mode': 'production'})
+        return jsonify({'status': 'healthy', 'mode': 'production', 'service': 'backend-api'})
     
     # --- Error Handlers ---
     @app.errorhandler(404)
