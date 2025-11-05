@@ -124,7 +124,11 @@ def create_app(config_class=Config):
         except Exception as e:
             app.logger.debug(f"⏸️  {name.title()} routes not available: {e}")
     
-    # Root route is handled by main blueprint (main.homepage)
+    # TEST: Direct root route to debug
+    @app.route('/')
+    def root_test():
+        """Temporary test route"""
+        return render_template('landing_presidential.html')
     
     # --- Health Check ---
     @app.route('/health')
