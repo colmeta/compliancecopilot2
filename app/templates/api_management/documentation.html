@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}API Documentation - CLARITY{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">📚 CLARITY API Documentation</h1>
+    
+    <div class="alert alert-info">
+        <strong>Base URL:</strong> <code>https://clarity.ai/api</code> (or your deployment URL)
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Authentication</h3>
+        </div>
+        <div class="card-body">
+            <p>All API requests require an API key in the <code>X-API-KEY</code> header:</p>
+            <pre class="bg-light p-3"><code>X-API-KEY: your-api-key-here</code></pre>
+            
+            <p class="mt-3"><a href="{{ url_for('api_mgmt.dashboard') }}" class="btn btn-primary">Generate API Key</a></p>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="mb-0">Endpoints</h3>
+        </div>
+        <div class="card-body">
+            
+            <!-- Analyze Endpoint -->
+            <h4>POST /api/analyze</h4>
+            <p>Analyze documents with CLARITY's AI intelligence</p>
+            
+            <h6>Request Body:</h6>
+            <pre class="bg-light p-3"><code>{
+  "user_directive": "Analyze this contract for risks",
+  "uploaded_files": [
+    {
+      "filename": "contract.pdf",
+      "content_base64": "base64_encoded_content",
+      "content_type": "application/pdf"
+    }
+  ]
+}</code></pre>
+            
+            <h6>Response:</h6>
+            <pre class="bg-light p-3"><code>{
+  "job_id": "abc123",
+  "status": "PENDING",
+  "message": "Analysis started"
+}</code></pre>
+            
+            <hr class="my-4">
+            
+            <!-- Status Endpoint -->
+            <h4>GET /api/status/&lt;job_id&gt;</h4>
+            <p>Check the status of an analysis job</p>
+            
+            <h6>Response:</h6>
+            <pre class="bg-light p-3"><code>{
+  "job_id": "abc123",
+  "status": "SUCCESS",
+  "result": {
+    "executive_summary": "...",
+    "key_findings": [...],
+    "actionable_recommendations": [...],
+    "confidence_score": "95%",
+    "data_gaps": [...]
+  }
+}</code></pre>
+            
+            <hr class="my-4">
+            
+            <!-- Vault Upload Endpoint -->
+            <h4>POST /api/vault/upload</h4>
+            <p>Upload documents to your Intelligence Vault</p>
+            
+            <h6>Request Body:</h6>
+            <pre class="bg-light p-3"><code>{
+  "documents": [
+    {
+      "filename": "report.pdf",
+      "content_base64": "base64_encoded_content",
+      "content_type": "application/pdf"
+    }
+  ]
+}</code></pre>
+            
+            <h6>Response:</h6>
+            <pre class="bg-light p-3"><code>{
+  "success": true,
+  "indexed_documents": 1,
+  "total_chunks": 45
+}</code></pre>
+            
+            <hr class="my-4">
+            
+            <!-- Data Entry Endpoint -->
+            <h4>POST /api/data-entry/process</h4>
+            <p>Process receipts/forms with Data Keystone Engine</p>
+            
+            <h6>Request Body:</h6>
+            <pre class="bg-light p-3"><code>{
+  "document": {
+    "filename": "receipt.jpg",
+    "content_base64": "base64_encoded_image",
+    "content_type": "image/jpeg"
+  },
+  "schema": {
+    "date": "date",
+    "vendor": "string",
+    "amount": "float",
+    "category": "string"
+  },
+  "output_config": {
+    "type": "json",
+    "file_path": "/path/to/output.json"
+  }
+}</code></pre>
+            
+            <hr class="my-4">
+            
+            <!-- Expense Analysis Endpoint -->
+            <h4>POST /api/expenses/analyze</h4>
+            <p>Analyze expenses and get cost-saving recommendations</p>
+            
+            <h6>Request Body:</h6>
+            <pre class="bg-light p-3"><code>{
+  "receipts": [
+    {
+      "filename": "receipt1.jpg",
+      "content_base64": "...",
+      "content_type": "image/jpeg"
+    }
+  ]
+}</code></pre>
+            
+            <h6>Response:</h6>
+            <pre class="bg-light p-3"><code>{
+  "total_expenses": 5234.56,
+  "potential_savings": 1147.23,
+  "recommendations": [
+    {
+      "title": "Consolidate vendors",
+      "savings": 500.00,
+      "priority": "high"
+    }
+  ]
+}</code></pre>
+            
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h3 class="mb-0">Code Examples</h3>
+        </div>
+        <div class="card-body">
+            
+            <h5>Python</h5>
+            <pre class="bg-light p-3"><code>import requests
+import base64
+
+# Your API key
+API_KEY = "your-api-key-here"
+BASE_URL = "https://clarity.ai/api"
+
+# Read file
+with open("document.pdf", "rb") as f:
+    content = base64.b64encode(f.read()).decode()
+
+# Make request
+response = requests.post(
+    f"{BASE_URL}/analyze",
+    headers={"X-API-KEY": API_KEY},
+    json={
+        "user_directive": "Analyze this document",
+        "uploaded_files": [{
+            "filename": "document.pdf",
+            "content_base64": content,
+            "content_type": "application/pdf"
+        }]
+    }
+)
+
+job_id = response.json()["job_id"]
+print(f"Job started: {job_id}")</code></pre>
+            
+            <h5 class="mt-4">JavaScript</h5>
+            <pre class="bg-light p-3"><code>const axios = require('axios');
+const fs = require('fs');
+
+const API_KEY = 'your-api-key-here';
+const BASE_URL = 'https://clarity.ai/api';
+
+// Read file
+const fileContent = fs.readFileSync('document.pdf');
+const base64Content = fileContent.toString('base64');
+
+// Make request
+axios.post(`${BASE_URL}/analyze`, {
+  user_directive: 'Analyze this document',
+  uploaded_files: [{
+    filename: 'document.pdf',
+    content_base64: base64Content,
+    content_type: 'application/pdf'
+  }]
+}, {
+  headers: {
+    'X-API-KEY': API_KEY
+  }
+}).then(response => {
+  console.log('Job ID:', response.data.job_id);
+});</code></pre>
+            
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-warning text-white">
+            <h3 class="mb-0">Rate Limits</h3>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Tier</th>
+                        <th>Requests/Minute</th>
+                        <th>Requests/Day</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Free</td>
+                        <td>10</td>
+                        <td>100</td>
+                    </tr>
+                    <tr>
+                        <td>Pro</td>
+                        <td>100</td>
+                        <td>10,000</td>
+                    </tr>
+                    <tr>
+                        <td>Enterprise</td>
+                        <td>Unlimited</td>
+                        <td>Unlimited</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

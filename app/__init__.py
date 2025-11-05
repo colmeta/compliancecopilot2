@@ -58,18 +58,19 @@ def create_app(config_class=Config):
     
     # This is where we break the circular import. We import the models
     # and routes AFTER the app and db are configured.
-        from . import models
-        from .auth.routes import auth as auth_blueprint
-        from .api.routes import api as api_blueprint
-        from .api.setup_routes import setup as setup_blueprint  # TEMPORARY SETUP
-from .api.multimodal_routes import multimodal as multimodal_blueprint  # PHASE 4
-from .api.collaboration_routes import collaboration as collaboration_blueprint  # PHASE 4B
-from .api.realtime_routes import realtime as realtime_blueprint  # PHASE 4B
-from .api.analytics_routes import analytics as analytics_blueprint  # PHASE 4C
-from .api.security_routes import security as security_blueprint  # PHASE 4D
-from .api.ai_optimization_routes import ai_optimization as ai_optimization_blueprint  # PHASE 4E
-        from .main.routes import main as main_blueprint
-        from .vault.routes import vault as vault_blueprint
+    from . import models
+    from .auth.routes import auth as auth_blueprint
+    from .api.routes import api as api_blueprint
+    from .api.setup_routes import setup as setup_blueprint  # TEMPORARY SETUP
+    from .api.multimodal_routes import multimodal as multimodal_blueprint  # PHASE 4
+    from .api.collaboration_routes import collaboration as collaboration_blueprint  # PHASE 4B
+    from .api.realtime_routes import realtime as realtime_blueprint  # PHASE 4B
+    from .api.analytics_routes import analytics as analytics_blueprint  # PHASE 4C
+    from .api.security_routes import security as security_blueprint  # PHASE 4D
+    from .api.ai_optimization_routes import ai_optimization as ai_optimization_blueprint  # PHASE 4E
+    from .api.api_management_routes import api_mgmt as api_mgmt_blueprint  # API Management
+    from .main.routes import main as main_blueprint
+    from .vault.routes import vault as vault_blueprint
 
     # --- Configure Flask-Login ---
     login_manager.login_view = 'auth.login'
@@ -99,17 +100,23 @@ from .api.ai_optimization_routes import ai_optimization as ai_optimization_bluep
         app.logger.warning(f'403 error: {request.url}')
         return render_template('errors/403.html'), 403
 
-        # --- Register Blueprints ---
-        app.register_blueprint(auth_blueprint, url_prefix='/auth')
-        app.register_blueprint(api_blueprint, url_prefix='/api')
-        app.register_blueprint(setup_blueprint, url_prefix='/api/setup')  # TEMPORARY
-        app.register_blueprint(multimodal_blueprint, url_prefix='/api/multimodal')  # PHASE 4
-        app.register_blueprint(collaboration_blueprint, url_prefix='/api/collaboration')  # PHASE 4B
-        app.register_blueprint(realtime_blueprint, url_prefix='/api/realtime')  # PHASE 4B
-        app.register_blueprint(analytics_blueprint, url_prefix='/api/analytics')  # PHASE 4C
-        app.register_blueprint(security_blueprint, url_prefix='/api/security')  # PHASE 4D
-        app.register_blueprint(ai_optimization_blueprint, url_prefix='/api/ai-optimization')  # PHASE 4E
-        app.register_blueprint(main_blueprint)
-        app.register_blueprint(vault_blueprint, url_prefix='/vault')
+    # --- Register Blueprints ---
+    app.register_blueprint(auth_blueprint, url_prefix='/auth')
+    app.register_blueprint(api_blueprint, url_prefix='/api')
+    app.register_blueprint(setup_blueprint, url_prefix='/api/setup')  # TEMPORARY
+    app.register_blueprint(multimodal_blueprint, url_prefix='/api/multimodal')  # PHASE 4
+    app.register_blueprint(collaboration_blueprint, url_prefix='/api/collaboration')  # PHASE 4B
+    app.register_blueprint(realtime_blueprint, url_prefix='/api/realtime')  # PHASE 4B
+    app.register_blueprint(analytics_blueprint, url_prefix='/api/analytics')  # PHASE 4C
+    app.register_blueprint(security_blueprint, url_prefix='/api/security')  # PHASE 4D
+    app.register_blueprint(ai_optimization_blueprint, url_prefix='/api/ai-optimization')  # PHASE 4E
+    app.register_blueprint(api_mgmt_blueprint)  # API Management (has its own prefix)
+    app.register_blueprint(main_blueprint)
+    app.register_blueprint(vault_blueprint, url_prefix='/vault')
+    
+    # Landing page route
+    @app.route('/')
+    def landing():
+        return render_template('landing.html')
     
     return app
