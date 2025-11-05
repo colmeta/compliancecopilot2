@@ -1,6 +1,7 @@
 # ==============================================================================
 # tasks.py
 # Pearl AI - "CLARITY" Engine v7.1 (Final Engine Integration)
+# + OUTSTANDING SYSTEM v2.0 - Presidential-Grade Quality for ALL Domains
 # This is the "brain" of the operation. The complete AI logic lives here.
 # ==============================================================================
 
@@ -24,6 +25,25 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader
 from langchain.schema import Document
 from typing import List, Dict, Any
+
+# ==============================================================================
+# OUTSTANDING SYSTEM - Presidential-Grade Quality for ALL Domains
+# ==============================================================================
+
+# Flag to enable Outstanding mode (5-pass writing, research, human touch)
+ENABLE_OUTSTANDING_MODE = os.getenv('ENABLE_OUTSTANDING_MODE', 'true').lower() == 'true'
+
+try:
+    from app.outstanding_system import (
+        get_universal_writer,
+        get_domain_researcher,
+        get_universal_planner
+    )
+    OUTSTANDING_AVAILABLE = True
+    print("✅ Outstanding System loaded - Presidential-grade quality enabled for ALL domains")
+except Exception as e:
+    OUTSTANDING_AVAILABLE = False
+    print(f"⚠️ Outstanding System not available: {e}")
 
 
 # ==============================================================================
@@ -505,12 +525,79 @@ def run_clarity_analysis(self, user_directive, uploaded_files_data, user_id):
                 final_prompt_parts.extend([f"Analyzing visual source: {vis['filename']}", vis['image']])
 
         print("WORKER: Master prompt constructed. Calling Google AI...")
-        response = model.generate_content(final_prompt_parts)
-
-        # --- Parse and Validate the AI's JSON Output ---
-        cleaned_output = response.text.strip().replace('```json', '').replace('```', '').strip()
-        try:
+        
+        # ==============================================================================
+        # OUTSTANDING MODE: Presidential-Grade Quality Enhancement
+        # ==============================================================================
+        if ENABLE_OUTSTANDING_MODE and OUTSTANDING_AVAILABLE:
+            print("✨ OUTSTANDING MODE ENABLED: Applying 5-pass refinement and human touch...")
+            try:
+                # First get the standard response
+                response = model.generate_content(final_prompt_parts)
+                cleaned_output = response.text.strip().replace('```json', '').replace('```', '').strip()
+                parsed_json = json.loads(cleaned_output)
+                
+                # Now enhance with Outstanding quality
+                writer = get_universal_writer()
+                
+                # Detect content type and domain
+                domain = detect_domain_context(file_names, user_directive)
+                content_type = "analysis"  # Default
+                if is_proposal_task:
+                    content_type = "proposal"
+                elif "brief" in user_directive.lower():
+                    content_type = "brief"
+                elif "report" in user_directive.lower():
+                    content_type = "report"
+                
+                # Prepare context for Outstanding writer
+                context = {
+                    'user_directive': user_directive,
+                    'documents': file_names,
+                    'domain': domain,
+                    'original_analysis': parsed_json
+                }
+                
+                # Prepare research (from original findings)
+                research = {
+                    'key_findings': parsed_json.get('key_findings', []),
+                    'data_gaps': parsed_json.get('data_gaps', []),
+                    'vault_context': vault_context
+                }
+                
+                # Apply Outstanding quality to executive summary (most visible)
+                print("✨ Enhancing executive summary with 5-pass refinement...")
+                enhanced_summary = writer.write_with_outstanding_quality(
+                    content_type=content_type,
+                    domain=domain,
+                    context=context,
+                    research=research,
+                    audience="executive"
+                )
+                
+                # Replace the summary with Outstanding version
+                parsed_json['executive_summary'] = enhanced_summary
+                parsed_json['outstanding_enhanced'] = True
+                parsed_json['quality_level'] = "Presidential-Grade (5-Pass Refined)"
+                
+                print("✅ Outstanding enhancement complete!")
+                
+            except Exception as outstanding_error:
+                print(f"⚠️ Outstanding enhancement failed, using standard mode: {outstanding_error}")
+                # Fall back to standard response
+                response = model.generate_content(final_prompt_parts)
+                cleaned_output = response.text.strip().replace('```json', '').replace('```', '').strip()
+                parsed_json = json.loads(cleaned_output)
+                parsed_json['outstanding_enhanced'] = False
+        else:
+            # Standard mode (fast, no Outstanding)
+            response = model.generate_content(final_prompt_parts)
+            cleaned_output = response.text.strip().replace('```json', '').replace('```', '').strip()
             parsed_json = json.loads(cleaned_output)
+            parsed_json['outstanding_enhanced'] = False
+        
+        # --- Parse and Validate the AI's JSON Output ---
+        try:
             print("WORKER: Successfully parsed JSON.")
             
             # Add vault context information to result
