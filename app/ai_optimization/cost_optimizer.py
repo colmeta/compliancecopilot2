@@ -178,17 +178,17 @@ class CostOptimizer:
                     metric_type='api_cost',
                     count=0,
                     period=period,
-                    metadata=json.dumps({'total_cost': 0.0})
+                    extra_data=json.dumps({'total_cost': 0.0})
                 )
                 db.session.add(metric)
             
             # Update cost
-            metadata = json.loads(metric.metadata) if metric.metadata else {}
-            current_cost = metadata.get('total_cost', 0.0)
-            metadata['total_cost'] = current_cost + record.total_cost
+            extra_data = json.loads(metric.extra_data) if metric.extra_data else {}
+            current_cost = extra_data.get('total_cost', 0.0)
+            extra_data['total_cost'] = current_cost + record.total_cost
             
             metric.count += 1
-            metric.metadata = json.dumps(metadata)
+            metric.extra_data = json.dumps(extra_data)
             metric.timestamp = datetime.utcnow()
             
             db.session.commit()
@@ -235,8 +235,8 @@ class CostOptimizer:
             total_calls = 0
             
             for metric in metrics:
-                metadata = json.loads(metric.metadata) if metric.metadata else {}
-                total_cost += metadata.get('total_cost', 0.0)
+                extra_data = json.loads(metric.extra_data) if metric.extra_data else {}
+                total_cost += extra_data.get('total_cost', 0.0)
                 total_calls += metric.count
             
             return {

@@ -133,7 +133,7 @@ class UsageMetrics(db.Model):
     count = db.Column(db.Integer, nullable=False, default=0)
     period = db.Column(db.String(20), nullable=False, index=True)  # YYYY-MM format for monthly tracking
     timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    metadata = db.Column(db.Text, nullable=True)  # JSON for additional details
+    extra_data = db.Column(db.Text, nullable=True)  # JSON for additional details (renamed from 'metadata' - SQLAlchemy reserved word)
     
     # Relationship to user
     user = db.relationship('User', backref='usage_metrics')
