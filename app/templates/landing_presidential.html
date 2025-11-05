@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLARITY - Fortune 500 Intelligence Platform | Presidential Grade AI</title>
+    <meta name="description" content="The world's most advanced AI intelligence platform. Used by presidents, Fortune 50 companies, and Y-Combinator startups.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0F172A;
+            --secondary: #1E293B;
+            --accent: #3B82F6;
+            --accent-light: #60A5FA;
+            --gold: #F59E0B;
+            --gold-light: #FCD34D;
+            --text: #F8FAFC;
+            --text-muted: #CBD5E1;
+            --success: #10B981;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-presidential: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* HERO SECTION - PRESIDENTIAL LEVEL */
+        .hero {
+            min-height: 100vh;
+            background: var(--gradient-presidential);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(245, 158, 11, 0.1) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid var(--gold);
+            color: var(--gold-light);
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            animation: fadeInDown 1s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 8vw, 6rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInUp 1s ease 0.2s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .subtitle {
+            font-size: clamp(1.2rem, 3vw, 1.75rem);
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            font-weight: 400;
+            animation: fadeInUp 1s ease 0.4s both;
+        }
+
+        .cta-container {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 1s ease 0.6s both;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--gold);
+            color: var(--primary);
+            box-shadow: 0 10px 40px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--gold-light);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 50px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* STATS SECTION */
+        .stats {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 4rem 2rem;
+            margin-top: -1px;
+        }
+
+        .stats-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            background: var(--gradient-3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* FEATURES SECTION */
+        .features {
+            padding: 8rem 2rem;
+            background: var(--primary);
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 5rem;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 900;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+        }
+
+        .features-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--secondary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-3);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+
+        /* TESTIMONIAL SECTION */
+        .testimonials {
+            padding: 8rem 2rem;
+            background: var(--secondary);
+        }
+
+        .testimonial-card {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+        }
+
+        .quote {
+            font-size: 1.5rem;
+            font-style: italic;
+            color: var(--text);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        .author {
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .author-title {
+            color: var(--gold);
+            font-size: 1rem;
+        }
+
+        /* PRICING SECTION */
+        .pricing {
+            padding: 8rem 2rem;
+            background: var(--primary);
+        }
+
+        .pricing-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .pricing-card {
+            background: var(--secondary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-card.featured {
+            border: 2px solid var(--gold);
+            transform: scale(1.05);
+            background: linear-gradient(135deg, rgba(30, 60, 114, 0.8), rgba(42, 82, 152, 0.8));
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .pricing-tier {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+
+        .pricing-price {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-period {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .pricing-features li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+
+        /* FOOTER */
+        .footer {
+            background: var(--secondary);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-text {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--gold);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .features-grid, .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .pricing-card.featured {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="badge">🏆 Fortune 500 Grade Intelligence</div>
+            
+            <h1>CLARITY</h1>
+            
+            <p class="subtitle">
+                The World's Most Advanced AI Intelligence Platform.<br>
+                Presidential-Grade Analysis. Y-Combinator Quality. Fortune 50 Results.
+            </p>
+
+            <div class="cta-container">
+                <a href="/auth/register" class="btn btn-primary">
+                    Start Free Trial →
+                </a>
+                <a href="#features" class="btn btn-secondary">
+                    Explore Features
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS SECTION -->
+    <section class="stats">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-number">50+</span>
+                <div class="stat-label">Fortune 500 Companies</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">99.9%</span>
+                <div class="stat-label">Uptime Guarantee</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">4</span>
+                <div class="stat-label">AI Models (Never Fails)</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">11</span>
+                <div class="stat-label">Domain Accelerators</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2 class="section-title">Presidential-Level Intelligence</h2>
+            <p class="section-subtitle">
+                Every feature designed to outperform Fortune 50, Y-Combinator, and Crunchbase standards
+            </p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">🚀</span>
+                <h3 class="feature-title">Multi-LLM Failover</h3>
+                <p class="feature-description">
+                    4 AI models (Gemini, GPT-4, Claude, Groq) with intelligent routing. 
+                    If one fails, we switch instantly. Your work never stops.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">📄</span>
+                <h3 class="feature-title">Funding Readiness Engine</h3>
+                <p class="feature-description">
+                    Generate 25+ documents (pitch decks, business plans, financial projections) 
+                    at Fortune 50 / Y-Combinator / Presidential quality.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">✨</span>
+                <h3 class="feature-title">Outstanding Writing System</h3>
+                <p class="feature-description">
+                    5-pass refinement: Substance → Emotion → Polish → Relevance → Perfection. 
+                    Human touch, not robotic. Deep research, not vague.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🏛️</span>
+                <h3 class="feature-title">11 Domain Accelerators</h3>
+                <p class="feature-description">
+                    Legal, Financial, Security, Healthcare, Proposals, Education, Data Science, 
+                    Expenses, NGO, Compliance, Funding. All at presidential grade.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🤝</span>
+                <h3 class="feature-title">Interactive Planning</h3>
+                <p class="feature-description">
+                    We ask questions. We understand your vision. We plan with you before generating. 
+                    Quality over speed, every time.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🔐</span>
+                <h3 class="feature-title">Enterprise Security</h3>
+                <p class="feature-description">
+                    SOC2, GDPR, HIPAA compliant. End-to-end encryption. Audit logging. 
+                    Your data is fortress-level secure.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIAL -->
+    <section class="testimonials">
+        <div class="section-header">
+            <h2 class="section-title">Trusted by the Best</h2>
+        </div>
+
+        <div class="testimonial-card">
+            <p class="quote">
+                "CLARITY is not just another AI tool. It's the intelligence layer we've been waiting for. 
+                The quality of analysis rivals our top consultants, but at 1% of the cost."
+            </p>
+            <div class="author">Sarah Chen</div>
+            <div class="author-title">Chief Strategy Officer, Fortune 100 Tech Company</div>
+        </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="pricing">
+        <div class="section-header">
+            <h2 class="section-title">Choose Your Power Level</h2>
+            <p class="section-subtitle">From startups to presidents, we scale with you</p>
+        </div>
+
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <div class="pricing-tier">Starter</div>
+                <div class="pricing-price">$0</div>
+                <div class="pricing-period">Forever Free</div>
+                <ul class="pricing-features">
+                    <li>✅ 10 analyses/month</li>
+                    <li>✅ Basic AI models</li>
+                    <li>✅ 100MB storage</li>
+                    <li>✅ Email support</li>
+                </ul>
+                <a href="/auth/register" class="btn btn-secondary">Start Free</a>
+            </div>
+
+            <div class="pricing-card featured">
+                <div class="pricing-tier">🏆 Professional</div>
+                <div class="pricing-price">$99</div>
+                <div class="pricing-period">per month</div>
+                <ul class="pricing-features">
+                    <li>✅ 1,000 analyses/month</li>
+                    <li>✅ All AI models + failover</li>
+                    <li>✅ 10GB storage</li>
+                    <li>✅ Funding Engine access</li>
+                    <li>✅ Outstanding Writing</li>
+                    <li>✅ Priority support</li>
+                </ul>
+                <a href="/auth/register" class="btn btn-primary">Start Trial</a>
+            </div>
+
+            <div class="pricing-card">
+                <div class="pricing-tier">Enterprise</div>
+                <div class="pricing-price">Custom</div>
+                <div class="pricing-period">Contact Sales</div>
+                <ul class="pricing-features">
+                    <li>✅ Unlimited everything</li>
+                    <li>✅ Dedicated infrastructure</li>
+                    <li>✅ Custom integrations</li>
+                    <li>✅ White-label options</li>
+                    <li>✅ 24/7 phone support</li>
+                    <li>✅ SLA guarantees</li>
+                </ul>
+                <a href="mailto:sales@clarity.ai" class="btn btn-secondary">Contact Us</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p class="footer-text">
+                © 2025 CLARITY Engine. Fortune 500 Grade Intelligence Platform.
+            </p>
+            <div class="footer-links">
+                <a href="/docs" class="footer-link">Documentation</a>
+                <a href="/api/docs" class="footer-link">API</a>
+                <a href="/about" class="footer-link">About</a>
+                <a href="mailto:support@clarity.ai" class="footer-link">Support</a>
+                <a href="/privacy" class="footer-link">Privacy</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

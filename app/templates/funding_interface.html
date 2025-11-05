@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funding Readiness Engine - CLARITY</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0F172A;
+            --secondary: #1E293B;
+            --tertiary: #334155;
+            --accent: #3B82F6;
+            --gold: #F59E0B;
+            --success: #10B981;
+            --text: #F8FAFC;
+            --text-muted: #CBD5E1;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-bottom: 2rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--gold);
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #60A5FA, #F59E0B);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+        }
+
+        .wizard {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--border);
+            z-index: 0;
+        }
+
+        .step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--tertiary);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin: 0 auto 0.5rem;
+        }
+
+        .step.active .step-number {
+            background: var(--gold);
+            border-color: var(--gold);
+            color: var(--primary);
+        }
+
+        .step.completed .step-number {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .step-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .step.active .step-label {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 1rem;
+            background: var(--tertiary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--gold);
+            color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: #FCD34D;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--tertiary);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-box-title {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-box-text {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .document-card {
+            background: var(--tertiary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .document-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .document-card input[type="checkbox"] {
+            margin-right: 1rem;
+        }
+
+        .document-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .document-description {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--gold));
+            transition: width 0.3s ease;
+        }
+
+        #results {
+            display: none;
+        }
+
+        .result-card {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .result-content {
+            background: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <a href="/dashboard" class="back-link">← Back to Dashboard</a>
+            <h1>Funding Readiness Engine</h1>
+            <p class="subtitle">
+                Generate Presidential-Grade Funding Documents<br>
+                Fortune 50 Quality • Y-Combinator Standard • Crunchbase Ready
+            </p>
+        </div>
+
+        <!-- WIZARD FORM -->
+        <div class="wizard" id="wizard">
+            <!-- Progress Bar -->
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 25%"></div>
+            </div>
+
+            <!-- Steps -->
+            <div class="steps">
+                <div class="step active" id="step1Indicator">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Project Info</div>
+                </div>
+                <div class="step" id="step2Indicator">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Funding Level</div>
+                </div>
+                <div class="step" id="step3Indicator">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Documents</div>
+                </div>
+                <div class="step" id="step4Indicator">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Generate</div>
+                </div>
+            </div>
+
+            <!-- STEP 1: Project Info -->
+            <div id="step1" class="wizard-step">
+                <div class="info-box">
+                    <div class="info-box-title">💡 Outstanding Mode</div>
+                    <div class="info-box-text">
+                        We'll ask you questions to deeply understand your vision. This ensures every document 
+                        has a human touch, deep research, and presidential-grade quality.
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label class="form-label">Project Name *</label>
+                    <input type="text" class="form-input" id="projectName" placeholder="Enter your project or company name">
+                </div>
+
+                <div class="form-section">
+                    <label class="form-label">Brief Description *</label>
+                    <textarea class="form-textarea" id="projectDescription" placeholder="What does your project do? What problem does it solve?"></textarea>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-section">
+                        <label class="form-label">Industry *</label>
+                        <select class="form-select" id="industry">
+                            <option>Technology</option>
+                            <option>Healthcare</option>
+                            <option>Finance</option>
+                            <option>Education</option>
+                            <option>Energy</option>
+                            <option>Manufacturing</option>
+                            <option>Retail</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label">Stage</label>
+                        <select class="form-select" id="stage">
+                            <option>Idea</option>
+                            <option>MVP</option>
+                            <option>Revenue</option>
+                            <option>Growth</option>
+                            <option>Scale</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="window.location.href='/dashboard'">Cancel</button>
+                    <button class="btn btn-primary" onclick="nextStep(2)">Next Step →</button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Funding Level -->
+            <div id="step2" class="wizard-step" style="display: none;">
+                <div class="info-box">
+                    <div class="info-box-title">🎯 Choose Your Funding Target</div>
+                    <div class="info-box-text">
+                        Each level generates specific documents optimized for that audience and amount.
+                    </div>
+                </div>
+
+                <div class="documents-grid">
+                    <label class="document-card">
+                        <input type="radio" name="fundingLevel" value="seed">
+                        <div>
+                            <div class="document-title">💎 Seed ($50K - $500K)</div>
+                            <div class="document-description">Angel investors, pre-seed funds</div>
+                        </div>
+                    </label>
+
+                    <label class="document-card">
+                        <input type="radio" name="fundingLevel" value="series_a">
+                        <div>
+                            <div class="document-title">🚀 Series A ($1M - $10M)</div>
+                            <div class="document-description">VC firms, institutional investors</div>
+                        </div>
+                    </label>
+
+                    <label class="document-card">
+                        <input type="radio" name="fundingLevel" value="accelerator">
+                        <div>
+                            <div class="document-title">🏆 Accelerator (Y-Combinator)</div>
+                            <div class="document-description">Top-tier accelerator programs</div>
+                        </div>
+                    </label>
+
+                    <label class="document-card">
+                        <input type="radio" name="fundingLevel" value="enterprise">
+                        <div>
+                            <div class="document-title">🏢 Enterprise ($10M+)</div>
+                            <div class="document-description">Growth equity, Fortune 500 partnerships</div>
+                        </div>
+                    </label>
+
+                    <label class="document-card">
+                        <input type="radio" name="fundingLevel" value="government">
+                        <div>
+                            <div class="document-title">🏛️ Government Grants</div>
+                            <div class="document-description">SBIR, STTR, federal/state grants</div>
+                        </div>
+                    </label>
+
+                    <label class="document-card">
+                        <input type="radio" name="fundingLevel" value="presidential">
+                        <div>
+                            <div class="document-title">🌟 Presidential</div>
+                            <div class="document-description">National impact, executive briefings</div>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="prevStep(1)">← Back</button>
+                    <button class="btn btn-primary" onclick="nextStep(3)">Next Step →</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: Select Documents -->
+            <div id="step3" class="wizard-step" style="display: none;">
+                <div class="info-box">
+                    <div class="info-box-title">📄 Select Documents to Generate</div>
+                    <div class="info-box-text">
+                        Each document will be crafted with Presidential-grade quality, deep research, and human touch.
+                    </div>
+                </div>
+
+                <div class="documents-grid">
+                    <label class="document-card">
+                        <input type="checkbox" checked>
+                        <div>
+                            <div class="document-title">Executive Summary</div>
+                            <div class="document-description">2-page overview of your vision</div>
+                        </div>
+                    </label>
+
+                    <label class="document-card">
+                        <input type="checkbox" checked>
+                        <div>
+                            <div class="document-title">Pitch Deck</div>
+                            <div class="document-description">10-15 slide presentation</div>
+                        </div>
+                    </label>
+
+                    <label class="document-card">
+                        <input type="checkbox" checked>
+                        <div>
+                            <div class="document-title">Business Plan</div>
+                            <div class="document-description">Complete strategy & roadmap</div>
+                        </div>
+                    </label>
+
+                    <label class="document-card">
+                        <input type="checkbox">
+                        <div>
+                            <div class="document-title">Financial Projections</div>
+                            <div class="document-description">3-5 year forecasts</div>
+                        </div>
+                    </label>
+
+                    <label class="document-card">
+                        <input type="checkbox">
+                        <div>
+                            <div class="document-title">Market Analysis</div>
+                            <div class="document-description">TAM/SAM/SOM, competitive landscape</div>
+                        </div>
+                    </label>
+
+                    <label class="document-card">
+                        <input type="checkbox">
+                        <div>
+                            <div class="document-title">Impact Assessment</div>
+                            <div class="document-description">Social & economic impact</div>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="prevStep(2)">← Back</button>
+                    <button class="btn btn-primary" onclick="nextStep(4)">Next Step →</button>
+                </div>
+            </div>
+
+            <!-- STEP 4: Review & Generate -->
+            <div id="step4" class="wizard-step" style="display: none;">
+                <div class="info-box">
+                    <div class="info-box-title">✨ Ready to Generate</div>
+                    <div class="info-box-text">
+                        Our Outstanding Writer will create Fortune 50 / Y-Combinator quality documents with:
+                        <br>• Deep market research
+                        <br>• Human touch (not robotic)
+                        <br>• 5-pass refinement process
+                        <br>• Audience adaptation
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>Your Configuration</h3>
+                    <p><strong>Project:</strong> <span id="summaryProject">-</span></p>
+                    <p><strong>Industry:</strong> <span id="summaryIndustry">-</span></p>
+                    <p><strong>Funding Level:</strong> <span id="summaryFunding">-</span></p>
+                    <p><strong>Documents:</strong> 6 selected</p>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="prevStep(3)">← Back</button>
+                    <button class="btn btn-primary" onclick="generateDocuments()">🚀 Generate Documents</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULTS SECTION -->
+        <div id="results">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <h3>Generating Your Presidential-Grade Documents...</h3>
+                <p style="color: var(--text-muted); margin-top: 1rem;">
+                    This may take 2-3 minutes. We're conducting deep research and crafting with human touch.
+                </p>
+            </div>
+
+            <div id="generatedDocs" style="display: none;">
+                <h2 style="margin-bottom: 2rem;">🎉 Your Documents Are Ready!</h2>
+
+                <div class="result-card">
+                    <div class="result-header">
+                        <div class="result-title">📄 Executive Summary</div>
+                        <div class="result-actions">
+                            <button class="btn btn-secondary">Download PDF</button>
+                            <button class="btn btn-secondary">Copy</button>
+                        </div>
+                    </div>
+                    <div class="result-content">
+                        <p>Your executive summary will appear here...</p>
+                    </div>
+                </div>
+
+                <!-- More document cards here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+
+        function nextStep(step) {
+            // Hide current step
+            document.getElementById(`step${currentStep}`).style.display = 'none';
+            document.getElementById(`step${currentStep}Indicator`).classList.remove('active');
+            document.getElementById(`step${currentStep}Indicator`).classList.add('completed');
+
+            // Show next step
+            currentStep = step;
+            document.getElementById(`step${currentStep}`).style.display = 'block';
+            document.getElementById(`step${currentStep}Indicator`).classList.add('active');
+
+            // Update progress bar
+            document.getElementById('progressBar').style.width = `${(currentStep / 4) * 100}%`;
+        }
+
+        function prevStep(step) {
+            // Hide current step
+            document.getElementById(`step${currentStep}`).style.display = 'none';
+            document.getElementById(`step${currentStep}Indicator`).classList.remove('active');
+            if (currentStep < 4) {
+                document.getElementById(`step${currentStep}Indicator`).classList.remove('completed');
+            }
+
+            // Show previous step
+            currentStep = step;
+            document.getElementById(`step${currentStep}`).style.display = 'block';
+            document.getElementById(`step${currentStep}Indicator`).classList.add('active');
+            document.getElementById(`step${currentStep}Indicator`).classList.remove('completed');
+
+            // Update progress bar
+            document.getElementById('progressBar').style.width = `${(currentStep / 4) * 100}%`;
+        }
+
+        function generateDocuments() {
+            // Hide wizard, show results
+            document.getElementById('wizard').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+
+            // Simulate generation (replace with actual API call)
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('generatedDocs').style.display = 'block';
+            }, 3000);
+        }
+
+        // Update summary
+        document.getElementById('projectName').addEventListener('blur', function() {
+            document.getElementById('summaryProject').textContent = this.value || '-';
+        });
+
+        document.getElementById('industry').addEventListener('change', function() {
+            document.getElementById('summaryIndustry').textContent = this.value;
+        });
+    </script>
+
+</body>
+</html>
