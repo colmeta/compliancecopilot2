@@ -96,4 +96,4 @@ databases:
 # Redis
   - name: clarity-redis
     plan: starter  # or 'free' for free tier
-    maxmemoryPolicy: allkeys-lru
+    maxmemoryPolicy: allkeys_lru
