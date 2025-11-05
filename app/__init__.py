@@ -69,6 +69,7 @@ def create_app(config_class=Config):
     from .api.security_routes import security as security_blueprint  # PHASE 4D
     from .api.ai_optimization_routes import ai_optimization as ai_optimization_blueprint  # PHASE 4E
     from .api.api_management_routes import api_mgmt as api_mgmt_blueprint  # API Management
+    from .api.funding_routes import funding_api as funding_blueprint  # Funding Readiness Engine
     from .main.routes import main as main_blueprint
     from .vault.routes import vault as vault_blueprint
 
@@ -111,6 +112,7 @@ def create_app(config_class=Config):
     app.register_blueprint(security_blueprint, url_prefix='/api/security')  # PHASE 4D
     app.register_blueprint(ai_optimization_blueprint, url_prefix='/api/ai-optimization')  # PHASE 4E
     app.register_blueprint(api_mgmt_blueprint)  # API Management (has its own prefix)
+    app.register_blueprint(funding_blueprint)  # Funding Readiness Engine
     app.register_blueprint(main_blueprint)
     app.register_blueprint(vault_blueprint, url_prefix='/vault')
     
