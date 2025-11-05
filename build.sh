@@ -38,13 +38,15 @@ else
 fi
 
 echo "🔍 Running Health Checks..."
-# Test database connectivity
+# Test database connectivity (SQLAlchemy 2.0 compatible)
 python -c "
 from app import create_app, db
+from sqlalchemy import text
 app = create_app()
 with app.app_context():
     try:
-        db.engine.execute('SELECT 1')
+        with db.engine.connect() as conn:
+            conn.execute(text('SELECT 1'))
         print('✅ Database connection successful')
     except Exception as e:
         print(f'❌ Database connection failed: {e}')

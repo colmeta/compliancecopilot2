@@ -1,0 +1,102 @@
+# ==============================================================================
+# RENDER-OPTIMIZED REQUIREMENTS
+# Lighter version for faster builds and smaller deployments
+# ==============================================================================
+
+setuptools
+
+# --- Web Server & Framework ---
+Flask==3.0.0
+Flask-CORS==4.0.0
+gunicorn==21.2.0
+Werkzeug==3.0.1
+
+# --- Document & Data Processing (Core Only) ---
+python-docx==1.1.0
+PyPDF2==3.0.1
+Pillow==10.1.0
+pandas==2.1.4
+openpyxl==3.1.2
+
+# --- Core AI Engine ---
+google-generativeai>=0.7.0
+openai>=1.3.0
+anthropic>=0.7.0
+groq>=0.4.0
+
+# --- Asynchronous Task Queue ---
+celery==5.3.4
+redis==5.0.1
+
+# --- AI Memory (Vector Database & Embeddings) ---
+sentence-transformers==2.2.2
+chromadb==0.4.22
+langchain==0.1.0
+langchain-community==0.0.13
+tiktoken==0.5.2
+
+# --- API Structure & Validation ---
+pydantic==2.5.3
+
+# --- Security & Configuration ---
+Flask-Limiter==3.5.0
+python-dotenv==1.0.0
+cryptography==41.0.7
+numpy==1.24.4
+scipy==1.11.4
+
+# --- Database & Authentication ---
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.25
+psycopg2-binary==2.9.9
+Flask-Login==0.6.3
+Flask-Migrate==4.0.5
+Flask-WTF==1.2.1
+email-validator==2.1.1
+
+# --- Real-Time Collaboration ---
+flask-socketio==5.3.5
+python-socketio==5.10.0
+
+# --- Analytics & Visualization ---
+plotly==5.17.0
+scikit-learn==1.3.2
+
+# --- Enhanced Security ---
+python-jose==3.3.0
+
+# --- Additional Utilities ---
+python-dateutil==2.8.2
+pytz==2023.3
+psutil==5.9.6
+
+# ==============================================================================
+# OPTIONAL: Heavy dependencies commented out for faster builds
+# Uncomment if you need these features
+# ==============================================================================
+
+# --- Audio Processing (COMMENTED - Uncomment if needed) ---
+# openai-whisper>=20231117
+# google-cloud-speech>=2.23.0
+# assemblyai>=0.17.0
+# pydub>=0.25.1
+
+# --- Vision/OCR (COMMENTED - Uncomment if needed) ---
+# pytesseract>=0.3.10
+# google-cloud-vision>=3.4.5
+# boto3>=1.28.0
+# pdf2image>=1.16.3
+
+# --- Video Processing (COMMENTED - Uncomment if needed) ---
+# opencv-python>=4.8.0
+# moviepy>=1.0.3
+# scenedetect>=0.6.2
+
+# --- NLP (COMMENTED - Heavy packages) ---
+# spacy>=3.7.0
+# transformers>=4.35.0
+# nltk>=3.8.1
+
+# --- Performance Monitoring (COMMENTED) ---
+# memory-profiler>=0.61.0
+# statsmodels>=0.14.0

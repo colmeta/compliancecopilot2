@@ -1,0 +1,99 @@
+# ==============================================================================
+# Render Deployment Configuration for CLARITY
+# ==============================================================================
+
+services:
+  # Web Service (Flask App)
+  - type: web
+    name: clarity-web
+    env: python
+    plan: starter  # or 'free' for free tier
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn run:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.6
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: clarity-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: clarity-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: clarity-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: clarity-redis
+          property: connectionString
+      # Add these in Render Dashboard (Secret)
+      - key: FLASK_SECRET_KEY
+        sync: false  # Set manually in dashboard
+      - key: GOOGLE_API_KEY
+        sync: false  # Set manually in dashboard
+      - key: OPENAI_API_KEY
+        sync: false  # Optional
+      - key: ANTHROPIC_API_KEY
+        sync: false  # Optional
+      - key: GROQ_API_KEY
+        sync: false  # Optional
+    
+  # Background Worker (Celery)
+  - type: worker
+    name: clarity-worker
+    env: python
+    plan: starter
+    buildCommand: "./build.sh"
+    startCommand: "celery -A celery_worker.celery_app worker --loglevel=info --concurrency=2"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.6
+      - key: DATABASE_URL
+        fromDatabase:
+          name: clarity-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: clarity-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: clarity-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: clarity-redis
+          property: connectionString
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+
+# Database
+databases:
+  - name: clarity-db
+    plan: starter  # or 'free' for free tier
+    databaseName: clarity
+    user: clarity
+
+# Redis
+  - name: clarity-redis
+    plan: starter  # or 'free' for free tier
+    maxmemoryPolicy: allkeys-lru
