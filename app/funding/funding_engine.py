@@ -86,14 +86,34 @@ class DocumentPackage:
 
 class FundingEngine:
     """
-    CLARITY Funding Readiness Engine
+    CLARITY Funding Readiness Engine - OUTSTANDING EDITION
     
     Transforms raw ideas into professionally documented, fundable ventures.
+    
+    This is NOT just AI text generation. This is:
+    - Deep research and analysis
+    - Human touch and emotional resonance
+    - Interactive planning with the entrepreneur
+    - Multiple refinement passes
+    - Truly presidential-grade quality
+    
+    Quality over speed. Innovation over templates.
     """
     
     def __init__(self):
         """Initialize the Funding Engine."""
         self.google_api_key = os.getenv('GOOGLE_API_KEY')
+        
+        # Import our existing engines for quality (optional for basic mode)
+        try:
+            from app.planning import get_planning_engine
+            from app.writing import get_human_touch_writer
+            self.planning_engine = get_planning_engine()
+            self.writer = get_human_touch_writer()
+        except Exception as e:
+            print(f"Warning: Could not load planning/writing engines: {e}")
+            self.planning_engine = None
+            self.writer = None
         
         # Document templates for different funding levels
         self.templates = {

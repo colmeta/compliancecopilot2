@@ -21,5 +21,20 @@ Features:
 """
 
 from .funding_engine import FundingEngine, DocumentPackage, FundingLevel
+from .research_agent import DeepResearchAgent, ResearchReport, get_research_agent
+from .interactive_planner import InteractivePlanner, Question, get_interactive_planner
+from .document_writer import OutstandingDocumentWriter, get_outstanding_writer
 
-__all__ = ['FundingEngine', 'DocumentPackage', 'FundingLevel']
+__all__ = [
+    'FundingEngine', 
+    'DocumentPackage', 
+    'FundingLevel',
+    'DeepResearchAgent',
+    'ResearchReport',
+    'InteractivePlanner',
+    'Question',
+    'OutstandingDocumentWriter',
+    'get_research_agent',
+    'get_interactive_planner',
+    'get_outstanding_writer'
+]
