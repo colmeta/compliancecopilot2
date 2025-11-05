@@ -1,0 +1,68 @@
+# ==============================================================================
+# CLARITY Engine - Full Requirements for Render (Optimized)
+# ==============================================================================
+
+# ===== CORE FLASK & WEB =====
+Flask==3.0.0
+gunicorn==21.2.0
+python-dotenv==1.0.0
+Werkzeug==3.0.1
+
+# ===== DATABASE =====
+Flask-SQLAlchemy==3.1.1
+psycopg2-binary==2.9.9
+Flask-Migrate==4.0.5
+SQLAlchemy==2.0.23
+
+# ===== AUTH & SECURITY =====
+Flask-Login==0.6.3
+Flask-Bcrypt==1.0.1
+Flask-WTF==1.2.1
+WTForms==3.1.1
+cryptography==41.0.7
+
+# ===== RATE LIMITING & CORS =====
+Flask-Limiter==3.5.0
+Flask-CORS==4.0.0
+limits==3.7.0
+
+# ===== REALTIME & WEBSOCKETS =====
+Flask-SocketIO==5.3.5
+python-socketio==5.10.0
+
+# ===== AI & LLM (ESSENTIAL ONLY) =====
+google-generativeai==0.3.1
+openai>=1.3.0
+anthropic>=0.7.0
+groq>=0.4.0
+
+# ===== DOCUMENT PROCESSING (LIGHTWEIGHT) =====
+PyPDF2==3.0.1
+python-docx==1.1.0
+openpyxl==3.1.2
+python-magic==0.4.27
+Pillow==10.1.0
+
+# ===== CELERY & BACKGROUND TASKS (Commented out for now) =====
+# Celery==5.3.4
+# redis==5.0.1
+
+# ===== EMBEDDINGS (Commented out - too heavy) =====
+# sentence-transformers==2.2.2
+# chromadb==0.4.18
+# numpy==1.26.2
+# scipy==1.11.4
+
+# ===== DATA & ANALYTICS (Minimal) =====
+# pandas==2.1.4
+# plotly==5.18.0
+
+# ===== MULTIMODAL (Commented out - very heavy) =====
+# opencv-python==4.8.1
+# pytesseract==0.3.10
+# moviepy==1.0.3
+
+# ===== UTILITIES =====
+requests==2.31.0
+beautifulsoup4==4.12.2
+lxml==4.9.3
