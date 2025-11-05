@@ -79,3 +79,22 @@ out/
 # Other
 .npm
 .eslintcache
+
+# ChromaDB data
+chroma_data/
+*.chroma
+
+# Large model files
+*.h5
+*.pkl
+*.joblib
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
