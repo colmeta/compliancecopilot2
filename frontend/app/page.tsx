@@ -505,7 +505,7 @@ export default function Home() {
                 roi: 'Save $50K+/year',
                 features: [
                   'Unlimited analyses',
-                  'All 4 AI models (never fails)',
+                  'Never fails (automatic failover)',
                   '10GB vault storage',
                   'Funding Readiness Engine',
                   'Outstanding Writing Mode',
