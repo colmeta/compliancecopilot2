@@ -8,8 +8,8 @@ import requests
 import json
 import time
 
-# Backend URL
-BACKEND_URL = "https://veritas-engine.onrender.com"
+# Backend URL (CORRECT URL!)
+BACKEND_URL = "https://veritas-engine-zae0.onrender.com"
 
 # Test email (CHANGE THIS TO YOUR EMAIL!)
 TEST_EMAIL = "nsubugacollin@gmail.com"
