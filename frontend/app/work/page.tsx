@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
 // Backend API URL
 const BACKEND_URL = 'https://veritas-engine-zae0.onrender.com'
 
-export default function CommandDeck() {
+function CommandDeckContent() {
   const searchParams = useSearchParams()
   const initialDomain = searchParams?.get('domain') || 'legal'
   
@@ -355,5 +355,17 @@ export default function CommandDeck() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function CommandDeck() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+        <div className="text-white text-2xl">Loading CLARITY...</div>
+      </div>
+    }>
+      <CommandDeckContent />
+    </Suspense>
   )
 }
