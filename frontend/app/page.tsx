@@ -45,10 +45,10 @@ export default function Home() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up delay-400">
             <Link 
-              href="/register" 
+              href="/dashboard" 
               className="px-8 py-4 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-xl transition-all transform hover:scale-105 hover:shadow-2xl"
             >
-              Start Free Trial →
+              Launch Platform →
             </Link>
             <Link 
               href="#features" 
@@ -107,33 +107,63 @@ export default function Home() {
             {[
               {
                 icon: '🚀',
-                title: 'Multi-LLM Failover',
-                description: '4 AI models (Gemini, GPT-4, Claude, Groq) with intelligent routing. If one fails, we switch instantly.',
+                title: 'Multi-LLM Intelligence',
+                description: '4 AI models (Gemini, GPT-4, Claude, Groq) working together. Never fails. Always finds the best answer.',
               },
               {
                 icon: '📄',
                 title: 'Funding Readiness Engine',
-                description: 'Generate 25+ documents at Fortune 50 / Y-Combinator / Presidential quality.',
+                description: 'Generate 25+ funding documents: pitch decks, business plans, financial projections. Fortune 50 / Y-Combinator / Presidential quality.',
               },
               {
-                icon: '✨',
-                title: 'Outstanding Writing System',
-                description: '5-pass refinement: Substance → Emotion → Polish → Relevance → Perfection.',
+                icon: '⚖️',
+                title: 'Legal Intelligence',
+                description: 'Contract analysis, compliance checking, legal research, risk assessment. Like having a Fortune 500 legal team.',
               },
               {
-                icon: '🏛️',
-                title: '11 Domain Accelerators',
-                description: 'Legal, Financial, Security, Healthcare, and more. All at presidential grade.',
-              },
-              {
-                icon: '🤝',
-                title: 'Interactive Planning',
-                description: 'We ask questions, understand your vision, and plan with you before generating.',
+                icon: '💰',
+                title: 'Financial Intelligence',
+                description: 'Financial modeling, forecasting, analysis, expense management. Track every dollar, predict every outcome.',
               },
               {
                 icon: '🔐',
-                title: 'Enterprise Security',
-                description: 'SOC2, GDPR, HIPAA compliant. End-to-end encryption. Fortress-level secure.',
+                title: 'Security Intelligence',
+                description: 'Threat detection, vulnerability assessment, compliance auditing, incident response. Protect everything.',
+              },
+              {
+                icon: '🏥',
+                title: 'Healthcare Intelligence',
+                description: 'Medical research, patient analysis, treatment planning, HIPAA compliance. Save lives with data.',
+              },
+              {
+                icon: '📊',
+                title: 'Data Science Engine',
+                description: 'Compete with Visual Capitalist and top data firms. Presidential-grade insights for World Bank, IMF, governments.',
+              },
+              {
+                icon: '🎓',
+                title: 'Education Intelligence',
+                description: 'Curriculum analysis, accreditation reports, student insights, grant proposals. Transform education.',
+              },
+              {
+                icon: '✍️',
+                title: 'Proposal Writing Excellence',
+                description: 'RFPs, grants, partnerships, tenders. Win every bid with compelling, data-backed proposals.',
+              },
+              {
+                icon: '🌍',
+                title: 'NGO & Impact Intelligence',
+                description: 'Grant proposals, impact reports, donor communications, program evaluation. Maximize social impact.',
+              },
+              {
+                icon: '🏢',
+                title: 'Data Entry Automation',
+                description: '4-agent system: Vision → Extraction → Validation → Loading. Transform paper to insights instantly.',
+              },
+              {
+                icon: '💳',
+                title: 'Expense Management',
+                description: 'Scan receipts, track spending, identify savings, balance budgets. Cut costs by 30%+.',
               },
             ].map((feature, i) => (
               <div
@@ -242,16 +272,50 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="relative py-12 px-4 border-t border-white/10">
-        <div className="max-w-7xl mx-auto text-center">
-          <p className="text-slate-400 mb-4">
-            © 2025 CLARITY Engine. Fortune 500 Grade Intelligence Platform.
-          </p>
-          <div className="flex flex-wrap justify-center gap-6 text-sm text-slate-500">
-            <Link href="/docs" className="hover:text-amber-400 transition-colors">Documentation</Link>
-            <Link href="/api" className="hover:text-amber-400 transition-colors">API</Link>
-            <Link href="/about" className="hover:text-amber-400 transition-colors">About</Link>
-            <Link href="/support" className="hover:text-amber-400 transition-colors">Support</Link>
-            <Link href="/privacy" className="hover:text-amber-400 transition-colors">Privacy</Link>
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
+            {/* Company Info */}
+            <div>
+              <h3 className="text-xl font-bold mb-4 text-white">Clarity Pearl</h3>
+              <p className="text-slate-400 mb-4">
+                Fortune 500 Grade Intelligence Platform.<br/>
+                Presidential-Level AI for Every Domain.
+              </p>
+              <div className="space-y-2 text-slate-400">
+                <p>📧 nsubugacollin@gmail.com</p>
+                <p>📱 +256 705 885 118</p>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h3 className="text-lg font-bold mb-4 text-white">Quick Links</h3>
+              <div className="space-y-2">
+                <Link href="/dashboard" className="block text-slate-400 hover:text-amber-400 transition-colors">Platform</Link>
+                <Link href="/#features" className="block text-slate-400 hover:text-amber-400 transition-colors">Features</Link>
+                <Link href="/#pricing" className="block text-slate-400 hover:text-amber-400 transition-colors">Pricing</Link>
+                <Link href={`mailto:nsubugacollin@gmail.com`} className="block text-slate-400 hover:text-amber-400 transition-colors">Contact</Link>
+              </div>
+            </div>
+
+            {/* Features */}
+            <div>
+              <h3 className="text-lg font-bold mb-4 text-white">Capabilities</h3>
+              <div className="space-y-2 text-sm text-slate-400">
+                <p>• Legal, Financial, Security Intelligence</p>
+                <p>• Healthcare, Education, Data Science</p>
+                <p>• Funding Engine, Proposal Writing</p>
+                <p>• Data Entry, Expense Management</p>
+                <p>• NGO & Impact Intelligence</p>
+                <p>• Multi-LLM Failover System</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center pt-8 border-t border-white/10">
+            <p className="text-slate-500 text-sm">
+              © 2025 Clarity Pearl. All rights reserved. | Powered by CLARITY Engine
+            </p>
           </div>
         </div>
       </footer>
