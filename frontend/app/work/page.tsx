@@ -1,8 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+
+// Backend API URL
+const BACKEND_URL = 'https://veritas-engine-zae0.onrender.com'
 
 export default function CommandDeck() {
   const searchParams = useSearchParams()
@@ -14,6 +17,8 @@ export default function CommandDeck() {
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [taskId, setTaskId] = useState('')
+  const [analysis, setAnalysis] = useState<any>(null)
+  const [error, setError] = useState('')
 
   const domains: Record<string, any> = {
     legal: { name: 'Legal Intelligence', icon: '⚖️', color: 'from-blue-500 to-cyan-500' },
