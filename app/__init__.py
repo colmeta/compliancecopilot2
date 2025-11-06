@@ -102,6 +102,14 @@ def create_app(config_class=Config):
     except Exception as e:
         app.logger.error(f"❌ Could not load quick test routes: {e}")
     
+    # Instant Routes (FREE TIER OPTIMIZED)
+    try:
+        from .api.instant_routes import instant as instant_blueprint
+        app.register_blueprint(instant_blueprint)
+        app.logger.info("✅ Instant routes registered (FREE TIER)")
+    except Exception as e:
+        app.logger.error(f"❌ Could not load instant routes: {e}")
+    
     # Auth (Required)
     try:
         from .auth.routes import auth as auth_blueprint

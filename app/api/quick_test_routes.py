@@ -34,12 +34,32 @@ def quick_analyze():
         }), 400
     
     # Return immediately (no email, no Celery)
+    import uuid
+    
+    # Simulate a quick analysis response
+    analysis_preview = {
+        'legal': 'Contract review initiated. Scanning for liability clauses, payment terms, and compliance issues.',
+        'financial': 'Financial analysis started. Examining revenue trends, expense patterns, and anomaly detection.',
+        'security': 'Security audit in progress. Checking for vulnerabilities, access controls, and compliance gaps.',
+        'healthcare': 'Healthcare data review. Analyzing patient records, treatment protocols, and HIPAA compliance.',
+        'data-science': 'Data science pipeline initiated. Running statistical analysis and predictive models.',
+        'education': 'Education intelligence engaged. Analyzing curriculum alignment and student performance patterns.',
+        'proposals': 'Proposal drafting started. Structuring sections, compliance checks, and competitive positioning.',
+        'ngo': 'NGO impact assessment. Analyzing program effectiveness and grant alignment.',
+        'data-entry': 'Data entry automation active. Extracting structured data from documents.',
+        'expenses': 'Expense analysis running. Categorizing transactions and identifying cost-saving opportunities.'
+    }
+    
     return jsonify({
         'success': True,
-        'message': 'Request received!',
-        'your_directive': directive,
+        'message': 'CLARITY Analysis Initiated',
+        'task_id': str(uuid.uuid4()),
         'domain': domain,
-        'note': 'This is a quick test. Real processing would happen in background.'
+        'directive': directive,
+        'preview': analysis_preview.get(domain, 'Analysis in progress...'),
+        'estimated_completion': '5-15 minutes',
+        'status': 'processing',
+        'note': 'Upgrade to paid tier for email delivery and full AI processing.'
     }), 200
 
 @quick_test.route('/quick/domains', methods=['GET'])

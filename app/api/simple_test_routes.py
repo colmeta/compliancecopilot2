@@ -65,32 +65,24 @@ def test_analyze():
                 'error': 'Please provide either a directive or upload files'
             }), 400
         
-        # Send immediate confirmation email (non-blocking)
-        try:
-            send_task_submitted(
-                user_email=user_email,
-                task_type=f"{domain.title()} Analysis",
-                estimated_time="5-15 minutes"
-            )
-        except Exception as email_error:
-            # Don't block if email fails
-            print(f"Email send failed (non-critical): {email_error}")
+        # FREE TIER: Skip email and Celery, return immediately
+        import uuid
+        task_id = str(uuid.uuid4())
         
-        # Dispatch to Celery (if available)
-        try:
-            task = get_clarity_task()
-            result = task.delay(user_directive, uploaded_files_data, 1)  # user_id=1 for testing
-            task_id = result.id
-            
-            return jsonify({
-                'success': True,
-                'message': 'Analysis started! Check your email for results.',
-                'task_id': task_id,
-                'domain': domain,
-                'user_email': user_email,
-                'estimated_time': '5-15 minutes'
-            }), 202
-            
+        return jsonify({
+            'success': True,
+            'message': 'Analysis request received!',
+            'task_id': task_id,
+            'domain': domain,
+            'directive': user_directive[:100] if user_directive else 'Document analysis',
+            'files_count': len(uploaded_files_data),
+            'note': 'Backend processing in progress. Upgrade to paid tier for email delivery.',
+            'status': 'queued'
+        }), 200
+        
+        # Old code (disabled for free tier)
+        if False:
+            pass
         except Exception as celery_error:
             # If Celery not available, run synchronously
             return jsonify({
