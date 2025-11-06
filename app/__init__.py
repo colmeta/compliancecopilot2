@@ -39,7 +39,22 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     limiter.init_app(app)
     socketio.init_app(app, cors_allowed_origins="*")
-    CORS(app, origins=['*'])  # Allow all for now
+    
+    # CORS configuration for Vercel frontend
+    CORS(app, resources={
+        r"/*": {
+            "origins": [
+                "http://localhost:3000",  # Local development
+                "https://*.vercel.app",    # Vercel deployments
+                "https://clarity-frontend.vercel.app",  # Production frontend
+            ],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "expose_headers": ["Content-Range", "X-Content-Range"],
+            "supports_credentials": True,
+            "max_age": 3600
+        }
+    })
     
     # --- Configure Logging ---
     if not app.debug and not app.testing:
