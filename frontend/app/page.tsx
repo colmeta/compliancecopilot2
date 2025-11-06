@@ -459,7 +459,6 @@ export default function Home() {
                 <div className="text-amber-400 font-bold text-center py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 opacity-0 group-hover:opacity-100 transition-opacity">
                   Launch →
                 </div>
-              </div>
             </Link>
             ))}
           </div>

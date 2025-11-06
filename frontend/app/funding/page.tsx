@@ -195,7 +195,7 @@ export default function FundingEngine() {
     const categoryDocs = documentTypes.filter(d => d.category === category).map(d => d.id)
     setConfig({
       ...config,
-      selectedDocuments: [...new Set([...config.selectedDocuments, ...categoryDocs])]
+      selectedDocuments: Array.from(new Set([...config.selectedDocuments, ...categoryDocs]))
     })
   }
 
