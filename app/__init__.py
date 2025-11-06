@@ -128,10 +128,8 @@ def create_app(config_class=Config):
     
     # Funding Readiness Engine (NEW - Outstanding Edition)
     try:
-        from .api.funding_routes import funding_api as funding_blueprint
-        from .api.funding_interactive_routes import funding_interactive as funding_interactive_blueprint
+        from .api.funding_routes import funding as funding_blueprint
         app.register_blueprint(funding_blueprint)
-        app.register_blueprint(funding_interactive_blueprint)
         app.logger.info("✅ Funding Readiness Engine registered (Outstanding Edition)")
     except Exception as e:
         app.logger.warning(f"⚠️ Funding engine not available: {e}")

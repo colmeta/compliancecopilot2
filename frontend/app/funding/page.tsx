@@ -26,6 +26,10 @@ export default function FundingEngine() {
   })
   const [generationProgress, setGenerationProgress] = useState(0)
   const [generatedDocuments, setGeneratedDocuments] = useState<any[]>([])
+  const [userEmail, setUserEmail] = useState('')
+  const [taskId, setTaskId] = useState('')
+  const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const discoveryQuestions = [
     {
@@ -200,31 +204,74 @@ export default function FundingEngine() {
   }
 
   const handleGenerate = async () => {
-    setStep('generating')
-    setGenerationProgress(0)
-
-    // Simulate document generation with progress
-    const totalDocs = config.selectedDocuments.length
-    const docs: any[] = []
-
-    for (let i = 0; i < totalDocs; i++) {
-      // Simulate API call to backend
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      const docType = documentTypes.find(d => d.id === config.selectedDocuments[i])
-      docs.push({
-        id: config.selectedDocuments[i],
-        name: docType?.name,
-        status: 'complete',
-        url: '#', // This would be the real download URL from backend
-        preview: 'Generated with Outstanding Edition quality...'
+    // Validate email
+    if (!userEmail.trim()) {
+      setError('Please enter your email address')
+      return
+    }
+    if (!userEmail.includes('@') || !userEmail.includes('.')) {
+      setError('Please enter a valid email address')
+      return
+    }
+    
+    setError('')
+    setIsSubmitting(true)
+    
+    try {
+      // Call real backend API
+      const response = await fetch('https://veritas-engine-zae0.onrender.com/api/funding/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: userEmail,
+          discovery_answers: discoveryAnswers,
+          config: config
+        })
       })
 
-      setGenerationProgress(((i + 1) / totalDocs) * 100)
-    }
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`)
+      }
 
-    setGeneratedDocuments(docs)
-    setStep('results')
+      const result = await response.json()
+      
+      if (result.success) {
+        setTaskId(result.task_id)
+        setStep('generating')
+        setGenerationProgress(0)
+        
+        // Simulate progress for now (in production, would poll /status endpoint)
+        const totalDocs = config.selectedDocuments.length
+        const docs: any[] = []
+
+        for (let i = 0; i < totalDocs; i++) {
+          // Simulate API call to backend
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          
+          const docType = documentTypes.find(d => d.id === config.selectedDocuments[i])
+          docs.push({
+            id: config.selectedDocuments[i],
+            name: docType?.name,
+            status: 'complete',
+            url: '#',
+            preview: 'Generated with Outstanding Edition quality...'
+          })
+
+          setGenerationProgress(((i + 1) / totalDocs) * 100)
+        }
+
+        setGeneratedDocuments(docs)
+        setStep('results')
+      } else {
+        throw new Error(result.error || 'Generation failed')
+      }
+    } catch (err: any) {
+      console.error('Generation error:', err)
+      setError(err.message || 'Failed to connect to backend. Please try again.')
+      setIsSubmitting(false)
+    }
   }
 
   const getCategoryColor = (category: string) => {
@@ -485,14 +532,35 @@ export default function FundingEngine() {
               </div>
             </div>
 
+            {/* Email Collection */}
+            <div className="mb-8">
+              <label className="block text-white font-bold mb-3 text-lg">Where should we send your documents?</label>
+              <input
+                type="email"
+                value={userEmail}
+                onChange={(e) => setUserEmail(e.target.value)}
+                placeholder="your.email@company.com"
+                className="w-full px-6 py-4 bg-slate-800 border-2 border-slate-700 focus:border-amber-500 rounded-xl text-white text-lg transition-all focus:outline-none"
+              />
+              {error && (
+                <p className="mt-2 text-red-400 text-sm flex items-center gap-2">
+                  <span>⚠️</span>
+                  <span>{error}</span>
+                </p>
+              )}
+              <p className="mt-2 text-slate-400 text-sm">
+                📧 Your funding package will be emailed to this address when ready (5-15 minutes)
+              </p>
+            </div>
+
             {/* Generate Button */}
             <div className="text-center">
               <button
                 onClick={handleGenerate}
-                disabled={config.selectedDocuments.length === 0}
+                disabled={config.selectedDocuments.length === 0 || isSubmitting}
                 className="px-12 py-5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white text-xl font-black rounded-xl transition-all transform hover:scale-105 shadow-2xl"
               >
-                Generate {config.selectedDocuments.length} Documents 🚀
+                {isSubmitting ? 'Submitting...' : `Generate ${config.selectedDocuments.length} Documents 🚀`}
               </button>
               <p className="mt-4 text-slate-400 text-sm">Outstanding Edition • Deep Research • Human Touch</p>
             </div>
@@ -550,19 +618,39 @@ export default function FundingEngine() {
               <h1 className="text-4xl md:text-5xl font-black mb-4 text-white">
                 Your Funding Package is Ready!
               </h1>
-              <p className="text-xl text-slate-400 mb-6">
+              <p className="text-xl text-slate-400 mb-2">
                 {generatedDocuments.length} documents generated with Outstanding Edition quality
               </p>
+              <p className="text-lg text-green-400 mb-6">
+                📧 Check your email: <span className="font-bold">{userEmail}</span>
+              </p>
+              <div className="p-6 rounded-xl bg-blue-500/10 border border-blue-500/30 mb-6">
+                <p className="text-blue-300 text-center">
+                  <span className="font-bold">⚡ Free Tier:</span> Preview generated instantly. Your complete funding package with real AI-powered documents will be emailed within 5-15 minutes.
+                </p>
+                <p className="text-blue-400 text-sm text-center mt-2">
+                  Task ID: <code className="bg-slate-900/50 px-2 py-1 rounded">{taskId}</code>
+                </p>
+              </div>
               <div className="flex flex-wrap gap-3 justify-center">
-                <button className="px-6 py-3 bg-green-500 hover:bg-green-400 text-white font-bold rounded-xl transition-all">
+                <button 
+                  onClick={() => alert('Download feature available in paid tier. Check your email for full package!')}
+                  className="px-6 py-3 bg-green-500 hover:bg-green-400 text-white font-bold rounded-xl transition-all"
+                >
                   Download All as ZIP
                 </button>
-                <button className="px-6 py-3 bg-blue-500 hover:bg-blue-400 text-white font-bold rounded-xl transition-all">
-                  Email Package to Me
+                <button 
+                  onClick={() => alert(`Email will be sent to ${userEmail} when generation completes`)}
+                  className="px-6 py-3 bg-blue-500 hover:bg-blue-400 text-white font-bold rounded-xl transition-all"
+                >
+                  Resend Email
                 </button>
-                <button className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-all">
+                <a
+                  href={`mailto:nsubugacollin@gmail.com?subject=Refinement Request - Task ${taskId}&body=Please refine my funding package. Task ID: ${taskId}`}
+                  className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-all"
+                >
                   Request Refinement
-                </button>
+                </a>
               </div>
             </div>
 
