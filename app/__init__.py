@@ -71,6 +71,14 @@ def create_app(config_class=Config):
     except Exception as e:
         app.logger.error(f"❌ Could not load API routes: {e}")
     
+    # Simple Test Routes (NO AUTH - FOR TESTING)
+    try:
+        from .api.simple_test_routes import simple_test as simple_test_blueprint
+        app.register_blueprint(simple_test_blueprint)
+        app.logger.info("✅ Simple test routes registered (NO AUTH)")
+    except Exception as e:
+        app.logger.error(f"❌ Could not load simple test routes: {e}")
+    
     # Auth (Required)
     try:
         from .auth.routes import auth as auth_blueprint
