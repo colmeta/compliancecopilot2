@@ -425,8 +425,14 @@ export default function Home() {
               <Link
                 key={i}
                 href={domain.link || `/work?domain=${domain.domain}`}
-                className="group block p-8 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-amber-500/50 backdrop-blur-sm transition-all hover:transform hover:scale-105 hover:shadow-2xl cursor-pointer"
+                className="group block relative p-8 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-amber-500/50 backdrop-blur-sm transition-all hover:transform hover:scale-105 hover:shadow-2xl cursor-pointer"
               >
+                {/* LIVE Indicator */}
+                <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/20 border border-green-500/30">
+                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                  <span className="text-green-400 text-xs font-bold">LIVE</span>
+                </div>
+
                 <div className="text-5xl mb-4">{domain.icon}</div>
                 <h3 className="text-xl font-bold mb-3 text-white group-hover:text-amber-400 transition-colors">
                   {domain.title}
