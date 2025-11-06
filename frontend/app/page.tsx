@@ -580,7 +580,7 @@ export default function Home() {
                 </ul>
 
                 <Link
-                  href={plan.name === 'Enterprise' ? 'mailto:nsubugacollin@gmail.com?subject=Enterprise Demo Request' : '/dashboard'}
+                  href={plan.name === 'Enterprise' ? 'mailto:nsubugacollin@gmail.com?subject=Enterprise Demo Request' : '/work'}
                   className={`block w-full py-4 rounded-xl font-bold text-center transition-all ${
                     plan.popular
                       ? 'bg-amber-500 hover:bg-amber-400 text-slate-900 shadow-lg'
