@@ -42,23 +42,45 @@ export default function CommandDeck() {
   }
 
   const handleSubmit = async () => {
-    if (!directive.trim() && files.length === 0) {
-      alert('Please provide a directive or upload files')
+    if (!directive.trim()) {
+      alert('Please enter a directive')
       return
     }
 
     setSubmitting(true)
-
+    setError('')
+    
     try {
-      // TODO: Connect to backend API
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      // Call real backend API
+      const response = await fetch(`${BACKEND_URL}/instant/analyze`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          directive: directive,
+          domain: selectedDomain
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`)
+      }
+
+      const result = await response.json()
       
-      setSubmitted(true)
-      setTaskId(`task_${Date.now()}`)
-      setSubmitting(false)
-    } catch (error) {
-      console.error(error)
-      alert('Submission failed. Please try again.')
+      if (result.success) {
+        setTaskId(result.task_id)
+        setAnalysis(result.analysis)
+        setSubmitted(true)
+      } else {
+        throw new Error(result.error || 'Analysis failed')
+      }
+    } catch (err: any) {
+      console.error('Analysis error:', err)
+      setError(err.message || 'Failed to connect to backend')
+      alert(`Error: ${err.message}. Please try again.`)
+    } finally {
       setSubmitting(false)
     }
   }
@@ -77,32 +99,98 @@ export default function CommandDeck() {
           </div>
         </header>
 
-        <main className="max-w-3xl mx-auto px-4 py-20 text-center">
-          <div className="text-6xl mb-6">✅</div>
-          <h1 className="text-4xl md:text-5xl font-black mb-6 text-white">
-            Task Submitted Successfully!
-          </h1>
-          <p className="text-xl text-slate-300 mb-12">
-            Your <span className="text-amber-400 font-bold">{currentDomain.name}</span> analysis is being processed.
-          </p>
-
-          <div className="p-8 rounded-2xl bg-slate-800/50 border border-green-500/30 backdrop-blur-xl mb-8">
-            <p className="text-lg text-slate-300 mb-4">
-              <span className="text-green-400 font-bold">✅ You can close this browser!</span>
+        <main className="max-w-5xl mx-auto px-4 py-12">
+          {/* Success Header */}
+          <div className="text-center mb-12">
+            <div className="text-6xl mb-6">✅</div>
+            <h1 className="text-4xl md:text-5xl font-black mb-4 text-white">
+              Analysis Complete!
+            </h1>
+            <p className="text-xl text-slate-300">
+              <span className="text-amber-400 font-bold">{currentDomain.name}</span> instant preview is ready
             </p>
-            <p className="text-slate-400 mb-6">
-              We'll email you when your results are ready. This prevents browser timeouts and allows unlimited concurrent users.
-            </p>
-            <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/30">
-              <p className="text-blue-300 text-sm"><strong>Task ID:</strong> {taskId}</p>
-              <p className="text-blue-300 text-sm mt-2"><strong>Estimated Time:</strong> 5-15 minutes</p>
-            </div>
           </div>
 
+          {/* Analysis Results */}
+          {analysis && (
+            <div className="bg-slate-800/50 rounded-2xl p-8 border border-white/10 backdrop-blur-xl mb-8">
+              {/* Header */}
+              <div className="flex items-start justify-between mb-6 pb-6 border-b border-white/10">
+                <div className="flex-1">
+                  <h2 className="text-3xl font-bold text-white mb-3">{analysis.summary}</h2>
+                  <div className="flex items-center gap-4">
+                    <span className="text-slate-400">Confidence Score:</span>
+                    <span className="text-green-400 font-bold text-xl">{Math.round(analysis.confidence * 100)}%</span>
+                    <div className="flex-1 max-w-xs h-2 bg-slate-700 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-green-500 rounded-full transition-all duration-500"
+                        style={{ width: `${analysis.confidence * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Findings */}
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  <span>🔍</span> Key Findings
+                </h3>
+                <ul className="space-y-3">
+                  {analysis.findings.map((finding: string, index: number) => (
+                    <li key={index} className="flex items-start gap-3 p-4 rounded-lg bg-slate-900/50">
+                      <span className="text-blue-400 text-xl mt-0.5">•</span>
+                      <span className="text-slate-300">{finding}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Next Steps */}
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6 mb-8">
+                <h3 className="text-lg font-bold text-blue-300 mb-2 flex items-center gap-2">
+                  <span>📋</span> Recommended Next Steps
+                </h3>
+                <p className="text-slate-300">{analysis.next_steps}</p>
+              </div>
+
+              {/* Upgrade CTA */}
+              <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-xl p-8">
+                <div className="flex items-start gap-4">
+                  <div className="text-4xl">💎</div>
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-bold text-white mb-3">Upgrade for Full AI Analysis</h3>
+                    <p className="text-slate-300 mb-6">
+                      This is an <strong>instant preview</strong>. Get the full power of CLARITY with:
+                    </p>
+                    <div className="grid md:grid-cols-2 gap-3 mb-6">
+                      <div className="flex items-center gap-2 text-slate-300">
+                        <span className="text-green-400">✓</span> Real Google Gemini AI processing
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-300">
+                        <span className="text-green-400">✓</span> Document upload & OCR
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-300">
+                        <span className="text-green-400">✓</span> Email delivery of results
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-300">
+                        <span className="text-green-400">✓</span> Detailed reports & citations
+                      </div>
+                    </div>
+                    <button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg">
+                      Upgrade to Paid Tier →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/"
-              className="px-8 py-4 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-all"
+              className="px-8 py-4 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-all text-center"
             >
               ← Back to Home
             </Link>
@@ -112,17 +200,18 @@ export default function CommandDeck() {
                 setDirective('')
                 setFiles([])
                 setTaskId('')
+                setAnalysis(null)
               }}
-              className="px-8 py-4 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-xl transition-all"
+              className="px-8 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 font-bold rounded-xl transition-all"
             >
-              Submit Another Task
+              Analyze Another Task
             </button>
           </div>
 
-          <div className="mt-12 p-6 rounded-xl bg-amber-500/10 border border-amber-500/30">
-            <p className="text-amber-300 text-sm">
-              📧 <strong>Check your email</strong> for results<br/>
-              💡 <strong>Tip:</strong> Add noreply@claritypearl.com to your contacts
+          {/* Task ID */}
+          <div className="mt-8 text-center">
+            <p className="text-slate-500 text-sm">
+              Task ID: <span className="font-mono text-slate-400">{taskId}</span>
             </p>
           </div>
         </main>
