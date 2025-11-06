@@ -634,6 +634,127 @@ export default function Home() {
         </div>
       </section>
 
+      {/* API Documentation Section */}
+      <section id="api" className="relative py-32 px-4 bg-slate-900/95 border-y border-white/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-200 text-sm font-semibold mb-6">
+              <span>🔌</span>
+              <span>FOR DEVELOPERS</span>
+            </div>
+            <h2 className="text-4xl md:text-6xl font-black mb-6 text-white">
+              Integrate CLARITY<br/>
+              <span className="text-blue-400">Into Your Apps</span>
+            </h2>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+              RESTful API. 100ms response time. 99.9% uptime. Add enterprise-grade AI intelligence to your product in minutes.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            {/* API Features */}
+            <div className="p-8 rounded-2xl bg-slate-800/50 border border-blue-500/30">
+              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <span className="text-3xl">⚡</span>
+                Instant Intelligence
+              </h3>
+              <ul className="space-y-4">
+                <li className="flex items-start gap-3">
+                  <span className="text-blue-400 mt-1">✓</span>
+                  <div>
+                    <p className="text-white font-semibold">10 Specialized Domains</p>
+                    <p className="text-slate-400 text-sm">Legal, Financial, Security, Healthcare, and more</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-blue-400 mt-1">✓</span>
+                  <div>
+                    <p className="text-white font-semibold">RESTful JSON API</p>
+                    <p className="text-slate-400 text-sm">Simple POST requests, structured responses</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-blue-400 mt-1">✓</span>
+                  <div>
+                    <p className="text-white font-semibold">Sub-Second Response</p>
+                    <p className="text-slate-400 text-sm">Average 100ms for instant analysis</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-blue-400 mt-1">✓</span>
+                  <div>
+                    <p className="text-white font-semibold">Generous Rate Limits</p>
+                    <p className="text-slate-400 text-sm">1,000 requests/hour on Pro tier</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            {/* Code Example */}
+            <div className="p-8 rounded-2xl bg-slate-900 border border-slate-700">
+              <h3 className="text-xl font-bold text-white mb-4">Quick Start Example</h3>
+              <div className="bg-slate-950 p-4 rounded-lg overflow-x-auto">
+                <pre className="text-sm text-green-400 whitespace-pre-wrap">
+{`curl -X POST \\
+  https://veritas-engine-zae0.onrender.com/instant/analyze \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "directive": "Review contract for risks",
+    "domain": "legal"
+  }'
+
+# Response (< 100ms):
+{
+  "success": true,
+  "analysis": {
+    "summary": "Legal Intelligence Analysis",
+    "findings": [...],
+    "confidence": 0.85
+  }
+}`}
+                </pre>
+              </div>
+              <div className="mt-4 flex gap-3">
+                <Link 
+                  href="/docs"
+                  className="px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white font-bold rounded-lg transition-all text-sm"
+                >
+                  Full API Docs →
+                </Link>
+                <Link 
+                  href="/api-keys"
+                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-all text-sm"
+                >
+                  Get API Key
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Integration Examples */}
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="p-6 rounded-xl bg-slate-800/30 border border-slate-700/50">
+              <div className="text-3xl mb-3">🐍</div>
+              <h4 className="text-lg font-bold text-white mb-2">Python SDK</h4>
+              <p className="text-slate-400 text-sm mb-3">pip install clarity-ai</p>
+              <code className="text-xs text-green-400">clarity.analyze(directive, domain)</code>
+            </div>
+            <div className="p-6 rounded-xl bg-slate-800/30 border border-slate-700/50">
+              <div className="text-3xl mb-3">📜</div>
+              <h4 className="text-lg font-bold text-white mb-2">JavaScript SDK</h4>
+              <p className="text-slate-400 text-sm mb-3">npm install @clarity/sdk</p>
+              <code className="text-xs text-green-400">await clarity.analyze(...)</code>
+            </div>
+            <div className="p-6 rounded-xl bg-slate-800/30 border border-slate-700/50">
+              <div className="text-3xl mb-3">🤖</div>
+              <h4 className="text-lg font-bold text-white mb-2">Claude/Cursor MCP</h4>
+              <p className="text-slate-400 text-sm mb-3">Use from AI assistants</p>
+              <code className="text-xs text-green-400">"Use CLARITY to analyze..."</code>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA - The Close */}
       <section className="relative py-24 px-4">
         <div className="max-w-4xl mx-auto text-center">
