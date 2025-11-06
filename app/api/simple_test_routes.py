@@ -80,10 +80,9 @@ def test_analyze():
             'status': 'queued'
         }), 200
         
-        # Old code (disabled for free tier)
-        if False:
-            pass
-        except Exception as celery_error:
+        # Old code (disabled for free tier - kept for reference)
+    
+    except Exception as e:
             # If Celery not available, run synchronously
             return jsonify({
                 'success': True,
