@@ -298,8 +298,8 @@ export default function FundingEngine() {
             </div>
             <div className="text-xs text-slate-400 uppercase tracking-wider">by Clarity Pearl</div>
           </Link>
-          <Link href="/dashboard" className="text-slate-400 hover:text-amber-400 transition-colors">
-            ← Back to Dashboard
+          <Link href="/" className="text-slate-400 hover:text-amber-400 transition-colors">
+            ← Back to Home
           </Link>
         </div>
       </header>

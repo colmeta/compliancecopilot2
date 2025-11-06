@@ -1,0 +1,43 @@
+{
+  "name": "CLARITY Engine - Enterprise Intelligence Platform",
+  "short_name": "CLARITY",
+  "description": "Fortune 50 AI Intelligence Platform - Legal, Financial, Compliance & More",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#f59e0b",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "finance"],
+  "shortcuts": [
+    {
+      "name": "Command Deck",
+      "short_name": "Analyze",
+      "description": "Start analyzing documents",
+      "url": "/work",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Funding Engine",
+      "short_name": "Funding",
+      "description": "Generate funding documents",
+      "url": "/funding",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "API Docs",
+      "short_name": "API",
+      "description": "View API documentation",
+      "url": "/docs",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    }
+  ]
+}
