@@ -338,6 +338,7 @@ export default function Home() {
                 pain: 'Your lawyers bill $500/hour to find clauses.',
                 solution: 'CLARITY finds them in 30 seconds.',
                 features: 'Contract review • Compliance audit • Risk detection • Legal research',
+                live: true,
               },
               {
                 domain: 'financial',
