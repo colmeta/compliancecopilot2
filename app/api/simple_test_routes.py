@@ -65,12 +65,16 @@ def test_analyze():
                 'error': 'Please provide either a directive or upload files'
             }), 400
         
-        # Send immediate confirmation email
-        send_task_submitted(
-            user_email=user_email,
-            task_type=f"{domain.title()} Analysis",
-            estimated_time="5-15 minutes"
-        )
+        # Send immediate confirmation email (non-blocking)
+        try:
+            send_task_submitted(
+                user_email=user_email,
+                task_type=f"{domain.title()} Analysis",
+                estimated_time="5-15 minutes"
+            )
+        except Exception as email_error:
+            # Don't block if email fails
+            print(f"Email send failed (non-critical): {email_error}")
         
         # Dispatch to Celery (if available)
         try:

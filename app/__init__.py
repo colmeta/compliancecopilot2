@@ -94,6 +94,14 @@ def create_app(config_class=Config):
     except Exception as e:
         app.logger.error(f"❌ Could not load simple test routes: {e}")
     
+    # Quick Test Routes (INSTANT RESPONSE - NO EMAIL/CELERY)
+    try:
+        from .api.quick_test_routes import quick_test as quick_test_blueprint
+        app.register_blueprint(quick_test_blueprint)
+        app.logger.info("✅ Quick test routes registered (INSTANT)")
+    except Exception as e:
+        app.logger.error(f"❌ Could not load quick test routes: {e}")
+    
     # Auth (Required)
     try:
         from .auth.routes import auth as auth_blueprint
