@@ -55,10 +55,10 @@ export default function Home() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up delay-600">
             <Link 
-              href="/dashboard" 
+              href="/work" 
               className="px-8 py-4 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-xl transition-all transform hover:scale-105 hover:shadow-2xl text-lg"
             >
-              See CLARITY in Action →
+              Launch CLARITY Now →
             </Link>
             <a
               href="mailto:nsubugacollin@gmail.com"
@@ -332,6 +332,7 @@ export default function Home() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
+                domain: 'legal',
                 icon: '⚖️',
                 title: 'Legal Intelligence',
                 pain: 'Your lawyers bill $500/hour to find clauses.',
@@ -339,6 +340,7 @@ export default function Home() {
                 features: 'Contract review • Compliance audit • Risk detection • Legal research',
               },
               {
+                domain: 'financial',
                 icon: '💰',
                 title: 'Financial Intelligence',
                 pain: 'Financial close takes 2 weeks every quarter.',
@@ -346,6 +348,7 @@ export default function Home() {
                 features: 'Statement analysis • Forecasting • Anomaly detection • Audit prep',
               },
               {
+                domain: 'security',
                 icon: '🔐',
                 title: 'Security Intelligence',
                 pain: 'Breaches cost $4.5M on average.',
@@ -353,6 +356,7 @@ export default function Home() {
                 features: 'Threat assessment • Vulnerability scanning • Incident response • Compliance',
               },
               {
+                domain: 'healthcare',
                 icon: '🏥',
                 title: 'Healthcare Intelligence',
                 pain: 'Medical errors are the 3rd leading cause of death.',
@@ -360,6 +364,7 @@ export default function Home() {
                 features: 'Patient analysis • Treatment planning • Research synthesis • HIPAA compliance',
               },
               {
+                domain: 'data-science',
                 icon: '📊',
                 title: 'Data Science Engine',
                 pain: 'Hire a Visual Capitalist-level analyst for $200K/year?',
@@ -367,6 +372,7 @@ export default function Home() {
                 features: 'Presidential briefings • World Bank insights • IMF-grade forecasts • Data visualization',
               },
               {
+                domain: 'education',
                 icon: '🎓',
                 title: 'Education Intelligence',
                 pain: 'Accreditation reports take a YEAR to prepare.',
@@ -374,13 +380,16 @@ export default function Home() {
                 features: 'Curriculum analysis • Compliance mapping • Grant proposals • Student insights',
               },
               {
+                domain: 'funding',
                 icon: '📄',
                 title: 'Funding Readiness Engine',
                 pain: 'Great idea but no paperwork = No funding.',
                 solution: 'CLARITY generates 25+ investor-grade documents.',
                 features: 'Pitch decks • Business plans • Financial projections • Y-Combinator quality',
+                link: '/funding'
               },
               {
+                domain: 'proposals',
                 icon: '✍️',
                 title: 'Proposal Writing',
                 pain: 'Lose a $10M contract because you missed the deadline?',
@@ -388,6 +397,7 @@ export default function Home() {
                 features: 'RFP responses • Grant proposals • Partnership agreements • Tender documents',
               },
               {
+                domain: 'ngo',
                 icon: '🌍',
                 title: 'NGO & Impact Intelligence',
                 pain: 'Spend more time on paperwork than your mission.',
@@ -395,6 +405,7 @@ export default function Home() {
                 features: 'Grant proposals • Impact reports • Donor communications • Program evaluation',
               },
               {
+                domain: 'data-entry',
                 icon: '🏢',
                 title: 'Data Entry Automation',
                 pain: 'Pay data entry clerks $50K/year per person.',
@@ -402,6 +413,7 @@ export default function Home() {
                 features: '4-agent system • OCR extraction • Validation • Database loading',
               },
               {
+                domain: 'expenses',
                 icon: '💳',
                 title: 'Expense Management',
                 pain: 'Lost receipts, budget overruns, wasted spending.',
@@ -409,9 +421,10 @@ export default function Home() {
                 features: 'Receipt scanning • Expense tracking • Budget balancing • Cost reduction (30%+)',
               },
             ].map((domain, i) => (
-              <div
+              <Link
                 key={i}
-                className="group p-8 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-amber-500/50 backdrop-blur-sm transition-all hover:transform hover:scale-105 hover:shadow-2xl"
+                href={domain.link || `/work?domain=${domain.domain}`}
+                className="group block p-8 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-amber-500/50 backdrop-blur-sm transition-all hover:transform hover:scale-105 hover:shadow-2xl cursor-pointer"
               >
                 <div className="text-5xl mb-4">{domain.icon}</div>
                 <h3 className="text-xl font-bold mb-3 text-white group-hover:text-amber-400 transition-colors">
@@ -431,17 +444,23 @@ export default function Home() {
                 </div>
 
                 {/* Features */}
-                <p className="text-slate-400 text-sm leading-relaxed">
+                <p className="text-slate-400 text-sm leading-relaxed mb-4">
                   {domain.features}
                 </p>
+                
+                {/* Launch Button */}
+                <div className="text-amber-400 font-bold text-center py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Launch →
+                </div>
               </div>
+            </Link>
             ))}
           </div>
 
           {/* Call to Action */}
           <div className="mt-16 text-center">
             <Link
-              href="/dashboard"
+              href="/work"
               className="inline-block px-12 py-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 text-xl font-black rounded-xl transition-all transform hover:scale-105 shadow-2xl"
             >
               Stop Wasting Time. Start Using CLARITY →
@@ -623,7 +642,7 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link
-              href="/dashboard"
+              href="/work"
               className="px-10 py-5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 text-xl font-black rounded-xl transition-all transform hover:scale-105 shadow-2xl"
             >
               Launch CLARITY Now →
@@ -674,7 +693,7 @@ export default function Home() {
             <div>
               <h3 className="text-lg font-bold mb-4 text-white">Platform</h3>
               <div className="space-y-2">
-                <Link href="/dashboard" className="block text-slate-400 hover:text-amber-400 transition-colors">Dashboard</Link>
+                <Link href="/work" className="block text-slate-400 hover:text-amber-400 transition-colors">Command Deck</Link>
                 <Link href="/#features" className="block text-slate-400 hover:text-amber-400 transition-colors">All Domains</Link>
                 <Link href="/#pricing" className="block text-slate-400 hover:text-amber-400 transition-colors">Pricing</Link>
                 <a href={`${process.env.NEXT_PUBLIC_API_URL}/api/docs`} className="block text-slate-400 hover:text-amber-400 transition-colors">API Docs</a>
