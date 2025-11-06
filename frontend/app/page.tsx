@@ -408,13 +408,6 @@ export default function Home() {
                 solution: 'CLARITY tracks every dollar and finds savings.',
                 features: 'Receipt scanning • Expense tracking • Budget balancing • Cost reduction (30%+)',
               },
-              {
-                icon: '🚀',
-                title: 'Multi-LLM System',
-                pain: 'AI downtime = Your work stops.',
-                solution: 'CLARITY never fails. 4 AIs, instant failover.',
-                features: 'Gemini • GPT-4 • Claude • Groq • Intelligent routing • 99.9% uptime',
-              },
             ].map((domain, i) => (
               <div
                 key={i}

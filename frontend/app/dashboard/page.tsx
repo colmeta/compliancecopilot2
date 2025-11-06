@@ -3,10 +3,19 @@
 import { useState } from 'react'
 import Link from 'next/link'
 
+interface Domain {
+  id: string
+  name: string
+  icon: string
+  color: string
+  description: string
+  link?: string
+}
+
 export default function Dashboard() {
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null)
 
-  const domains = [
+  const domains: Domain[] = [
     { id: 'legal', name: 'Legal Intelligence', icon: '⚖️', color: 'from-blue-500 to-cyan-500', description: 'Contract analysis, compliance, legal research' },
     { id: 'financial', name: 'Financial Intelligence', icon: '💰', color: 'from-green-500 to-emerald-500', description: 'Financial modeling, forecasting, analysis' },
     { id: 'security', name: 'Security Intelligence', icon: '🔐', color: 'from-red-500 to-pink-500', description: 'Threat detection, vulnerability assessment' },
@@ -15,10 +24,9 @@ export default function Dashboard() {
     { id: 'education', name: 'Education Intelligence', icon: '🎓', color: 'from-indigo-500 to-blue-500', description: 'Curriculum analysis, accreditation reports' },
     { id: 'proposals', name: 'Proposal Writing', icon: '✍️', color: 'from-teal-500 to-cyan-500', description: 'RFPs, grants, tenders - Win every bid' },
     { id: 'ngo', name: 'NGO & Impact', icon: '🌍', color: 'from-lime-500 to-green-500', description: 'Grant proposals, impact reports' },
-    { id: 'funding', name: 'Funding Readiness', icon: '📄', color: 'from-yellow-500 to-amber-500', description: '25+ documents for investors' },
+    { id: 'funding', name: 'Funding Readiness', icon: '📄', color: 'from-yellow-500 to-amber-500', description: '25+ documents for investors', link: '/funding' },
     { id: 'data-entry', name: 'Data Entry Automation', icon: '🏢', color: 'from-slate-500 to-gray-500', description: 'Paper to insights instantly' },
     { id: 'expenses', name: 'Expense Management', icon: '💳', color: 'from-rose-500 to-red-500', description: 'Track spending, cut costs 30%+' },
-    { id: 'multi-llm', name: 'Multi-LLM System', icon: '🚀', color: 'from-violet-500 to-purple-500', description: '4 AI models, never fails' },
   ]
 
   return (
@@ -59,29 +67,50 @@ export default function Dashboard() {
 
         {/* Domains Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-          {domains.map((domain) => (
-            <button
-              key={domain.id}
-              onClick={() => setSelectedDomain(domain.id)}
-              className="group relative p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-blue-500/50 backdrop-blur-sm transition-all hover:transform hover:scale-105 hover:shadow-2xl text-left"
-            >
-              {/* Gradient overlay */}
-              <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${domain.color} opacity-0 group-hover:opacity-10 transition-opacity`}></div>
-              
-              <div className="relative z-10">
-                <div className="text-5xl mb-4">{domain.icon}</div>
-                <h3 className="text-xl font-bold mb-2 text-white group-hover:text-blue-400 transition-colors">
-                  {domain.name}
-                </h3>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  {domain.description}
-                </p>
-                <div className="mt-4 text-amber-400 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
-                  Launch →
+          {domains.map((domain) => {
+            const cardContent = (
+              <>
+                {/* Gradient overlay */}
+                <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${domain.color} opacity-0 group-hover:opacity-10 transition-opacity`}></div>
+                
+                <div className="relative z-10">
+                  <div className="text-5xl mb-4">{domain.icon}</div>
+                  <h3 className="text-xl font-bold mb-2 text-white group-hover:text-blue-400 transition-colors">
+                    {domain.name}
+                  </h3>
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    {domain.description}
+                  </p>
+                  <div className="mt-4 text-amber-400 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                    Launch →
+                  </div>
                 </div>
-              </div>
-            </button>
-          ))}
+              </>
+            )
+
+            // If domain has a link, render as Link, otherwise as button
+            if (domain.link) {
+              return (
+                <Link
+                  key={domain.id}
+                  href={domain.link}
+                  className="group relative p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-blue-500/50 backdrop-blur-sm transition-all hover:transform hover:scale-105 hover:shadow-2xl text-left block"
+                >
+                  {cardContent}
+                </Link>
+              )
+            }
+
+            return (
+              <button
+                key={domain.id}
+                onClick={() => setSelectedDomain(domain.id)}
+                className="group relative p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-blue-500/50 backdrop-blur-sm transition-all hover:transform hover:scale-105 hover:shadow-2xl text-left"
+              >
+                {cardContent}
+              </button>
+            )
+          })}
         </div>
 
         {/* Selected Domain Panel */}
