@@ -689,36 +689,44 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Platform */}
+            {/* Core Intelligence */}
             <div>
-              <h3 className="text-lg font-bold mb-4 text-white">Platform</h3>
+              <h3 className="text-lg font-bold mb-4 text-white">Core Intelligence</h3>
               <div className="space-y-2">
-                <Link href="/work" className="block text-slate-400 hover:text-amber-400 transition-colors">Command Deck</Link>
-                <Link href="/#features" className="block text-slate-400 hover:text-amber-400 transition-colors">All Domains</Link>
-                <Link href="/#pricing" className="block text-slate-400 hover:text-amber-400 transition-colors">Pricing</Link>
-                <a href={`${process.env.NEXT_PUBLIC_API_URL}/api/docs`} className="block text-slate-400 hover:text-amber-400 transition-colors">API Docs</a>
+                <Link href="/work?domain=legal" className="block text-slate-400 hover:text-amber-400 transition-colors text-sm">⚖️ Legal Intelligence</Link>
+                <Link href="/work?domain=financial" className="block text-slate-400 hover:text-amber-400 transition-colors text-sm">💰 Financial Intelligence</Link>
+                <Link href="/work?domain=security" className="block text-slate-400 hover:text-amber-400 transition-colors text-sm">🔒 Security Intelligence</Link>
+                <Link href="/work?domain=healthcare" className="block text-slate-400 hover:text-amber-400 transition-colors text-sm">🏥 Healthcare Intelligence</Link>
+                <Link href="/work?domain=data-science" className="block text-slate-400 hover:text-amber-400 transition-colors text-sm">📊 Data Science Engine</Link>
               </div>
             </div>
 
-            {/* Company */}
+            {/* Strategic Solutions */}
             <div>
-              <h3 className="text-lg font-bold mb-4 text-white">Company</h3>
+              <h3 className="text-lg font-bold mb-4 text-white">Strategic Solutions</h3>
               <div className="space-y-2">
-                <a href="mailto:nsubugacollin@gmail.com?subject=About Clarity Pearl" className="block text-slate-400 hover:text-amber-400 transition-colors">About</a>
-                <a href="mailto:nsubugacollin@gmail.com?subject=Partnership Inquiry" className="block text-slate-400 hover:text-amber-400 transition-colors">Partners</a>
-                <a href="mailto:nsubugacollin@gmail.com?subject=Careers at Clarity Pearl" className="block text-slate-400 hover:text-amber-400 transition-colors">Careers</a>
-                <a href="mailto:nsubugacollin@gmail.com?subject=Support Request" className="block text-slate-400 hover:text-amber-400 transition-colors">Support</a>
+                <Link href="/work?domain=proposals" className="block text-slate-400 hover:text-amber-400 transition-colors text-sm">✍️ Proposal Writing</Link>
+                <Link href="/work?domain=education" className="block text-slate-400 hover:text-amber-400 transition-colors text-sm">🎓 Education Intelligence</Link>
+                <Link href="/work?domain=ngo" className="block text-slate-400 hover:text-amber-400 transition-colors text-sm">🌍 NGO & Impact</Link>
+                <Link href="/work?domain=data-entry" className="block text-slate-400 hover:text-amber-400 transition-colors text-sm">📄 Data Entry Automation</Link>
+                <Link href="/work?domain=expenses" className="block text-slate-400 hover:text-amber-400 transition-colors text-sm">💳 Expense Management</Link>
               </div>
             </div>
           </div>
 
-          <div className="pt-8 border-t border-white/10 text-center">
-            <p className="text-slate-500 text-sm mb-4">
-              © 2025 Clarity Pearl. All rights reserved. 
-            </p>
-            <p className="text-slate-600 text-xs">
-              CLARITY Engine • Fortune 500 Grade Intelligence • Presidential-Level Analysis
-            </p>
+          <div className="pt-8 border-t border-white/10">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <p className="text-slate-500 text-sm">
+                © 2025 Clarity Pearl. All rights reserved.
+              </p>
+              <div className="flex items-center gap-6 text-slate-500 text-sm">
+                <span>10 Core Domains</span>
+                <span>•</span>
+                <span>100% Operational</span>
+                <span>•</span>
+                <span className="text-green-400">All Systems Live</span>
+              </div>
+            </div>
           </div>
         </div>
       </footer>
