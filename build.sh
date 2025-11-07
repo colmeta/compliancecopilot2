@@ -24,10 +24,22 @@ echo "✅ Environment variables validated"
 
 echo "📦 Installing System Dependencies (OCR, PDF processing)..."
 # Install Tesseract OCR (FREE - no credit card needed!)
-apt-get update -qq
-apt-get install -y tesseract-ocr tesseract-ocr-eng libtesseract-dev poppler-utils
+# Render uses Ubuntu and we have apt permissions in build phase
+echo "Installing tesseract-ocr..."
+apt-get update -qq || echo "⚠️  apt-get update failed, continuing..."
+apt-get install -y tesseract-ocr tesseract-ocr-eng libtesseract-dev poppler-utils || echo "⚠️  Some packages failed to install"
 
-echo "✅ Tesseract OCR installed (FREE tier ready!)"
+# Verify installation
+if command -v tesseract &> /dev/null; then
+    echo "✅ Tesseract OCR installed successfully!"
+    tesseract --version | head -1
+else
+    echo "❌ Tesseract installation FAILED - OCR will not work"
+    echo "📋 Checking available package managers..."
+    which apt-get || echo "No apt-get"
+    which yum || echo "No yum" 
+    which apk || echo "No apk"
+fi
 
 echo "📦 Installing Python Dependencies..."
 pip install -r requirements.txt
