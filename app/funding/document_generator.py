@@ -433,8 +433,6 @@ Create a comprehensive business plan with these sections:
 [Continue with all sections, using clear headers and subheaders]
 ...
 """
-            }
-            
             },
             
             'financial_projections': {
