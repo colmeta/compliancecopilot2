@@ -435,7 +435,672 @@ Create a comprehensive business plan with these sections:
 """
             }
             
-            # TODO: Add more document types (financial projections, go-to-market, etc.)
+            },
+            
+            'financial_projections': {
+                'name': '5-Year Financial Projections',
+                'category': 'financial',
+                'pages': 12,
+                'output_format': 'markdown',
+                'system_prompt': """You are a CFO who has raised $500M+ and knows exactly what investors scrutinize in financial projections.
+Your projections are:
+- Conservative yet ambitious (not hockey sticks, but growth is credible)
+- Bottom-up built (unit economics → revenue model → P&L)
+- Assumption-transparent (every number has a clear source)
+- Scenario-tested (best/base/worst case)
+- Milestone-linked (growth tied to product/team milestones)
+Think like you're presenting to Sequoia's financial diligence team.""",
+                'requirements': """
+Create comprehensive 5-year financial projections:
+
+1. Executive Summary of Financials (1 page)
+   - Key metrics overview
+   - Break-even timeline
+   - Capital requirements
+   
+2. Revenue Model (2 pages)
+   - Unit economics (CAC, LTV, payback period)
+   - Pricing strategy and justification
+   - Revenue streams breakdown
+   - Growth assumptions with sources
+   
+3. 5-Year P&L (2 pages)
+   - Revenue by year (with growth rates)
+   - Cost of goods sold
+   - Operating expenses breakdown
+   - EBITDA and net income
+   
+4. Cash Flow Statement (2 pages)
+   - Operating cash flow
+   - Capital expenditures
+   - Financing activities
+   - Cash runway analysis
+   
+5. Balance Sheet (2 pages)
+   - Assets (current and long-term)
+   - Liabilities
+   - Shareholder equity
+   
+6. Key Assumptions (2 pages)
+   - Market size and penetration rates
+   - Customer acquisition assumptions
+   - Pricing and churn assumptions
+   - Hiring plan and salary assumptions
+   
+7. Scenario Analysis (1 page)
+   - Best case (25% above base)
+   - Base case (most likely)
+   - Worst case (25% below base)
+   
+All numbers must be realistic, well-sourced, and defensible in investor meetings.
+""",
+                'format': """
+# 5-Year Financial Projections
+
+## Executive Summary
+[Key financial metrics and milestones]
+
+## Revenue Model
+### Unit Economics
+- Customer Acquisition Cost (CAC): $X
+- Lifetime Value (LTV): $Y
+- LTV/CAC Ratio: Z:1
+- Payback Period: N months
+
+### Revenue Streams
+[Detailed breakdown]
+
+## Year-by-Year Projections
+[Tables with all financials]
+
+[Continue with all sections]
+"""
+            },
+            
+            'go_to_market': {
+                'name': 'Go-to-Market Strategy',
+                'category': 'market',
+                'pages': 8,
+                'output_format': 'markdown',
+                'system_prompt': """You are a growth strategist who has launched 50+ successful products and knows the difference between a plan and a winning GTM strategy.
+Your GTM strategies are:
+- Channel-specific with clear playbooks
+- Metric-driven (know exactly what success looks like)
+- Phase-gated (crawl/walk/run approach)
+- Competitive-aware (how to win against incumbents)
+- Budget-realistic (ROI on every dollar spent)
+Think like you're advising a Series A company entering a competitive market.""",
+                'requirements': """
+Create a comprehensive go-to-market strategy:
+
+1. Market Entry Strategy (2 pages)
+   - Beachhead market (first customers)
+   - Expansion sequence (geographic/vertical)
+   - Positioning statement
+   - Differentiation strategy
+   
+2. Customer Acquisition Channels (3 pages)
+   - Primary channels (with expected CAC and conversion rates)
+   - Secondary channels
+   - Channel-specific tactics and playbooks
+   - Budget allocation by channel
+   
+3. Sales Strategy (2 pages)
+   - Sales process and cycle length
+   - Team structure and hiring plan
+   - Sales tools and enablement
+   - Key partnerships and alliances
+   
+4. Marketing Strategy (1 page)
+   - Brand positioning
+   - Content strategy
+   - Demand generation tactics
+   - PR and thought leadership plan
+   
+5. Success Metrics (1 page)
+   - Month-by-month targets (users, revenue, CAC)
+   - Leading indicators to track
+   - Pivot triggers (when to adjust)
+""",
+                'format': """
+# Go-to-Market Strategy
+
+## Market Entry
+### Beachhead Market
+[First target customer segment]
+
+### Positioning
+[How we position against competition]
+
+## Customer Acquisition
+[Detailed channel strategies]
+
+[Continue with all sections]
+"""
+            },
+            
+            'competitive_analysis': {
+                'name': 'Competitive Analysis & Market Positioning',
+                'category': 'market',
+                'pages': 6,
+                'output_format': 'markdown',
+                'system_prompt': """You are a competitive intelligence analyst who has helped companies win against giants like Amazon, Google, and Microsoft.
+Your competitive analyses are:
+- Brutally honest (acknowledge competitor strengths)
+- Strategically insightful (find the wedge to win)
+- Data-backed (market share, funding, customer reviews)
+- Forward-looking (where is the market going?)
+- Action-oriented (how to compete and win)
+Think like you're briefing a CEO before a board meeting.""",
+                'requirements': """
+Create comprehensive competitive analysis:
+
+1. Competitive Landscape (2 pages)
+   - Direct competitors (3-5 companies)
+   - Indirect competitors and substitutes
+   - Market positioning map
+   - Competitive matrix (features, pricing, strengths, weaknesses)
+   
+2. Competitor Deep Dives (2 pages)
+   - Each major competitor's strategy
+   - Their strengths (be honest)
+   - Their vulnerabilities (where we can win)
+   - Recent moves and funding
+   
+3. Our Competitive Advantages (1 page)
+   - Unique value proposition
+   - Sustainable moats (technology, network effects, etc.)
+   - Defensibility strategy
+   
+4. Market Trends & Opportunities (1 page)
+   - Industry trends favoring us
+   - Emerging opportunities
+   - Potential threats to monitor
+""",
+                'format': """
+# Competitive Analysis
+
+## Competitive Landscape
+[Market overview and key players]
+
+## Competitor Profiles
+### [Competitor 1]
+- **Strengths**: [Honest assessment]
+- **Weaknesses**: [Where we can win]
+- **Strategy**: [What they're doing]
+
+[Continue for all competitors]
+
+## Our Competitive Advantages
+[Clear differentiation]
+
+## Market Opportunities
+[Where we can win]
+"""
+            },
+            
+            'product_roadmap': {
+                'name': 'Product Roadmap & Development Plan',
+                'category': 'operations',
+                'pages': 6,
+                'output_format': 'markdown',
+                'system_prompt': """You are a Head of Product at a top tech company who has shipped products used by millions.
+Your product roadmaps are:
+- Customer-driven (tied to real pain points)
+- Milestone-based (clear success criteria)
+- Resource-realistic (achievable with available team)
+- Competitive-aware (feature parity where needed, innovation where possible)
+- Metric-focused (know how each feature moves KPIs)
+Think like you're presenting to a VP of Engineering and CEO.""",
+                'requirements': """
+Create a detailed product roadmap:
+
+1. Product Vision & Principles (1 page)
+   - Long-term product vision (3-5 years)
+   - Core product principles
+   - Success metrics
+   
+2. Current Product State (1 page)
+   - Features shipped
+   - User feedback and insights
+   - Technical debt and infrastructure
+   
+3. 18-Month Roadmap (3 pages)
+   - Quarters 1-2: MVP and core features
+   - Quarters 3-4: Scale and optimization
+   - Quarters 5-6: Advanced features and expansion
+   - Each feature with: rationale, user impact, success metrics, dependencies
+   
+4. Technical Infrastructure (1 page)
+   - Technology stack
+   - Scalability plan
+   - Security and compliance
+   - Key technical milestones
+""",
+                'format': """
+# Product Roadmap & Development Plan
+
+## Product Vision
+[3-5 year vision]
+
+## Current State
+[What we have today]
+
+## 18-Month Roadmap
+
+### Q1-Q2: Foundation
+**Feature 1: [Name]**
+- **Why**: [Customer pain point]
+- **Impact**: [Expected metrics]
+- **Timeline**: [Weeks]
+- **Resources**: [Team needs]
+
+[Continue for all features]
+
+## Technical Infrastructure
+[Stack and scalability plan]
+"""
+            },
+            
+            'team_bios': {
+                'name': 'Team Bios & Organizational Chart',
+                'category': 'operations',
+                'pages': 4,
+                'output_format': 'markdown',
+                'system_prompt': """You are a talent/HR executive who knows that investors invest in teams, not just ideas.
+Your team bios are:
+- Credibility-building (highlight relevant wins and expertise)
+- Story-driven (why this person, for this role, at this company)
+- Complementary (show how skills mesh together)
+- Ambitious (show ability to scale beyond current stage)
+- Human (show passion and cultural fit)
+Think like you're writing for a Sequoia partner evaluating team quality.""",
+                'requirements': """
+Create compelling team documentation:
+
+1. Team Overview (1 page)
+   - Team philosophy and culture
+   - Why this team will win
+   - Hiring plan for next 18 months
+   
+2. Founder Bios (1-2 pages)
+   - Background and relevant experience
+   - Previous wins and track record
+   - Why they're uniquely qualified for this
+   - Roles and responsibilities
+   - Personal motivation and story
+   
+3. Key Team Members (1 page)
+   - First 5-10 hires
+   - Their backgrounds and expertise
+   - What they bring to the company
+   
+4. Advisory Board (0.5 pages)
+   - Advisors and their expertise
+   - How they're helping the company
+   
+5. Organizational Chart (0.5 pages)
+   - Current structure
+   - 18-month projected structure
+""",
+                'format': """
+# Team Bios & Organizational Structure
+
+## Team Philosophy
+[Culture and values]
+
+## Founders
+
+### [Founder Name], CEO
+**Background**: [Education, previous roles]
+**Track Record**: [Key achievements]
+**Expertise**: [Relevant skills]
+**Why Now**: [Personal story and motivation]
+
+[Continue for all founders]
+
+## Key Team Members
+[Profiles of critical hires]
+
+## Advisory Board
+[Advisor profiles]
+
+## Organizational Chart
+[Current and projected structure]
+"""
+            },
+            
+            'market_research': {
+                'name': 'Market Research & Validation Report',
+                'category': 'market',
+                'pages': 10,
+                'output_format': 'markdown',
+                'system_prompt': """You are a market research analyst at McKinsey who has conducted 200+ market studies for Fortune 500 companies.
+Your market research is:
+- Data-driven (cite sources for every claim)
+- Segmentation-clear (TAM/SAM/SOM with bottom-up math)
+- Trend-aware (macro and micro trends)
+- Customer-validated (real customer insights, not assumptions)
+- Opportunity-focused (where the white space is)
+Think like you're presenting to a PE firm evaluating a $100M investment.""",
+                'requirements': """
+Create comprehensive market research:
+
+1. Market Size & Segmentation (3 pages)
+   - Total Addressable Market (TAM) - top-down and bottom-up
+   - Serviceable Addressable Market (SAM)
+   - Serviceable Obtainable Market (SOM)
+   - Market segments and sizing
+   - Sources for all numbers
+   
+2. Market Dynamics (2 pages)
+   - Growth rates and trends
+   - Key drivers and accelerators
+   - Market maturity and lifecycle stage
+   - Regulatory environment
+   
+3. Customer Analysis (3 pages)
+   - Target customer segments (3-5 personas)
+   - Customer needs and pain points
+   - Buying behavior and decision criteria
+   - Customer validation (interviews, surveys, pilot data)
+   
+4. Market Opportunities (2 pages)
+   - Underserved segments
+   - Emerging trends creating opportunities
+   - White space analysis
+   - Market entry barriers and how to overcome
+""",
+                'format': """
+# Market Research & Validation
+
+## Market Size
+
+### Total Addressable Market (TAM)
+**Top-Down**: $X billion
+- Source: [Industry report]
+- Calculation: [Show math]
+
+**Bottom-Up**: $Y billion
+- Unit economics: [Show math]
+- Number of potential customers: [Data]
+
+[Continue with SAM and SOM]
+
+## Market Dynamics
+[Trends and growth drivers]
+
+## Customer Analysis
+### Persona 1: [Name]
+- **Demographics**: [Profile]
+- **Pain Points**: [List]
+- **Validation**: [Customer quotes/data]
+
+[Continue for all sections]
+"""
+            },
+            
+            'risk_analysis': {
+                'name': 'Risk Analysis & Mitigation Strategy',
+                'category': 'operations',
+                'pages': 5,
+                'output_format': 'markdown',
+                'system_prompt': """You are a risk management consultant who has helped companies avoid $100M+ in losses.
+Your risk analyses are:
+- Comprehensive (identify all major risks)
+- Realistic (acknowledge probability and impact)
+- Actionable (specific mitigation strategies)
+- Monitored (how to track and respond)
+- Balanced (don't scare investors, but be honest)
+Think like you're advising a board on fiduciary responsibility.""",
+                'requirements': """
+Create comprehensive risk analysis:
+
+1. Market Risks (1.5 pages)
+   - Market adoption slower than expected
+   - Competitor moves
+   - Market dynamics shift
+   - Mitigation strategies for each
+   
+2. Operational Risks (1.5 pages)
+   - Team/talent risks
+   - Technology/product risks
+   - Supply chain/partnership risks
+   - Mitigation strategies
+   
+3. Financial Risks (1 page)
+   - Funding risks
+   - Unit economics worse than modeled
+   - Cash burn higher than projected
+   - Mitigation strategies
+   
+4. Regulatory & Legal Risks (0.5 pages)
+   - Compliance risks
+   - IP risks
+   - Liability risks
+   - Mitigation strategies
+   
+5. Risk Monitoring Framework (0.5 pages)
+   - Key risk indicators to track
+   - Response triggers
+   - Escalation procedures
+""",
+                'format': """
+# Risk Analysis & Mitigation Strategy
+
+## Market Risks
+
+### Risk 1: [Name]
+**Probability**: Low/Medium/High
+**Impact**: $X or [Description]
+**Indicators**: [Early warning signs]
+**Mitigation**: [Specific actions]
+**Contingency**: [If risk materializes]
+
+[Continue for all risk categories]
+
+## Risk Monitoring
+[Dashboard of key indicators]
+"""
+            },
+            
+            'impact_assessment': {
+                'name': 'Impact Assessment & Social Value',
+                'category': 'impact',
+                'pages': 6,
+                'output_format': 'markdown',
+                'system_prompt': """You are an impact measurement expert who has helped social enterprises secure $200M+ in funding from impact investors and foundations.
+Your impact assessments are:
+- Metric-rigorous (quantified outcomes, not just outputs)
+- Theory-driven (clear logic models)
+- Evidence-based (cite research and comparable programs)
+- Long-term focused (multi-year impact projections)
+- ROI-calculated (social return on investment)
+Think like you're presenting to Gates Foundation or Omidyar Network.""",
+                'requirements': """
+Create comprehensive impact assessment:
+
+1. Impact Thesis (1 page)
+   - Problem statement (scope and urgency)
+   - Theory of change
+   - Target beneficiaries
+   - Impact goals (3-5 year)
+   
+2. Impact Metrics (2 pages)
+   - Primary outcomes (lives changed, dollars saved, etc.)
+   - Secondary outcomes
+   - Leading indicators
+   - Measurement methodology
+   - Comparison to alternatives
+   
+3. Impact Projections (2 pages)
+   - Year 1-5 impact milestones
+   - Cumulative impact by end of 5 years
+   - Cost per outcome
+   - Social return on investment (SROI)
+   
+4. Impact Evidence (1 page)
+   - Pilot results
+   - Academic research supporting approach
+   - Case studies of similar programs
+   - Expert endorsements
+""",
+                'format': """
+# Impact Assessment & Social Value
+
+## Impact Thesis
+
+### The Problem
+[Scope, scale, urgency]
+
+### Our Solution
+[How we create impact]
+
+### Theory of Change
+Problem → Activity → Output → Outcome → Impact
+
+## Impact Metrics
+
+### Primary Outcomes
+- **Metric 1**: [Lives improved, dollars saved, etc.]
+  - Baseline: [Current state]
+  - Target Year 5: [Goal]
+  - Measurement: [How we track]
+
+[Continue for all metrics]
+
+## 5-Year Impact Projections
+[Detailed projections with methodology]
+
+## Impact Evidence
+[Pilot data, research, case studies]
+"""
+            },
+            
+            'investor_faq': {
+                'name': 'Investor FAQ & Due Diligence Pack',
+                'category': 'specialized',
+                'pages': 8,
+                'output_format': 'markdown',
+                'system_prompt': """You are a startup lawyer who has closed 500+ funding rounds and knows every question investors will ask.
+Your FAQs are:
+- Comprehensive (50+ common investor questions)
+- Transparent (honest about challenges)
+- Data-backed (specific numbers and evidence)
+- Forward-looking (address future plans)
+- Legally sound (reviewed and defensible)
+Think like you're prepping a founder for partner meetings at top VCs.""",
+                'requirements': """
+Create comprehensive investor FAQ:
+
+1. Company & Product (15 questions)
+   - What do you do? (elevator pitch)
+   - Why now?
+   - What's your unfair advantage?
+   - How does the product work?
+   - What's your IP strategy?
+   
+2. Market & Competition (15 questions)
+   - How big is the market?
+   - Who are your competitors?
+   - Why will you win?
+   - What's your go-to-market strategy?
+   - Who are your customers?
+   
+3. Business Model & Financials (15 questions)
+   - How do you make money?
+   - What's your pricing?
+   - What are unit economics?
+   - When will you be profitable?
+   - What's your burn rate?
+   
+4. Team & Operations (10 questions)
+   - Who's on the team?
+   - What's the hiring plan?
+   - Where are you based?
+   - What are key operational risks?
+   - What's your culture?
+   
+5. Fundraising & Use of Funds (10 questions)
+   - How much are you raising?
+   - What will you use it for?
+   - What milestones will you hit?
+   - When will you raise next?
+   - What's your exit strategy?
+   
+Each answer should be 2-4 sentences: concise but complete.
+""",
+                'format': """
+# Investor FAQ & Due Diligence
+
+## Company & Product
+
+**Q: What does [Company] do?**
+A: [Elevator pitch - 2-3 sentences]
+
+**Q: Why now? Why is this the right time?**
+A: [Market timing and catalysts]
+
+[Continue with all 65+ questions]
+"""
+            },
+            
+            'one_pager': {
+                'name': 'One-Page Investment Summary',
+                'category': 'core',
+                'pages': 1,
+                'output_format': 'markdown',
+                'system_prompt': """You are a venture partner who reviews 1,000 one-pagers per year and knows what makes investors say "tell me more" in 30 seconds.
+Your one-pagers are:
+- Punchy and scannable (busy investors, 30-second read)
+- Metric-heavy (numbers over words)
+- Urgency-creating (why invest NOW)
+- Team-credible (track record and expertise)
+- Vision-inspiring (why this matters)
+Think like you're competing for attention at a Demo Day with 50 other companies.""",
+                'requirements': """
+Create a compelling one-page summary:
+
+1. Header (company name, tagline, contact)
+2. The Problem (2-3 sentences, quantified)
+3. The Solution (2-3 sentences, what makes it unique)
+4. Market Opportunity (TAM/SAM/SOM in one line each)
+5. Traction (3-5 key metrics with growth rates)
+6. Business Model (one line: how you make money)
+7. Team (one line per founder: name, title, previous win)
+8. Competition (one line: how you're different)
+9. The Ask (amount, use of funds, milestones)
+10. Contact Info (email, phone, website)
+
+Must fit on ONE page when printed. Every word counts.
+""",
+                'format': """
+# [Company Name]
+**[One-line tagline that captures what you do]**
+
+**PROBLEM**: [2-3 sentences with quantified pain]
+
+**SOLUTION**: [2-3 sentences with unique value prop]
+
+**MARKET**: 
+- TAM: $X billion | SAM: $Y billion | SOM: $Z billion (Year 5)
+
+**TRACTION**:
+- $X MRR (Y% MoM growth) | Z customers | A% retention
+- [Other key metrics]
+
+**BUSINESS MODEL**: [One sentence]
+
+**TEAM**: 
+- [Name], CEO: [Previous win] | [Name], CTO: [Previous win]
+
+**COMPETITION**: [One sentence differentiation]
+
+**THE ASK**: Raising $X for [Y months runway] to [Z milestone]
+
+**CONTACT**: [Email] | [Phone] | [Website]
+"""
+            }
         }
         
         return templates.get(doc_id)

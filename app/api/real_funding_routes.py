@@ -131,43 +131,155 @@ def generate_real_funding_package():
 def list_available_funding_documents():
     """List all available document types"""
     documents = [
+        # Core Documents (Essential)
+        {
+            'id': 'one_pager',
+            'name': 'One-Page Investment Summary',
+            'category': 'core',
+            'description': 'Punchy 30-second read for busy investors',
+            'pages': 1,
+            'time_estimate': '2-3 minutes',
+            'quality': 'Demo Day / Y-Combinator Standard',
+            'ai_powered': True
+        },
         {
             'id': 'vision',
             'name': 'Vision & Mission Statement',
             'category': 'core',
-            'description': 'Inspiring vision and mission statements with core values',
+            'description': 'Inspiring vision and mission with core values',
             'pages': 2,
             'time_estimate': '3-5 minutes',
+            'quality': 'Fortune 500 Strategic Communications',
             'ai_powered': True
         },
         {
             'id': 'executive_summary',
             'name': 'Executive Summary',
             'category': 'core',
-            'description': '2-page investor-grade executive summary',
+            'description': '2-page investor-grade summary (opportunity, solution, traction, ask)',
             'pages': 2,
             'time_estimate': '3-5 minutes',
+            'quality': 'VC Partner Grade',
             'ai_powered': True
         },
         {
             'id': 'pitch_deck',
             'name': 'Investor Pitch Deck',
             'category': 'core',
-            'description': '15-slide professional pitch deck (Y-Combinator format)',
+            'description': '15-slide professional deck (Sequoia/a16z format)',
             'pages': 15,
             'time_estimate': '10-15 minutes',
+            'quality': 'Y-Combinator / Series A Standard',
             'ai_powered': True
         },
         {
             'id': 'business_plan',
             'name': 'Comprehensive Business Plan',
             'category': 'core',
-            'description': '40-page detailed business plan covering all aspects',
+            'description': '40-page detailed plan (market, product, operations, financials)',
             'pages': 40,
             'time_estimate': '20-30 minutes',
+            'quality': 'Harvard MBA / PE Firm Standard',
+            'ai_powered': True
+        },
+        
+        # Financial Documents
+        {
+            'id': 'financial_projections',
+            'name': '5-Year Financial Projections',
+            'category': 'financial',
+            'description': 'Complete P&L, cash flow, balance sheet with scenarios',
+            'pages': 12,
+            'time_estimate': '10-15 minutes',
+            'quality': 'CFO / Financial Diligence Grade',
+            'ai_powered': True
+        },
+        
+        # Market Documents
+        {
+            'id': 'market_research',
+            'name': 'Market Research & Validation',
+            'category': 'market',
+            'description': 'TAM/SAM/SOM, customer analysis, market dynamics',
+            'pages': 10,
+            'time_estimate': '10-15 minutes',
+            'quality': 'McKinsey / Market Research Standard',
+            'ai_powered': True
+        },
+        {
+            'id': 'competitive_analysis',
+            'name': 'Competitive Analysis',
+            'category': 'market',
+            'description': 'Competitor landscape, positioning, differentiation strategy',
+            'pages': 6,
+            'time_estimate': '5-10 minutes',
+            'quality': 'Competitive Intelligence Professional',
+            'ai_powered': True
+        },
+        {
+            'id': 'go_to_market',
+            'name': 'Go-to-Market Strategy',
+            'category': 'market',
+            'description': 'Customer acquisition channels, sales strategy, success metrics',
+            'pages': 8,
+            'time_estimate': '8-12 minutes',
+            'quality': 'Growth Strategist / Series A Standard',
+            'ai_powered': True
+        },
+        
+        # Operations Documents
+        {
+            'id': 'product_roadmap',
+            'name': 'Product Roadmap',
+            'category': 'operations',
+            'description': '18-month roadmap with features, milestones, tech stack',
+            'pages': 6,
+            'time_estimate': '5-10 minutes',
+            'quality': 'Head of Product / Tech Company Standard',
+            'ai_powered': True
+        },
+        {
+            'id': 'team_bios',
+            'name': 'Team Bios & Org Chart',
+            'category': 'operations',
+            'description': 'Founder profiles, key hires, advisory board',
+            'pages': 4,
+            'time_estimate': '5-8 minutes',
+            'quality': 'Executive Search / Sequoia Team Assessment',
+            'ai_powered': True
+        },
+        {
+            'id': 'risk_analysis',
+            'name': 'Risk Analysis & Mitigation',
+            'category': 'operations',
+            'description': 'Market, operational, financial risks with mitigation plans',
+            'pages': 5,
+            'time_estimate': '5-8 minutes',
+            'quality': 'Risk Management / Board Governance Standard',
+            'ai_powered': True
+        },
+        
+        # Impact & Specialized
+        {
+            'id': 'impact_assessment',
+            'name': 'Impact Assessment',
+            'category': 'impact',
+            'description': 'Social impact metrics, theory of change, SROI',
+            'pages': 6,
+            'time_estimate': '5-10 minutes',
+            'quality': 'Gates Foundation / Impact Investor Standard',
+            'ai_powered': True
+        },
+        {
+            'id': 'investor_faq',
+            'name': 'Investor FAQ',
+            'category': 'specialized',
+            'description': '65+ common investor questions with answers',
+            'pages': 8,
+            'time_estimate': '8-12 minutes',
+            'quality': 'Startup Attorney / Partner Meeting Prep',
             'ai_powered': True
         }
-        # TODO: Add more document types as they're built
     ]
     
     generator = get_document_generator()
