@@ -110,6 +110,14 @@ def create_app(config_class=Config):
     except Exception as e:
         app.logger.error(f"❌ Could not load instant routes: {e}")
     
+    # Email Test Routes (NO AUTH - FOR TESTING EMAIL)
+    try:
+        from .api.email_test_routes import email_test as email_test_blueprint
+        app.register_blueprint(email_test_blueprint)
+        app.logger.info("✅ Email test routes registered (TEST EMAIL)")
+    except Exception as e:
+        app.logger.error(f"❌ Could not load email test routes: {e}")
+    
     # Auth (Required)
     try:
         from .auth.routes import auth as auth_blueprint
