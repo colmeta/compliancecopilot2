@@ -182,6 +182,14 @@ def create_app(config_class=Config):
     except Exception as e:
         app.logger.error(f"❌ Could not load system check: {e}")
     
+    # Working Tests (Simple endpoints guaranteed to work)
+    try:
+        from .api.working_tests import working as working_blueprint
+        app.register_blueprint(working_blueprint)
+        app.logger.info("✅ Working test endpoints registered (SIMPLE TESTS)")
+    except Exception as e:
+        app.logger.error(f"❌ Could not load working tests: {e}")
+    
     # Auth (Required)
     try:
         from .auth.routes import auth as auth_blueprint
