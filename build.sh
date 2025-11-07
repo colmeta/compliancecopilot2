@@ -65,7 +65,17 @@ fi
 echo ""
 
 echo "📦 Installing Python Dependencies..."
-pip install -r requirements.txt
+echo "Installing critical document dependencies first..."
+pip install --no-cache-dir reportlab==4.0.7 python-pptx==0.6.23 markdown2==2.4.13 pytesseract==0.3.13 || echo "⚠️  Some dependencies failed"
+
+echo "Installing remaining dependencies..."
+pip install --no-cache-dir -r requirements.txt
+
+echo "📋 Verifying critical dependencies..."
+python3 -c "import reportlab; print('✅ reportlab installed')" || echo "❌ reportlab FAILED"
+python3 -c "import pptx; print('✅ python-pptx installed')" || echo "❌ python-pptx FAILED"
+python3 -c "import markdown2; print('✅ markdown2 installed')" || echo "❌ markdown2 FAILED"
+python3 -c "import pytesseract; print('✅ pytesseract installed')" || echo "❌ pytesseract FAILED"
 
 echo "🗄️ Running Database Migrations..."
 export FLASK_APP=run.py

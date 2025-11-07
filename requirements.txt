@@ -1,12 +1,12 @@
 setuptools
 
 # ==============================================================================
-# CRITICAL: These MUST install first for document generation
+# CRITICAL: Install these FIRST - explicitly specify to avoid conflicts
 # ==============================================================================
-reportlab>=4.0.0
-python-pptx>=0.6.23
-markdown2>=2.4.10
-pytesseract>=0.3.10
+reportlab==4.0.7
+python-pptx==0.6.23
+markdown2==2.4.13
+pytesseract==0.3.13
 
 # --- Web Server & Framework ---
 Flask
