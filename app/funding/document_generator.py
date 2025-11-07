@@ -1100,6 +1100,841 @@ Must fit on ONE page when printed. Every word counts.
 
 **CONTACT**: [Email] | [Phone] | [Website]
 """
+            },
+            
+            'term_sheet': {
+                'name': 'Sample Term Sheet',
+                'category': 'legal',
+                'pages': 4,
+                'output_format': 'markdown',
+                'system_prompt': """You are a startup attorney from Wilson Sonsini who has negotiated $10B+ in funding rounds.
+Your term sheets are:
+- Standard market terms (aligned with NVCA standards)
+- Founder-friendly where possible
+- Clear on governance and control
+- Realistic valuation guidance
+- Negotiation-ready
+Think like you're advising a founder on their first institutional round.""",
+                'requirements': """
+Create a sample term sheet:
+
+1. Deal Terms (1 page)
+   - Amount raised
+   - Pre-money valuation (guidance based on traction)
+   - Security type (SAFE, convertible, priced equity)
+   - Investor rights
+   
+2. Governance Terms (1 page)
+   - Board composition
+   - Voting rights
+   - Protective provisions
+   - Information rights
+   
+3. Economic Terms (1 page)
+   - Liquidation preference
+   - Anti-dilution protection
+   - Participation rights
+   - Vesting schedules
+   
+4. Other Provisions (1 page)
+   - Option pool
+   - Drag-along / tag-along rights
+   - Right of first refusal
+   - Conditions to closing
+""",
+                'format': """
+# Sample Term Sheet
+[Company Name] - [Funding Round]
+
+## Summary Terms
+- **Investment Amount**: $X million
+- **Pre-Money Valuation**: $Y million
+- **Security**: [Type]
+- **Lead Investor**: [To be determined]
+
+## Governance
+[Board seats, voting rights]
+
+## Economic Terms
+[Liquidation preferences, anti-dilution]
+
+[Continue with all sections]
+
+**Note**: This is a sample term sheet for discussion purposes. Consult with legal counsel before negotiating.
+"""
+            },
+            
+            'cap_table': {
+                'name': 'Capitalization Table & Ownership',
+                'category': 'legal',
+                'pages': 3,
+                'output_format': 'markdown',
+                'system_prompt': """You are a startup CFO who has managed cap tables through multiple funding rounds and exits.
+Your cap tables are:
+- Clear and easy to understand
+- Fully diluted (show all scenarios)
+- Round-by-round tracking
+- Option pool modeled
+- Exit scenario analysis
+Think like you're presenting to founders before a funding round.""",
+                'requirements': """
+Create a professional cap table:
+
+1. Current Ownership (1 page)
+   - Founders and employees
+   - Early investors (if any)
+   - Option pool
+   - Fully diluted shares
+   
+2. Pro Forma Post-Raise (1 page)
+   - After current fundraise
+   - Dilution impact on founders
+   - New investor ownership
+   - Updated option pool
+   
+3. Future Round Projections (1 page)
+   - Series A, B, C scenarios
+   - Expected dilution per round
+   - Founder ownership at exit
+   - Exit value scenarios
+""",
+                'format': """
+# Capitalization Table
+
+## Current Ownership (Pre-Raise)
+
+| Shareholder | Shares | % Ownership (FD) | Notes |
+|-------------|--------|------------------|-------|
+| Founder 1 | X | Y% | Fully vested |
+| Founder 2 | X | Y% | 4yr vest, 1yr cliff |
+| Employee Pool | X | Z% | Unallocated |
+| **Total** | X | 100% | |
+
+## Pro Forma (Post-This-Raise)
+[Table showing dilution after current round]
+
+## Future Scenarios
+[Projections for Series A, B, C]
+
+## Exit Value Scenarios
+[Founder take-home at different exit values]
+"""
+            },
+            
+            'operating_plan': {
+                'name': 'Operating Plan & Key Milestones',
+                'category': 'operations',
+                'pages': 5,
+                'output_format': 'markdown',
+                'system_prompt': """You are a COO who has scaled 3 companies from seed to IPO and knows exactly what matters operationally.
+Your operating plans are:
+- Milestone-focused (clear success criteria)
+- Resource-mapped (people, money, time for each goal)
+- Risk-aware (what could go wrong and Plan B)
+- Metric-tracked (OKRs and KPIs for accountability)
+- Investor-aligned (tied to funding milestones)
+Think like you're presenting to a board on quarterly goals.""",
+                'requirements': """
+Create a detailed operating plan:
+
+1. 18-Month Milestone Map (2 pages)
+   - Quarter-by-quarter goals
+   - Product milestones
+   - Customer/revenue milestones
+   - Team milestones
+   - Each with success criteria and dependencies
+   
+2. Resource Allocation (1 page)
+   - Headcount plan by quarter
+   - Budget allocation by function
+   - Capital expenditures
+   - Burn rate and runway
+   
+3. Key Performance Indicators (1 page)
+   - North star metric
+   - Product KPIs
+   - Sales/growth KPIs
+   - Operational KPIs
+   - Tracking and reporting cadence
+   
+4. Critical Path & Dependencies (1 page)
+   - What must happen first
+   - Parallel workstreams
+   - External dependencies (partnerships, funding, etc.)
+   - Risk factors and contingencies
+""",
+                'format': """
+# Operating Plan & Key Milestones
+
+## 18-Month Milestone Map
+
+### Q1 (Months 1-3)
+**Product**:
+- Milestone 1: [Specific goal]
+  - Success criteria: [Measurable]
+  - Resources: [Team, budget]
+  - Risk: [What could go wrong]
+
+**Growth**:
+- Milestone: [Customer/revenue goal]
+
+[Continue for all quarters]
+
+## Resource Allocation
+[Budget and headcount plan]
+
+## Key Performance Indicators
+[OKRs and tracking]
+
+## Critical Path
+[Dependencies and sequencing]
+"""
+            },
+            
+            'customer_case_studies': {
+                'name': 'Customer Case Studies & Testimonials',
+                'category': 'specialized',
+                'pages': 6,
+                'output_format': 'markdown',
+                'system_prompt': """You are a marketing strategist who has crafted case studies that close $100M+ in enterprise deals.
+Your case studies are:
+- Story-driven (challenge, solution, results)
+- Metric-heavy (quantified outcomes)
+- Quote-rich (customer voices)
+- Visual (before/after, charts)
+- Credibility-building (logo/name recognition)
+Think like you're creating sales collateral for a Fortune 500 enterprise sales team.""",
+                'requirements': """
+Create compelling customer case studies:
+
+1. Case Study Format (per customer):
+   - Customer Profile (company size, industry, challenge)
+   - The Challenge (quantified problem)
+   - The Solution (how your product helped)
+   - Implementation (timeline, process)
+   - Results (quantified outcomes with %)
+   - Customer Quote (authentic testimonial)
+   
+2. Create 3-5 Case Studies:
+   - Represent different customer segments
+   - Show different use cases
+   - Demonstrate ROI and value
+   - Include logos and names (if available) or anonymize
+
+3. Traction Summary:
+   - Total customers
+   - Retention rate
+   - Average customer satisfaction score
+   - Customer lifetime value
+""",
+                'format': """
+# Customer Case Studies & Testimonials
+
+## Case Study 1: [Customer Name/Type]
+
+### Customer Profile
+- **Industry**: [Industry]
+- **Size**: [Employee count, revenue]
+- **Challenge**: [Problem they faced]
+
+### The Challenge
+[Detailed problem description with quantified pain]
+
+### The Solution
+[How we helped]
+
+### Results
+- **Metric 1**: X% improvement
+- **Metric 2**: $Y saved
+- **Metric 3**: Z time reduction
+
+**Customer Quote**: "[Testimonial]" - [Name, Title]
+
+[Continue for 3-5 case studies]
+
+## Traction Summary
+[Overall customer metrics]
+"""
+            },
+            
+            'technology_ip': {
+                'name': 'Technology Stack & IP Strategy',
+                'category': 'specialized',
+                'pages': 5,
+                'output_format': 'markdown',
+                'system_prompt': """You are a CTO who has built scalable systems for 100M+ users and understands technical moats.
+Your technical documentation is:
+- Architecture-clear (how the system works)
+- Scalability-proven (can handle growth)
+- Security-rigorous (enterprise-grade)
+- IP-protected (patents, trade secrets, defensibility)
+- Competitive-aware (technical advantages)
+Think like you're presenting to a technical due diligence team at Google Ventures.""",
+                'requirements': """
+Create comprehensive technology documentation:
+
+1. Technology Stack (1 page)
+   - Frontend technologies
+   - Backend infrastructure
+   - Database and storage
+   - Third-party services
+   - Why these choices (scalability, cost, speed)
+   
+2. System Architecture (2 pages)
+   - High-level architecture diagram
+   - Key components and interactions
+   - Data flow
+   - Security measures
+   - Scalability approach
+   
+3. Intellectual Property (1 page)
+   - Patents (filed or planned)
+   - Proprietary algorithms
+   - Trade secrets
+   - IP strategy and defensibility
+   
+4. Technical Roadmap (1 page)
+   - Current capabilities
+   - Planned enhancements
+   - Technical debt management
+   - Infrastructure scaling milestones
+""",
+                'format': """
+# Technology Stack & IP Strategy
+
+## Technology Stack
+
+### Frontend
+- [Technologies and frameworks]
+- **Why**: [Reasoning]
+
+### Backend
+- [Technologies and infrastructure]
+- **Scalability**: [Can handle X users]
+
+[Continue for all stack components]
+
+## System Architecture
+[High-level design and key components]
+
+## Intellectual Property
+### Patents
+- [Patent 1]: [Status]
+- [Patent 2]: [Status]
+
+### Proprietary Technology
+- [Algorithm/process 1]
+- [Algorithm/process 2]
+
+## Technical Roadmap
+[Future technical milestones]
+"""
+            },
+            
+            'regulatory_compliance': {
+                'name': 'Regulatory & Compliance Strategy',
+                'category': 'legal',
+                'pages': 4,
+                'output_format': 'markdown',
+                'system_prompt': """You are a compliance officer who has navigated FDA approvals, GDPR, SOC2, and other complex regulatory frameworks.
+Your compliance strategies are:
+- Framework-specific (know exact requirements)
+- Timeline-realistic (how long it takes)
+- Cost-estimated (budget for compliance)
+- Risk-managed (what happens if non-compliant)
+- Competitive-aware (how compliance creates moat)
+Think like you're advising a healthtech or fintech startup on regulatory strategy.""",
+                'requirements': """
+Create regulatory compliance strategy:
+
+1. Regulatory Landscape (1 page)
+   - Applicable regulations (FDA, HIPAA, GDPR, etc.)
+   - Regulatory bodies
+   - Compliance requirements overview
+   
+2. Compliance Roadmap (2 pages)
+   - Phase 1: Minimum viable compliance
+   - Phase 2: Full compliance
+   - Phase 3: Certifications (SOC2, ISO, etc.)
+   - Timeline and milestones
+   - Budget requirements
+   
+3. Risk Management (0.5 pages)
+   - Non-compliance risks and penalties
+   - Mitigation strategies
+   - Insurance and indemnification
+   
+4. Competitive Advantage (0.5 pages)
+   - How compliance creates barriers to entry
+   - Regulatory moat
+   - Trust and credibility with customers
+""",
+                'format': """
+# Regulatory & Compliance Strategy
+
+## Regulatory Landscape
+[Applicable regulations and requirements]
+
+## Compliance Roadmap
+
+### Phase 1: Minimum Viable Compliance (Months 1-6)
+- **Requirement 1**: [What to achieve]
+  - Timeline: [Duration]
+  - Cost: $[Amount]
+  - Resources: [What's needed]
+
+[Continue for all phases]
+
+## Risk Management
+[Non-compliance risks and mitigation]
+
+## Competitive Advantage
+[How compliance helps us win]
+"""
+            },
+            
+            'sales_playbook': {
+                'name': 'Sales Playbook & Enablement',
+                'category': 'specialized',
+                'pages': 7,
+                'output_format': 'markdown',
+                'system_prompt': """You are a VP of Sales who has built sales teams from 0 to $100M ARR multiple times.
+Your sales playbooks are:
+- Process-defined (every step of the sales cycle)
+- Objection-ready (handle every common pushback)
+- Role-specific (SDR, AE, CSM responsibilities)
+- Metric-driven (conversion rates at every stage)
+- Tool-enabled (tech stack and automation)
+Think like you're onboarding your first 10 sales hires.""",
+                'requirements': """
+Create a comprehensive sales playbook:
+
+1. Sales Process (2 pages)
+   - Lead qualification (BANT/MEDDIC framework)
+   - Discovery call structure
+   - Demo/presentation guidelines
+   - Proposal and negotiation
+   - Contract and close
+   - Each stage with goals, duration, conversion rates
+   
+2. Ideal Customer Profile (1 page)
+   - Firmographic criteria
+   - Technographic criteria
+   - Behavioral signals
+   - Disqualification criteria
+   
+3. Value Proposition & Messaging (2 pages)
+   - Elevator pitch (30-second, 2-minute versions)
+   - Key differentiators
+   - Competitive positioning
+   - Common objections and responses
+   - ROI calculator/business case template
+   
+4. Sales Tools & Enablement (1 page)
+   - CRM and sales stack
+   - Sales collateral (decks, one-pagers, case studies)
+   - Training and onboarding
+   - Compensation and quota structure
+   
+5. Success Metrics (1 page)
+   - Pipeline coverage
+   - Conversion rates by stage
+   - Average deal size and cycle length
+   - CAC and LTV targets
+""",
+                'format': """
+# Sales Playbook & Enablement
+
+## Sales Process
+
+### Stage 1: Lead Qualification
+**Goal**: [Objective]
+**Duration**: [Days]
+**Conversion Rate**: [%]
+**Activities**:
+- [Activity 1]
+- [Activity 2]
+**Exit Criteria**: [When to advance]
+
+[Continue for all stages]
+
+## Ideal Customer Profile
+[Detailed ICP definition]
+
+## Value Proposition
+### 30-Second Pitch
+[Elevator pitch]
+
+### Common Objections
+**Objection 1**: "[Quote]"
+**Response**: [How to handle]
+
+[Continue for all sections]
+"""
+            },
+            
+            'customer_acquisition': {
+                'name': 'Customer Acquisition Playbook',
+                'category': 'market',
+                'pages': 8,
+                'output_format': 'markdown',
+                'system_prompt': """You are a growth marketer who has scaled 5 companies from $0 to $100M+ ARR using data-driven acquisition strategies.
+Your acquisition playbooks are:
+- Channel-specific with proven tactics
+- Metric-obsessed (CAC, LTV, payback by channel)
+- Budget-optimized (ROI on every dollar)
+- Experiment-driven (test, measure, scale)
+- Full-funnel (awareness → conversion → retention)
+Think like you're advising a Series A VP of Growth.""",
+                'requirements': """
+Create customer acquisition playbook:
+
+1. Channel Strategy (4 pages)
+   - Primary channels (3-5 with detailed playbooks)
+     * Content marketing (SEO, blog strategy)
+     * Paid advertising (Google, Facebook, LinkedIn)
+     * Sales outreach (cold email, LinkedIn)
+     * Partnerships and integrations
+     * Community and word-of-mouth
+   - For each channel: tactics, budget, expected CAC, timeline
+   
+2. Funnel Metrics (2 pages)
+   - Awareness → Consideration → Trial → Purchase
+   - Conversion rates at each stage
+   - Optimization opportunities
+   - Benchmarks and goals
+   
+3. Budget Allocation (1 page)
+   - Month-by-month spend by channel
+   - Expected customer acquisition
+   - CAC trends over time
+   - Breakeven point
+   
+4. Experimentation Framework (1 page)
+   - Testing methodology
+   - Key experiments to run
+   - Success criteria
+   - Scale or kill decision framework
+""",
+                'format': """
+# Customer Acquisition Playbook
+
+## Channel Strategy
+
+### Channel 1: [Name]
+**Budget**: $X/month
+**Expected CAC**: $Y
+**Expected Customers**: Z/month
+**Payback Period**: N months
+
+**Tactics**:
+1. [Specific tactic]
+   - How: [Process]
+   - Resources: [What's needed]
+   - Timeline: [When]
+   - Success metrics: [How to measure]
+
+[Continue for all channels]
+
+## Funnel Metrics
+[Detailed conversion funnel]
+
+## Budget & Projections
+[Monthly acquisition plan]
+"""
+            },
+            
+            'partnership_strategy': {
+                'name': 'Partnership & Alliance Strategy',
+                'category': 'specialized',
+                'pages': 5,
+                'output_format': 'markdown',
+                'system_prompt': """You are a VP of Business Development who has closed 100+ strategic partnerships worth $500M+ in combined value.
+Your partnership strategies are:
+- Strategic (clear value exchange)
+- Prioritized (focus on highest-impact partners)
+- Structured (standard deal terms and processes)
+- Success-measured (metrics for partnership performance)
+- Relationship-driven (long-term thinking)
+Think like you're presenting a BD plan to a CEO.""",
+                'requirements': """
+Create partnership strategy:
+
+1. Partnership Thesis (1 page)
+   - Why partnerships matter for growth
+   - Types of partnerships (distribution, technology, co-marketing)
+   - Target partner profile
+   
+2. Priority Partner List (2 pages)
+   - Top 10 target partners
+   - Why each partner (strategic rationale)
+   - What we offer them (value prop)
+   - What we gain (expected impact)
+   - Approach strategy for each
+   
+3. Partnership Structure (1 page)
+   - Standard deal terms
+   - Revenue share models
+   - Co-marketing commitments
+   - SLA and performance metrics
+   
+4. Execution Plan (1 page)
+   - Outreach and pitching process
+   - Legal and contracting
+   - Onboarding and enablement
+   - Success metrics and governance
+""",
+                'format': """
+# Partnership & Alliance Strategy
+
+## Partnership Thesis
+[Why partnerships are critical]
+
+## Priority Partners
+
+### Partner 1: [Company Name]
+**Why**: [Strategic rationale]
+**We Offer**: [Value to them]
+**We Gain**: [Value to us]
+**Approach**: [How to reach them]
+**Expected Impact**: [Metrics]
+
+[Continue for all priority partners]
+
+## Deal Structure
+[Standard terms and models]
+
+## Execution Plan
+[How to close and manage partnerships]
+"""
+            },
+            
+            'hiring_plan': {
+                'name': 'Hiring Plan & Talent Strategy',
+                'category': 'operations',
+                'pages': 5,
+                'output_format': 'markdown',
+                'system_prompt': """You are a Head of People who has built teams from 5 to 500 employees at successful startups.
+Your hiring plans are:
+- Role-specific (exact job descriptions and requirements)
+- Timeline-realistic (how long to recruit and onboard)
+- Compensation-competitive (market rates by role and location)
+- Culture-focused (values and cultural fit)
+- Retention-oriented (not just hiring, but keeping talent)
+Think like you're presenting a people strategy to a board.""",
+                'requirements': """
+Create comprehensive hiring plan:
+
+1. Hiring Roadmap (2 pages)
+   - Quarter-by-quarter hiring plan (next 18 months)
+   - Role, level, start date, compensation
+   - Total headcount by quarter
+   - Organizational evolution
+   
+2. Key Roles (2 pages)
+   - First 10-15 critical hires
+   - For each role:
+     * Job title and level
+     * Responsibilities
+     * Requirements (experience, skills)
+     * Why critical for company success
+     * Compensation range
+     * Timeline to hire
+   
+3. Talent Strategy (0.5 pages)
+   - Sourcing channels
+   - Employer brand and value prop
+   - Diversity and inclusion commitments
+   - Remote/hybrid policy
+   
+4. Retention & Culture (0.5 pages)
+   - Equity and compensation philosophy
+   - Performance management
+   - Career development
+   - Culture-building initiatives
+""",
+                'format': """
+# Hiring Plan & Talent Strategy
+
+## 18-Month Hiring Roadmap
+
+### Q1 Hires
+| Role | Level | Start Date | Comp | Why Critical |
+|------|-------|------------|------|--------------|
+| VP Engineering | Senior | Month 2 | $200K + equity | Scale product team |
+| Sales Lead | Mid | Month 3 | $150K + commission | Launch sales motion |
+
+[Continue for all quarters]
+
+## Key Role Details
+
+### Role 1: VP of Engineering
+**Responsibilities**:
+- [Key responsibility 1]
+- [Key responsibility 2]
+
+**Requirements**:
+- [Requirement 1]
+- [Requirement 2]
+
+**Compensation**: $X base + Y% equity
+**Why Critical**: [Impact on company]
+
+[Continue for all roles]
+
+## Talent Strategy
+[Sourcing and retention approach]
+"""
+            },
+            
+            'financial_model': {
+                'name': 'Financial Model (Spreadsheet)',
+                'category': 'financial',
+                'pages': 1,
+                'output_format': 'markdown',
+                'system_prompt': """You are a financial modeler who has built models for 200+ startups that raised $2B+ combined.
+Your models are:
+- Assumption-driven (every number links to assumptions sheet)
+- Scenario-tested (best/base/worst with sensitivities)
+- Monthly granular (not just annual)
+- Bottom-up built (unit economics → revenue → P&L)
+- Dashboard-visual (KPIs at a glance)
+Think like you're building a model for a Series B company preparing for IPO.""",
+                'requirements': """
+Create a comprehensive financial model structure:
+
+Note: This will be markdown instructions for building the Excel model.
+
+1. Assumptions Sheet
+   - All key assumptions (pricing, growth rates, costs, etc.)
+   - Sources for each assumption
+   - Sensitivity analysis toggles
+   
+2. Revenue Model
+   - Unit economics by product/service
+   - Customer cohorts and growth
+   - Monthly recurring revenue buildup
+   - Churn and expansion revenue
+   
+3. P&L (5 years, monthly detail)
+   - Revenue by stream
+   - COGS
+   - Operating expenses by category
+   - EBITDA and net income
+   
+4. Cash Flow
+   - Operating activities
+   - CapEx
+   - Financing
+   - Cash balance and runway
+   
+5. Balance Sheet
+   - Assets, liabilities, equity
+   
+6. KPI Dashboard
+   - ARR, MRR growth
+   - Burn rate, months of runway
+   - CAC, LTV, gross margin
+   - Rule of 40
+""",
+                'format': """
+# Financial Model Structure
+
+## Sheet 1: Assumptions
+[List all assumptions with sources]
+
+## Sheet 2: Unit Economics
+[Customer economics breakdown]
+
+## Sheet 3: Revenue Buildup
+[Monthly revenue model]
+
+## Sheet 4: P&L (60 months)
+[Detailed P&L]
+
+## Sheet 5: Cash Flow
+[Cash flow projections]
+
+## Sheet 6: Balance Sheet
+[Balance sheet projections]
+
+## Sheet 7: Dashboard
+[Key metrics visualization]
+
+**Note**: This is a template structure. Requires Excel/Google Sheets implementation.
+"""
+            },
+            
+            'board_deck': {
+                'name': 'Board Meeting Deck Template',
+                'category': 'specialized',
+                'pages': 12,
+                'output_format': 'markdown',
+                'system_prompt': """You are a CEO who has presented to boards 100+ times and knows exactly what directors need to see.
+Your board decks are:
+- Metrics-driven (all key numbers visible)
+- Issue-focused (raise problems early)
+- Action-oriented (clear asks and decisions)
+- Forward-looking (not just historical)
+- Time-respecting (scannable in 30 minutes)
+Think like you're presenting to Benchmark Capital or Andreessen Horowitz board members.""",
+                'requirements': """
+Create a board meeting deck template:
+
+1. Executive Summary (1 slide)
+   - Headline metrics
+   - Key wins
+   - Key challenges
+   - Decisions needed
+   
+2. Business Performance (4 slides)
+   - Revenue (actual vs plan)
+   - Key metrics dashboard (ARR, MRR, churn, CAC, LTV)
+   - Customer growth and retention
+   - Product usage and engagement
+   
+3. Strategic Initiatives (3 slides)
+   - Current quarter priorities
+   - Progress on key initiatives
+   - Upcoming plans (next quarter)
+   
+4. Financials (2 slides)
+   - P&L actual vs budget
+   - Cash position and burn
+   - Fundraising status/plans
+   
+5. Team & Operations (1 slide)
+   - Headcount and hiring
+   - Key wins and challenges
+   - Culture initiatives
+   
+6. Ask (1 slide)
+   - Decisions needed from board
+   - Help/intros needed
+   - Upcoming board requests
+""",
+                'format': """
+# Board Meeting Deck - [Date]
+
+## Slide 1: Executive Summary
+**Headline Metrics**:
+- ARR: $X (+Y% QoQ)
+- Customers: Z (+A this quarter)
+- Cash: $B (N months runway)
+
+**Key Wins This Quarter**:
+- [Win 1]
+- [Win 2]
+
+**Key Challenges**:
+- [Challenge 1]
+- [Challenge 2]
+
+**Board Asks**:
+- [Decision/help needed]
+
+[Continue for all slides with clear structure]
+"""
             }
         }
         
