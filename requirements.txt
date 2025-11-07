@@ -1,4 +1,13 @@
 setuptools
+
+# ==============================================================================
+# CRITICAL: These MUST install first for document generation
+# ==============================================================================
+reportlab>=4.0.0
+python-pptx>=0.6.23
+markdown2>=2.4.10
+pytesseract>=0.3.10
+
 # --- Web Server & Framework ---
 Flask
 Flask-CORS
