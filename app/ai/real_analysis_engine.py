@@ -61,15 +61,17 @@ class RealAnalysisEngine:
         # Get domain-specific prompt
         system_prompt = self._get_domain_prompt(domain)
         
-        # Build full prompt
+        # Build full prompt (avoid f-string backslash - Python 3.11 compatibility)
+        doc_section = ""
+        if document_content:
+            doc_section = "DOCUMENT CONTENT:\n" + document_content + "\n\n"
+        
         user_prompt = f"""
 DIRECTIVE: {directive}
 
 DOMAIN: {domain}
 
-{f"DOCUMENT CONTENT:\n{document_content}\n" if document_content else ""}
-
-Please provide a comprehensive analysis with:
+{doc_section}Please provide a comprehensive analysis with:
 1. Executive Summary (2-3 sentences)
 2. Key Findings (bullet points, specific and actionable)
 3. Risk Assessment (if applicable)
@@ -81,8 +83,9 @@ Be specific, cite evidence, and provide actionable insights.
         
         try:
             # Call Gemini API
+            full_prompt = system_prompt + "\n\n" + user_prompt
             response = self.model.generate_content(
-                f"{system_prompt}\n\n{user_prompt}",
+                full_prompt,
                 generation_config={
                     'temperature': 0.3,  # Lower = more focused
                     'top_p': 0.8,
