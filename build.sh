@@ -23,23 +23,46 @@ fi
 echo "✅ Environment variables validated"
 
 echo "📦 Installing System Dependencies (OCR, PDF processing)..."
-# Install Tesseract OCR (FREE - no credit card needed!)
-# Render uses Ubuntu and we have apt permissions in build phase
-echo "Installing tesseract-ocr..."
-apt-get update -qq || echo "⚠️  apt-get update failed, continuing..."
-apt-get install -y tesseract-ocr tesseract-ocr-eng libtesseract-dev poppler-utils || echo "⚠️  Some packages failed to install"
 
-# Verify installation
-if command -v tesseract &> /dev/null; then
-    echo "✅ Tesseract OCR installed successfully!"
-    tesseract --version | head -1
+# Check if we have sudo (Render's build environment)
+if command -v sudo &> /dev/null; then
+    echo "Using sudo for system package installation..."
+    SUDO="sudo"
 else
-    echo "❌ Tesseract installation FAILED - OCR will not work"
-    echo "📋 Checking available package managers..."
-    which apt-get || echo "No apt-get"
-    which yum || echo "No yum" 
-    which apk || echo "No apk"
+    echo "Running without sudo..."
+    SUDO=""
 fi
+
+# Try to install Tesseract
+echo "Installing tesseract-ocr and dependencies..."
+$SUDO apt-get update -qq 2>&1 | grep -v "^Get:" || true
+$SUDO apt-get install -y \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+    libtesseract-dev \
+    poppler-utils \
+    2>&1 | grep -E "(Setting up|done|Unpacking)" || true
+
+# Verify Tesseract installation
+echo ""
+echo "📋 Verifying installations..."
+if command -v tesseract &> /dev/null; then
+    TESSERACT_VERSION=$(tesseract --version 2>&1 | head -1)
+    echo "✅ Tesseract: $TESSERACT_VERSION"
+else
+    echo "❌ Tesseract: NOT FOUND"
+    echo "⚠️  OCR features will be limited"
+fi
+
+# Verify poppler (PDF processing)
+if command -v pdfinfo &> /dev/null; then
+    POPPLER_VERSION=$(pdfinfo -v 2>&1 | head -1)
+    echo "✅ Poppler: $POPPLER_VERSION"
+else
+    echo "❌ Poppler: NOT FOUND"
+fi
+
+echo ""
 
 echo "📦 Installing Python Dependencies..."
 pip install -r requirements.txt
