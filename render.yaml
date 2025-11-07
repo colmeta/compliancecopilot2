@@ -45,5 +45,5 @@ services:
       - key: ENABLE_EMAIL_DELIVERY
         value: true
     
-    # Health check
-    healthCheckPath: /ocr/health
+    # Health check (simple path that responds instantly)
+    healthCheckPath: /health
