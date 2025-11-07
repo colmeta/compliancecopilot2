@@ -250,7 +250,7 @@ class AnalyticsSnapshot(db.Model):
     date = db.Column(db.Date, nullable=False, index=True)
     metric_name = db.Column(db.String(100), nullable=False, index=True)
     value = db.Column(db.Float, nullable=False)
-    metadata = db.Column(db.Text, nullable=True)  # JSON for additional context
+    extra_context = db.Column(db.Text, nullable=True)  # JSON for additional context (renamed from 'metadata' - SQLAlchemy reserved)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     
     # Relationship to user
