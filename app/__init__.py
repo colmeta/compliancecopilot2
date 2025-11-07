@@ -150,6 +150,22 @@ def create_app(config_class=Config):
     except Exception as e:
         app.logger.error(f"❌ Could not load OCR routes: {e}")
     
+    # Expense Management (Scan receipts, track spending, optimize costs)
+    try:
+        from .api.expense_routes import expense_bp as expense_blueprint
+        app.register_blueprint(expense_blueprint)
+        app.logger.info("✅ Expense management registered (Receipt scanning + Analytics)")
+    except Exception as e:
+        app.logger.error(f"❌ Could not load expense routes: {e}")
+    
+    # Batch Processing (100+ documents at once)
+    try:
+        from .api.batch_processing_routes import batch_bp as batch_blueprint
+        app.register_blueprint(batch_blueprint)
+        app.logger.info("✅ Batch processing registered (Mass document scanning)")
+    except Exception as e:
+        app.logger.error(f"❌ Could not load batch processing routes: {e}")
+    
     # Auth (Required)
     try:
         from .auth.routes import auth as auth_blueprint
