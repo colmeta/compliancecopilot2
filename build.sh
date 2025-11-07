@@ -22,6 +22,13 @@ fi
 
 echo "✅ Environment variables validated"
 
+echo "📦 Installing System Dependencies (OCR, PDF processing)..."
+# Install Tesseract OCR (FREE - no credit card needed!)
+apt-get update -qq
+apt-get install -y tesseract-ocr tesseract-ocr-eng libtesseract-dev poppler-utils
+
+echo "✅ Tesseract OCR installed (FREE tier ready!)"
+
 echo "📦 Installing Python Dependencies..."
 pip install -r requirements.txt
 
