@@ -134,6 +134,14 @@ def create_app(config_class=Config):
     except Exception as e:
         app.logger.error(f"❌ Could not load real funding routes: {e}")
     
+    # Real Funding V2 (COMPLETE WORKFLOW: Generate→Convert→Package→Email)
+    try:
+        from .api.real_funding_routes_v2 import real_funding_v2 as real_funding_v2_blueprint
+        app.register_blueprint(real_funding_v2_blueprint)
+        app.logger.info("✅ Complete funding workflow V2 registered (PRESIDENTIAL QUALITY)")
+    except Exception as e:
+        app.logger.error(f"❌ Could not load funding V2 routes: {e}")
+    
     # Auth (Required)
     try:
         from .auth.routes import auth as auth_blueprint
