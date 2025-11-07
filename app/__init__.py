@@ -118,6 +118,14 @@ def create_app(config_class=Config):
     except Exception as e:
         app.logger.error(f"❌ Could not load email test routes: {e}")
     
+    # Real Analysis Routes (REAL AI - NO SIMULATIONS)
+    try:
+        from .api.real_analysis_routes import real_analysis as real_analysis_blueprint
+        app.register_blueprint(real_analysis_blueprint)
+        app.logger.info("✅ Real AI analysis routes registered (GEMINI)")
+    except Exception as e:
+        app.logger.error(f"❌ Could not load real analysis routes: {e}")
+    
     # Auth (Required)
     try:
         from .auth.routes import auth as auth_blueprint
