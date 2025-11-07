@@ -22,6 +22,7 @@ def scan_receipt():
     Form Data:
     - file: Receipt image (JPG, PNG, PDF)
     - user_id: User/company ID (optional)
+    - email: Email to send results (optional)
     
     Response:
     {
@@ -35,18 +36,21 @@ def scan_receipt():
             "tax_deductible": true,
             "line_items": [...]
         },
-        "recommendations": [...]
+        "recommendations": [...],
+        "demo_mode": true (if OCR not configured)
     }
     """
     try:
         if 'file' not in request.files:
             return jsonify({
                 'success': False,
-                'error': 'No file uploaded'
+                'error': 'No file uploaded',
+                'message': 'Please upload a receipt image (JPG, PNG, or PDF)'
             }), 400
         
         file = request.files['file']
         user_id = request.form.get('user_id')
+        user_email = request.form.get('email')
         
         # OCR extraction
         ocr_engine = get_ocr_engine()
@@ -55,9 +59,22 @@ def scan_receipt():
         logger.info(f"📄 Scanning receipt: {file.filename}")
         ocr_result = ocr_engine.extract_text(file_data)
         
+        # Check if in demo mode
+        demo_mode = ocr_result.get('demo_mode', False)
+        
         # Process receipt
         expense_manager = get_expense_manager()
         result = expense_manager.process_receipt(ocr_result, user_id=user_id)
+        
+        # Add demo mode flag to response
+        if demo_mode:
+            result['demo_mode'] = True
+            result['message'] = '🎭 Demo mode active - showing sample receipt data. Install Tesseract or Google Vision for real OCR.'
+        
+        # If email provided, mention that (email sending will be implemented later)
+        if user_email:
+            result['email'] = user_email
+            result['email_note'] = 'Email delivery feature coming soon!'
         
         if result['success']:
             return jsonify(result), 200
@@ -68,7 +85,8 @@ def scan_receipt():
         logger.error(f"Receipt scanning failed: {e}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': str(e),
+            'message': 'Receipt scanning failed. Please try again or contact support.'
         }), 500
 
 
