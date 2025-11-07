@@ -166,6 +166,14 @@ def create_app(config_class=Config):
     except Exception as e:
         app.logger.error(f"❌ Could not load batch processing routes: {e}")
     
+    # Diagnostics (Ferrari inspection tool)
+    try:
+        from .api.diagnostics import diagnostics as diagnostics_blueprint
+        app.register_blueprint(diagnostics_blueprint)
+        app.logger.info("✅ Ferrari diagnostics registered (System inspection)")
+    except Exception as e:
+        app.logger.error(f"❌ Could not load diagnostics: {e}")
+    
     # Auth (Required)
     try:
         from .auth.routes import auth as auth_blueprint
