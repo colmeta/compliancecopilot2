@@ -128,3 +128,16 @@ python-pptx>=0.6.23
 
 # --- Markdown Processing ---
 markdown2>=2.4.10
+
+# ==============================================================================
+# OCR (Extract Text from Images) - FREE + Premium Tiers
+# ==============================================================================
+
+# --- FREE Tesseract OCR (No credit card needed!) ---
+pytesseract>=0.3.10
+
+# --- Premium Google Cloud Vision (1,000 FREE pages/month) ---
+google-cloud-vision>=3.4.5
+
+# --- PDF to Image Conversion ---
+pdf2image>=1.16.3

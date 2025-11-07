@@ -142,6 +142,14 @@ def create_app(config_class=Config):
     except Exception as e:
         app.logger.error(f"❌ Could not load funding V2 routes: {e}")
     
+    # OCR Routes (Extract text from images/documents - FREE + Premium tiers)
+    try:
+        from .api.ocr_routes import ocr_bp as ocr_blueprint
+        app.register_blueprint(ocr_blueprint)
+        app.logger.info("✅ OCR service registered (FREE Tesseract + Premium Google Vision)")
+    except Exception as e:
+        app.logger.error(f"❌ Could not load OCR routes: {e}")
+    
     # Auth (Required)
     try:
         from .auth.routes import auth as auth_blueprint
