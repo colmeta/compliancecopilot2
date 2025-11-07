@@ -223,6 +223,238 @@ class EmailService:
         
         return self._send_email(user_email, subject, html_body)
     
+    def send_funding_package_email(self, 
+                                   to_email: str,
+                                   company_name: str,
+                                   documents: List[dict],
+                                   zip_path: str,
+                                   download_url: Optional[str] = None,
+                                   package_size_mb: float = 0) -> bool:
+        """
+        Send email with funding package (20 documents, Presidential quality)
+        Includes download link or attachment
+        """
+        if not self.enabled:
+            return False
+        
+        doc_count = len(documents)
+        total_pages = sum(doc.get('pages', 0) for doc in documents)
+        
+        subject = f"🎉 Your Funding Package is Ready - {company_name}"
+        
+        # Generate document list HTML
+        docs_by_category = {}
+        for doc in documents:
+            category = doc.get('category', 'other')
+            if category not in docs_by_category:
+                docs_by_category[category] = []
+            docs_by_category[category].append(doc)
+        
+        docs_html = ""
+        for category, cat_docs in docs_by_category.items():
+            docs_html += f'<h4 style="color: #F59E0B; margin-top: 15px;">{category.upper()}</h4><ul style="margin: 5px 0;">'
+            for doc in cat_docs:
+                docs_html += f'<li>{doc["name"]} ({doc.get("pages", "?")} pages)</li>'
+            docs_html += '</ul>'
+        
+        download_section = ""
+        if download_url:
+            download_section = f"""
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{download_url}" 
+                       style="display: inline-block; padding: 15px 40px; background: #F59E0B; 
+                              color: white; text-decoration: none; border-radius: 8px; 
+                              font-weight: bold; font-size: 18px;">
+                        📦 DOWNLOAD YOUR PACKAGE ({package_size_mb} MB)
+                    </a>
+                    <p style="color: #94a3b8; font-size: 12px; margin-top: 10px;">
+                        Link expires in 7 days
+                    </p>
+                </div>
+            """
+        else:
+            download_section = f"""
+                <div style="background: #dbeafe; padding: 15px; border-left: 4px solid #3b82f6; margin: 20px 0;">
+                    <p style="margin: 0;">
+                        <strong>📎 Package attached to this email</strong> ({package_size_mb} MB ZIP file)
+                    </p>
+                </div>
+            """
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f8fafc;">
+            <div style="max-width: 600px; margin: 40px auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden;">
+                
+                <!-- Header -->
+                <div style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); padding: 30px; text-align: center;">
+                    <h1 style="color: white; margin: 0; font-size: 28px;">
+                        🎉 Your Funding Package is Ready!
+                    </h1>
+                    <p style="color: #CBD5E1; margin: 10px 0 0 0; font-size: 16px;">
+                        Presidential-Grade Documentation • Fortune 50 Quality
+                    </p>
+                </div>
+                
+                <!-- Body -->
+                <div style="padding: 30px;">
+                    <p style="font-size: 16px; color: #1E293B;">
+                        Hello <strong>{company_name}</strong> team! 👋
+                    </p>
+                    
+                    <p style="font-size: 16px; color: #475569;">
+                        Your complete funding documentation package has been generated and is ready for download.
+                    </p>
+                    
+                    <!-- Package Stats -->
+                    <div style="background: #F0FDF4; border-left: 4px solid #22C55E; padding: 20px; margin: 25px 0;">
+                        <h3 style="margin: 0 0 15px 0; color: #166534;">📊 Package Contents</h3>
+                        <div style="display: flex; justify-content: space-around; text-align: center;">
+                            <div>
+                                <p style="margin: 0; font-size: 32px; font-weight: bold; color: #F59E0B;">{doc_count}</p>
+                                <p style="margin: 5px 0 0 0; font-size: 14px; color: #64748b;">Documents</p>
+                            </div>
+                            <div>
+                                <p style="margin: 0; font-size: 32px; font-weight: bold; color: #F59E0B;">{total_pages}+</p>
+                                <p style="margin: 5px 0 0 0; font-size: 14px; color: #64748b;">Pages</p>
+                            </div>
+                            <div>
+                                <p style="margin: 0; font-size: 32px; font-weight: bold; color: #F59E0B;">3</p>
+                                <p style="margin: 5px 0 0 0; font-size: 14px; color: #64748b;">Formats</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Download Button or Attachment Notice -->
+                    {download_section}
+                    
+                    <!-- Document List -->
+                    <div style="margin: 25px 0;">
+                        <h3 style="color: #1E293B; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px;">
+                            📋 Documents Included
+                        </h3>
+                        {docs_html}
+                    </div>
+                    
+                    <!-- Formats -->
+                    <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 15px; margin: 25px 0;">
+                        <h4 style="margin: 0 0 10px 0; color: #92400E;">📄 File Formats</h4>
+                        <ul style="margin: 0; padding-left: 20px; color: #78350F;">
+                            <li><strong>PDF</strong> - For professional presentation and printing</li>
+                            <li><strong>Word (.docx)</strong> - Fully editable for customization</li>
+                            <li><strong>PowerPoint (.pptx)</strong> - For pitch deck presentations</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Quality Badge -->
+                    <div style="text-align: center; margin: 30px 0; padding: 20px; background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); border-radius: 12px;">
+                        <h3 style="color: white; margin: 0 0 5px 0;">✨ Presidential Quality Standard</h3>
+                        <p style="color: white; margin: 0; opacity: 0.9;">
+                            Fortune 50 • Y-Combinator • Top-Tier VCs
+                        </p>
+                    </div>
+                    
+                    <!-- Next Steps -->
+                    <div style="margin: 25px 0;">
+                        <h3 style="color: #1E293B;">🚀 Next Steps</h3>
+                        <ol style="color: #475569; line-height: 1.8;">
+                            <li>Download and review all documents</li>
+                            <li>Customize Word documents as needed</li>
+                            <li>Use PDF versions for investor presentations</li>
+                            <li>Practice your pitch deck presentation</li>
+                            <li>Get feedback from advisors and mentors</li>
+                            <li>Start reaching out to investors!</li>
+                        </ol>
+                    </div>
+                    
+                    <!-- Support -->
+                    <div style="background: #F1F5F9; padding: 15px; border-radius: 8px; margin: 25px 0;">
+                        <p style="margin: 0; color: #475569; font-size: 14px;">
+                            <strong>Need help?</strong> We're here to support you!<br>
+                            📧 nsubugacollin@gmail.com<br>
+                            📱 +256 705 885 118
+                        </p>
+                    </div>
+                    
+                    <p style="color: #64748b; font-size: 14px; margin-top: 30px;">
+                        Good luck with your fundraising! We're excited to see what you build. 💪
+                    </p>
+                </div>
+                
+                <!-- Footer -->
+                <div style="background: #F8FAFC; padding: 20px; text-align: center; border-top: 1px solid #E2E8F0;">
+                    <p style="color: #94A3B8; font-size: 12px; margin: 0;">
+                        © 2025 Clarity Pearl • CLARITY Funding Engine<br>
+                        Presidential-Grade Funding Documentation
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Send with or without attachment
+        return self._send_email_with_attachment(to_email, subject, html_body, zip_path)
+    
+    def _send_email_with_attachment(self, to_email: str, subject: str, html_body: str, 
+                                    attachment_path: Optional[str] = None) -> bool:
+        """
+        Send email with optional ZIP attachment
+        """
+        if not self.enabled:
+            return False
+        
+        try:
+            msg = MIMEMultipart('alternative')
+            msg['From'] = self.mail_sender
+            msg['To'] = to_email
+            msg['Subject'] = subject
+            
+            # HTML body
+            html_part = MIMEText(html_body, 'html')
+            msg.attach(html_part)
+            
+            # Attachment (if file exists and is not too large)
+            if attachment_path and os.path.exists(attachment_path):
+                file_size_mb = os.path.getsize(attachment_path) / (1024 * 1024)
+                
+                # Only attach if < 25MB (Gmail limit)
+                if file_size_mb < 25:
+                    with open(attachment_path, 'rb') as f:
+                        attachment = MIMEBase('application', 'zip')
+                        attachment.set_payload(f.read())
+                        encoders.encode_base64(attachment)
+                        attachment.add_header(
+                            'Content-Disposition',
+                            f'attachment; filename={os.path.basename(attachment_path)}'
+                        )
+                        msg.attach(attachment)
+                        logger.info(f"📎 Attached file: {file_size_mb:.2f} MB")
+                else:
+                    logger.warning(f"⚠️  File too large for email attachment: {file_size_mb:.2f} MB")
+            
+            # Send
+            server = smtplib.SMTP(self.mail_server, self.mail_port)
+            server.starttls()
+            server.login(self.mail_username, self.mail_password)
+            server.send_message(msg)
+            server.quit()
+            
+            logger.info(f"✅ Funding package email sent to {to_email}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to send funding package email to {to_email}: {e}")
+            return False
+    
+    def is_configured(self) -> bool:
+        """Check if email service is properly configured"""
+        return self.enabled and bool(self.mail_username) and bool(self.mail_password)
+    
     def _send_email(self, to_email: str, subject: str, html_body: str) -> bool:
         """
         Internal method to send email via SMTP.
