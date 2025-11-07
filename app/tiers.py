@@ -22,7 +22,7 @@ TIER_LIMITS = {
         'max_file_size_mb': 5,
         
         # AI Capabilities
-        'ai_model': 'gemini-1.5-flash',  # Fast, cost-effective model
+        'ai_model': 'gemini-pro',  # Stable, reliable model
         'context_window': 32000,
         'audio_transcription': False,
         'video_processing': False,

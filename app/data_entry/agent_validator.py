@@ -46,7 +46,7 @@ class AgentValidator:
         
         try:
             genai.configure(api_key=os.environ.get('GOOGLE_API_KEY'))
-            self.model = genai.GenerativeModel('gemini-1.5-flash')  # Use Flash for speed
+            self.model = genai.GenerativeModel('gemini-pro')  # Use Pro for reliability
             self.llm_available = True
             logger.info("Agent Validator initialized successfully")
         except Exception as e:

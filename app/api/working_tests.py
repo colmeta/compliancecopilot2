@@ -50,7 +50,7 @@ def simple_ai_test():
         
         # Configure and test
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-pro')
         
         data = request.get_json() or {}
         prompt = data.get('prompt', 'Say hello')
@@ -62,7 +62,7 @@ def simple_ai_test():
             'message': 'AI is working!',
             'prompt': prompt,
             'response': response.text,
-            'model': 'gemini-1.5-flash'
+            'model': 'gemini-pro'
         }), 200
         
     except Exception as e:
