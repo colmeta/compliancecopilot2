@@ -196,6 +196,14 @@ def create_app(config_class=Config):
     except Exception as e:
         app.logger.error(f"❌ Could not load working tests: {e}")
     
+    # POST Test (Diagnose POST request issues)
+    try:
+        from .api.post_test import post_test as post_test_blueprint
+        app.register_blueprint(post_test_blueprint)
+        app.logger.info("✅ POST test endpoints registered (DIAGNOSE POST)")
+    except Exception as e:
+        app.logger.error(f"❌ Could not load POST test: {e}")
+    
     # Auth (Required)
     try:
         from .auth.routes import auth as auth_blueprint
