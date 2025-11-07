@@ -126,6 +126,14 @@ def create_app(config_class=Config):
     except Exception as e:
         app.logger.error(f"❌ Could not load real analysis routes: {e}")
     
+    # Real Funding Routes (REAL DOCUMENT GENERATION)
+    try:
+        from .api.real_funding_routes import real_funding as real_funding_blueprint
+        app.register_blueprint(real_funding_blueprint)
+        app.logger.info("✅ Real funding document generator registered (GEMINI PRO)")
+    except Exception as e:
+        app.logger.error(f"❌ Could not load real funding routes: {e}")
+    
     # Auth (Required)
     try:
         from .auth.routes import auth as auth_blueprint
