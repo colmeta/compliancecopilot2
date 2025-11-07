@@ -59,22 +59,24 @@ def scan_receipt():
         logger.info(f"📄 Scanning receipt: {file.filename}")
         ocr_result = ocr_engine.extract_text(file_data)
         
-        # Check if in demo mode
-        demo_mode = ocr_result.get('demo_mode', False)
+        # Check OCR success
+        if not ocr_result['success']:
+            logger.error(f"OCR failed: {ocr_result.get('error')}")
+            return jsonify({
+                'success': False,
+                'error': 'OCR processing failed',
+                'details': ocr_result.get('error'),
+                'message': 'Unable to extract text from receipt. Please ensure image is clear and try again.'
+            }), 500
         
         # Process receipt
         expense_manager = get_expense_manager()
         result = expense_manager.process_receipt(ocr_result, user_id=user_id)
         
-        # Add demo mode flag to response
-        if demo_mode:
-            result['demo_mode'] = True
-            result['message'] = '🎭 Demo mode active - showing sample receipt data. Install Tesseract or Google Vision for real OCR.'
-        
-        # If email provided, mention that (email sending will be implemented later)
+        # If email provided, store for future email delivery
         if user_email:
             result['email'] = user_email
-            result['email_note'] = 'Email delivery feature coming soon!'
+            logger.info(f"Receipt processed for email: {user_email}")
         
         if result['success']:
             return jsonify(result), 200

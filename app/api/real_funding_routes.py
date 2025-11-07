@@ -418,6 +418,7 @@ def list_available_funding_documents():
     }), 200
 
 
+@real_funding.route('/funding/health', methods=['GET'])
 @real_funding.route('/real/funding/health', methods=['GET'])
 def check_funding_generator_health():
     """Check if funding generator is configured"""

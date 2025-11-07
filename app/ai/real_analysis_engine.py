@@ -27,9 +27,10 @@ class RealAnalysisEngine:
         
         try:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel('gemini-1.5-flash')
+            # Use gemini-pro (stable, widely available) instead of gemini-1.5-flash
+            self.model = genai.GenerativeModel('gemini-pro')
             self.enabled = True
-            logger.info("✅ Real AI Analysis Engine initialized (Gemini)")
+            logger.info("✅ Real AI Analysis Engine initialized (Gemini Pro)")
         except Exception as e:
             logger.error(f"❌ Failed to initialize Gemini: {e}")
             self.enabled = False
@@ -106,7 +107,7 @@ Be specific, cite evidence, and provide actionable insights.
                 'directive': directive,
                 'analysis': parsed,
                 'raw_response': ai_response,
-                'model': 'gemini-1.5-flash',
+                'model': 'gemini-pro',
                 'status': 'completed'
             }
             

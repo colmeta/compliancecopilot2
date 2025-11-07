@@ -92,7 +92,7 @@ def analyze_with_real_ai():
             'directive': directive,
             'timestamp': datetime.utcnow().isoformat(),
             'analysis': result['analysis'],
-            'model': result.get('model', 'gemini-1.5-flash'),
+            'model': result.get('model', 'gemini-pro'),
             'status': 'completed',
             'note': '✅ REAL AI ANALYSIS (not simulated)',
             'processing_time': 'Real-time'
@@ -118,7 +118,7 @@ def check_real_ai_health():
         'service': 'Real AI Analysis Engine',
         'status': 'configured' if engine.enabled else 'not_configured',
         'api_key_set': bool(engine.api_key),
-        'model': 'gemini-1.5-flash' if engine.enabled else None,
+        'model': 'gemini-pro' if engine.enabled else None,
         'ready': engine.enabled,
         'message': '✅ Ready for real AI analysis' if engine.enabled else '❌ GOOGLE_API_KEY not set',
         'instructions': {

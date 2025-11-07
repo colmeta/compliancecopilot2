@@ -1,160 +1,113 @@
-setuptools
-
 # ==============================================================================
-# CRITICAL: Install these FIRST - explicitly specify to avoid conflicts
+# VERITAS ENGINE - PRODUCTION REQUIREMENTS
+# Complete dependency list for production deployment
 # ==============================================================================
-reportlab==4.0.7
-python-pptx==0.6.23
-markdown2==2.4.13
-pytesseract==0.3.13
 
-# --- Web Server & Framework ---
-Flask
-Flask-CORS
-gunicorn
-Werkzeug
-
-# --- Document & Data Processing ---
-python-docx
-PyPDF2
-python-magic
-Pillow
-pandas     # For handling tabular data if needed
-openpyxl    # For reading .xlsx files with pandas
-
-# --- Core AI Engine ---
-google-generativeai>=0.7.0
-openai>=1.3.0                 # OpenAI GPT-4
-anthropic>=0.7.0              # Anthropic Claude
-groq>=0.4.0                   # Groq (ultra-fast inference)
-
-# --- Asynchronous Task Queue ---
-celery
-redis
-flower      # Optional but highly recommended: monitoring dashboard for Celery
-
-# --- AI Memory (Vector Database & Embeddings) ---
-sentence-transformers # For creating text embeddings
-chromadb>=0.4.22 # Vector database for persistent memory
-langchain>=0.1.0 # For document chunking and text splitting
-langchain-community # Additional langchain components
-tiktoken # Tokenizer for chunking
-
-# --- API Structure & Validation ---
-pydantic    # For data validation and enforcing structured JSON
-
-# --- Security & Configuration ---
-Flask-Limiter # For rate-limiting your API endpoints
-Flask-CORS # For Cross-Origin Resource Sharing
-python-dotenv # For managing environment variables from a .env file
-cryptography # For security-related operations
-numpy
-scipy
-nltk
-
-# --- Database & Authentication ---
+# --- Core Web Framework ---
+Flask==3.0.0
+Flask-CORS==4.0.0
 Flask-SQLAlchemy==3.1.1
-SQLAlchemy==2.0.25
-psycopg2-binary==2.9.9   # The "driver" that allows Python to speak PostgreSQL
-Flask-Login==0.6.3       # For managing user login sessions
-werkzeug>=2.2.3          # For password hashing (usually installed with Flask)
-Flask-Migrate==4.0.5     # For managing changes to your database schema
+Flask-Login==0.6.3
+Flask-Migrate==4.0.5
 Flask-WTF==1.2.1
-email-validator==2.1.1
+Flask-Limiter==3.5.0
+gunicorn==21.2.0
+Werkzeug==3.0.1
 
-# ==============================================================================
-# PHASE 4: ADVANCED FEATURES DEPENDENCIES
-# ==============================================================================
+# --- Database & ORM ---
+SQLAlchemy==2.0.25
+psycopg2-binary==2.9.9
+alembic==1.13.1
 
-# --- Audio Processing ---
-openai-whisper>=20231117
-google-cloud-speech>=2.23.0
-assemblyai>=0.17.0
-pydub>=0.25.1
+# --- Async Task Queue ---
+celery==5.3.4
+redis==5.0.1
+flower==2.0.1
 
-# --- Vision/OCR ---
-pytesseract>=0.3.10
-google-cloud-vision>=3.4.5
-boto3>=1.28.0
-pdf2image>=1.16.3
+# --- AI/LLM Providers ---
+google-generativeai==0.7.2
+openai==1.12.0
+anthropic==0.18.1
+groq==0.4.2
 
-# --- Video Processing ---
-opencv-python>=4.8.0
-moviepy>=1.0.3
-scenedetect>=0.6.2
+# --- Vector Database & Embeddings ---
+chromadb==0.4.24
+sentence-transformers==2.3.1
+langchain==0.1.9
+langchain-community==0.0.24
+tiktoken==0.6.0
 
-# --- Real-Time Collaboration ---
-flask-socketio>=5.3.5
-python-socketio>=5.10.0
+# --- Document Processing & Generation ---
+# PDF
+reportlab==4.0.9
+PyPDF2==3.0.1
+pdf2image==1.16.3
 
-# --- Analytics & Visualization ---
-plotly>=5.17.0
+# Word
+python-docx==1.1.0
 
-# --- Additional NLP & ML ---
-spacy>=3.7.0
-transformers>=4.35.0
-scikit-learn>=1.3.0
+# PowerPoint
+python-pptx==0.6.23
 
-# --- Enhanced Security ---
-python-jose>=3.3.0
+# Excel
+openpyxl==3.1.2
+xlsxwriter==3.2.0
 
-# ==============================================================================
-# PHASE 4E: AI MODEL OPTIMIZATION DEPENDENCIES
-# ==============================================================================
+# Markdown
+markdown2==2.4.13
 
-# --- AI Model Optimization ---
-sentence-transformers>=2.2.2
-redis>=5.0.1
+# --- OCR & Image Processing ---
+pytesseract==0.3.10
+google-cloud-vision==3.7.0
+Pillow==10.2.0
+opencv-python-headless==4.9.0.80
 
-# --- Cost Optimization and Analytics ---
-pandas>=2.1.4
-numpy>=1.24.4
+# --- Audio/Video Processing ---
+openai-whisper==20231117
+google-cloud-speech==2.26.0
+assemblyai==0.23.1
+pydub==0.25.1
+moviepy==1.0.3
+scenedetect==0.6.3
 
-# --- A/B Testing and Statistical Analysis ---
-scipy>=1.11.4
-statsmodels>=0.14.0
+# --- Data & Analytics ---
+pandas==2.2.0
+numpy==1.26.4
+scipy==1.12.0
+scikit-learn==1.4.1.post1
+plotly==5.19.0
+statsmodels==0.14.1
 
-# --- Performance Monitoring ---
-psutil>=5.9.6
-memory-profiler>=0.61.0
+# --- NLP & ML ---
+spacy==3.7.4
+transformers==4.38.1
+nltk==3.8.1
 
-# --- Additional Utilities ---
-python-dateutil>=2.8.2
-pytz>=2023.3
+# --- Security & Auth ---
+cryptography==42.0.5
+python-jose==3.3.0
+email-validator==2.1.0.post1
 
-# ==============================================================================
-# DOCUMENT CONVERSION & PACKAGING (Presidential-Grade PDF/Word/PowerPoint)
-# ==============================================================================
+# --- Utilities ---
+python-dotenv==1.0.1
+python-dateutil==2.9.0.post0
+pytz==2024.1
+pydantic==2.6.3
+requests==2.31.0
+aiohttp==3.9.3
 
-# --- PDF Generation ---
-reportlab>=4.0.0
+# --- Cloud Services ---
+boto3==1.34.51
 
-# --- Word Document Generation ---
-python-docx>=1.1.0
+# --- Real-Time Features ---
+flask-socketio==5.3.6
+python-socketio==5.11.1
 
-# --- PowerPoint Generation ---
-python-pptx>=0.6.23
+# --- Monitoring & Performance ---
+psutil==5.9.8
+memory-profiler==0.61.0
 
-# --- Markdown Processing ---
-markdown2>=2.4.10
-
-# ==============================================================================
-# OCR (Extract Text from Images) - FREE + Premium Tiers
-# ==============================================================================
-
-# --- FREE Tesseract OCR (No credit card needed!) ---
-pytesseract>=0.3.10
-
-# --- Premium Google Cloud Vision (1,000 FREE pages/month) ---
-google-cloud-vision>=3.4.5
-
-# --- PDF to Image Conversion ---
-pdf2image>=1.16.3
-
-# ==============================================================================
-# FIX: Ensure these are actually installed
-# ==============================================================================
-markdown2
-reportlab
-python-pptx
-pytesseract
+# --- Additional Tools ---
+python-magic==0.4.27
+setuptools==69.1.1
+wheel==0.42.0
