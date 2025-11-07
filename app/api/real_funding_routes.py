@@ -279,6 +279,132 @@ def list_available_funding_documents():
             'time_estimate': '8-12 minutes',
             'quality': 'Startup Attorney / Partner Meeting Prep',
             'ai_powered': True
+        },
+        
+        # Legal & Financial
+        {
+            'id': 'term_sheet',
+            'name': 'Sample Term Sheet',
+            'category': 'legal',
+            'description': 'NVCA-standard term sheet with founder-friendly terms',
+            'pages': 4,
+            'time_estimate': '5-8 minutes',
+            'quality': 'Wilson Sonsini / Startup Attorney',
+            'ai_powered': True
+        },
+        {
+            'id': 'cap_table',
+            'name': 'Cap Table & Ownership',
+            'category': 'legal',
+            'description': 'Fully-diluted ownership with round-by-round projections',
+            'pages': 3,
+            'time_estimate': '5-8 minutes',
+            'quality': 'Startup CFO / Exit Scenario Analysis',
+            'ai_powered': True
+        },
+        {
+            'id': 'regulatory_compliance',
+            'name': 'Regulatory Strategy',
+            'category': 'legal',
+            'description': 'Compliance roadmap (FDA, HIPAA, GDPR, SOC2)',
+            'pages': 4,
+            'time_estimate': '5-8 minutes',
+            'quality': 'Compliance Officer / Regulatory Strategy',
+            'ai_powered': True
+        },
+        {
+            'id': 'financial_model',
+            'name': 'Financial Model Structure',
+            'category': 'financial',
+            'description': 'Excel/Sheets model template (assumptions, P&L, cash flow)',
+            'pages': 1,
+            'time_estimate': '3-5 minutes',
+            'quality': 'Financial Modeler / Series B Standard',
+            'ai_powered': True
+        },
+        
+        # Additional Operations
+        {
+            'id': 'operating_plan',
+            'name': 'Operating Plan',
+            'category': 'operations',
+            'description': '18-month milestone map with OKRs and resource allocation',
+            'pages': 5,
+            'time_estimate': '5-10 minutes',
+            'quality': 'COO / Board Presentation Standard',
+            'ai_powered': True
+        },
+        {
+            'id': 'hiring_plan',
+            'name': 'Hiring & Talent Plan',
+            'category': 'operations',
+            'description': 'Headcount roadmap, job descriptions, compensation',
+            'pages': 5,
+            'time_estimate': '5-10 minutes',
+            'quality': 'Head of People / Executive Recruiting',
+            'ai_powered': True
+        },
+        
+        # Advanced Specialized
+        {
+            'id': 'customer_case_studies',
+            'name': 'Customer Case Studies',
+            'category': 'specialized',
+            'description': '3-5 customer stories with quantified ROI',
+            'pages': 6,
+            'time_estimate': '8-12 minutes',
+            'quality': 'Enterprise Marketing / Sales Enablement',
+            'ai_powered': True
+        },
+        {
+            'id': 'technology_ip',
+            'name': 'Technology & IP',
+            'category': 'specialized',
+            'description': 'Tech stack, architecture, patents, defensibility',
+            'pages': 5,
+            'time_estimate': '5-10 minutes',
+            'quality': 'CTO / Google Ventures Due Diligence',
+            'ai_powered': True
+        },
+        {
+            'id': 'sales_playbook',
+            'name': 'Sales Playbook',
+            'category': 'specialized',
+            'description': 'Sales process, objection handling, ICP, metrics',
+            'pages': 7,
+            'time_estimate': '8-12 minutes',
+            'quality': 'VP Sales / $100M ARR Standard',
+            'ai_powered': True
+        },
+        {
+            'id': 'customer_acquisition',
+            'name': 'Customer Acquisition',
+            'category': 'market',
+            'description': 'Channel playbooks, CAC/LTV, budget optimization',
+            'pages': 8,
+            'time_estimate': '10-15 minutes',
+            'quality': 'VP Growth / Performance Marketing',
+            'ai_powered': True
+        },
+        {
+            'id': 'partnership_strategy',
+            'name': 'Partnership Strategy',
+            'category': 'specialized',
+            'description': 'Target partners, deal structure, BD execution plan',
+            'pages': 5,
+            'time_estimate': '5-10 minutes',
+            'quality': 'VP Business Development / Strategic Alliances',
+            'ai_powered': True
+        },
+        {
+            'id': 'board_deck',
+            'name': 'Board Meeting Deck',
+            'category': 'specialized',
+            'description': 'Quarterly board presentation template with KPIs',
+            'pages': 12,
+            'time_estimate': '10-15 minutes',
+            'quality': 'CEO / Benchmark/a16z Board Standard',
+            'ai_powered': True
         }
     ]
     
