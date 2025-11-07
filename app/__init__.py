@@ -67,6 +67,12 @@ def create_app(config_class=Config):
         app.logger.addHandler(file_handler)
         app.logger.setLevel(logging.INFO)
         app.logger.info('CLARITY Engine startup')
+    
+    # CRITICAL: Simple health check endpoint for Render (BEFORE blueprints)
+    @app.route('/health', methods=['GET', 'HEAD'])
+    def health_check_endpoint():
+        """Instant health check - no dependencies"""
+        return jsonify({'status': 'ok', 'service': 'clarity', 'ready': True}), 200
 
     # --- Register Blueprints (STAGED - Only Core Ones First) ---
     
