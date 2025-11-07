@@ -174,6 +174,14 @@ def create_app(config_class=Config):
     except Exception as e:
         app.logger.error(f"❌ Could not load diagnostics: {e}")
     
+    # System Check (Complete dependency verification)
+    try:
+        from .api.system_check import system_check as system_check_blueprint
+        app.register_blueprint(system_check_blueprint)
+        app.logger.info("✅ System check registered (Dependency verification)")
+    except Exception as e:
+        app.logger.error(f"❌ Could not load system check: {e}")
+    
     # Auth (Required)
     try:
         from .auth.routes import auth as auth_blueprint
