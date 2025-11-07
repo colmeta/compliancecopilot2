@@ -9,30 +9,51 @@ import io
 import re
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime
-
-# PDF Generation
-from reportlab.lib.pagesizes import letter, A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
-from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, Image
-from reportlab.pdfgen import canvas
-
-# Word Generation
-from docx import Document
-from docx.shared import Inches, Pt, RGBColor
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-
-# PowerPoint Generation
-from pptx import Presentation
-from pptx.util import Inches as PptxInches, Pt as PptxPt
-from pptx.enum.text import PP_ALIGN
-
-import markdown2
 import logging
 
 logger = logging.getLogger(__name__)
+
+# Try to import PDF generation (reportlab)
+try:
+    from reportlab.lib.pagesizes import letter, A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
+    from reportlab.lib import colors
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, Image
+    from reportlab.pdfgen import canvas
+    REPORTLAB_AVAILABLE = True
+except ImportError:
+    REPORTLAB_AVAILABLE = False
+    logger.warning("reportlab not installed - PDF generation disabled")
+
+# Try to import Word generation
+try:
+    from docx import Document
+    from docx.shared import Inches, Pt, RGBColor
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    DOCX_AVAILABLE = True
+except ImportError:
+    DOCX_AVAILABLE = False
+    logger.warning("python-docx not installed - Word generation disabled")
+
+# Try to import PowerPoint generation
+try:
+    from pptx import Presentation
+    from pptx.util import Inches as PptxInches, Pt as PptxPt
+    from pptx.enum.text import PP_ALIGN
+    PPTX_AVAILABLE = True
+except ImportError:
+    PPTX_AVAILABLE = False
+    logger.warning("python-pptx not installed - PowerPoint generation disabled")
+
+# Try to import markdown
+try:
+    import markdown2
+    MARKDOWN_AVAILABLE = True
+except ImportError:
+    MARKDOWN_AVAILABLE = False
+    logger.warning("markdown2 not installed - Markdown processing limited")
 
 
 class DocumentConverter:
@@ -45,6 +66,9 @@ class DocumentConverter:
         
     def convert_to_pdf(self, markdown_content: str, output_path: str, metadata: Dict = None) -> str:
         """Convert Markdown to professionally formatted PDF"""
+        if not REPORTLAB_AVAILABLE:
+            raise ImportError("reportlab not installed - cannot generate PDF")
+        
         try:
             # Create PDF
             doc = SimpleDocTemplate(
@@ -197,6 +221,9 @@ class DocumentConverter:
     
     def convert_to_word(self, markdown_content: str, output_path: str, metadata: Dict = None) -> str:
         """Convert Markdown to professionally formatted Word document"""
+        if not DOCX_AVAILABLE:
+            raise ImportError("python-docx not installed - cannot generate Word documents")
+        
         try:
             doc = Document()
             
@@ -301,6 +328,9 @@ class DocumentConverter:
     
     def convert_to_powerpoint(self, markdown_content: str, output_path: str, metadata: Dict = None) -> str:
         """Convert Markdown to professionally formatted PowerPoint (for Pitch Deck)"""
+        if not PPTX_AVAILABLE:
+            raise ImportError("python-pptx not installed - cannot generate PowerPoint")
+        
         try:
             prs = Presentation()
             prs.slide_width = PptxInches(10)

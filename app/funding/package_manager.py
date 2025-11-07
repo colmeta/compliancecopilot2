@@ -5,11 +5,18 @@ Handles ZIP packaging and cloud storage for document packages
 
 import os
 import zipfile
-import boto3
 import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
-from botocore.exceptions import ClientError
+
+# boto3 is optional (for cloud storage)
+try:
+    import boto3
+    from botocore.exceptions import ClientError
+    BOTO3_AVAILABLE = True
+except ImportError:
+    BOTO3_AVAILABLE = False
+    logging.warning("boto3 not installed - S3 upload disabled (local storage only)")
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +29,11 @@ class PackageManager:
         self.bucket_name = os.getenv('AWS_S3_BUCKET', 'clarity-funding-documents')
         self.aws_region = os.getenv('AWS_REGION', 'us-east-1')
         
-        # Initialize S3 if credentials available
+        # Initialize S3 if boto3 available AND credentials provided
+        if not BOTO3_AVAILABLE:
+            logger.info("boto3 not available - using local storage only")
+            return
+        
         aws_key = os.getenv('AWS_ACCESS_KEY_ID')
         aws_secret = os.getenv('AWS_SECRET_ACCESS_KEY')
         
@@ -38,7 +49,7 @@ class PackageManager:
             except Exception as e:
                 logger.warning(f"S3 initialization failed (will use local storage): {e}")
         else:
-            logger.warning("AWS credentials not found - using local storage only")
+            logger.info("AWS credentials not found - using local storage only")
     
     def create_zip_package(self, file_paths: Dict[str, str], output_path: str, 
                           package_name: str = "funding_package") -> str:
