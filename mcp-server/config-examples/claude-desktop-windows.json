@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "clarity-engine": {
+      "command": "node",
+      "args": ["C:\\Users\\YourName\\path\\to\\workspace\\mcp-server\\server.js"],
+      "env": {
+        "CLARITY_API_URL": "https://veritas-engine-zae0.onrender.com"
+      }
+    }
+  }
+}
