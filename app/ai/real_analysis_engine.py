@@ -1,38 +1,40 @@
 """
-REAL AI ANALYSIS ENGINE - No More Simulations
-Connects to Google Gemini API for actual AI processing
+REAL AI ANALYSIS ENGINE - Multi-Provider with Automatic Fallback
+Supports: Anthropic Claude, Groq, OpenAI GPT-4, Google Gemini
 """
 
 import os
 import logging
 from typing import Dict, List, Optional, Any
-import google.generativeai as genai
 
 logger = logging.getLogger(__name__)
 
 class RealAnalysisEngine:
     """
-    Real AI-powered analysis engine using Google Gemini
-    Replaces all simulated/fake responses with actual AI processing
+    Real AI-powered analysis engine with multi-provider support
+    Automatic fallback: Anthropic → Groq → OpenAI → Gemini
     """
     
     def __init__(self):
-        """Initialize with Google Gemini API"""
-        self.api_key = os.getenv('GOOGLE_API_KEY')
-        
-        if not self.api_key:
-            logger.error("❌ GOOGLE_API_KEY not set! AI analysis will fail.")
-            self.enabled = False
-            return
+        """Initialize with multi-provider AI system"""
+        from app.ai.multi_provider_engine import get_multi_provider
         
         try:
-            genai.configure(api_key=self.api_key)
-            # Use gemini-pro (stable, widely available) instead of gemini-1.5-flash
-            self.model = genai.GenerativeModel('gemini-pro')
-            self.enabled = True
-            logger.info("✅ Real AI Analysis Engine initialized (Gemini Pro)")
+            self.ai_provider = get_multi_provider()
+            available = self.ai_provider.get_available_providers()
+            
+            if available:
+                self.enabled = True
+                logger.info(f"✅ Real AI Analysis Engine initialized with {len(available)} providers: {available}")
+            else:
+                self.enabled = False
+                logger.error("❌ No AI providers available! Set at least one API key:")
+                logger.error("   - ANTHROPIC_API_KEY (Claude - Best quality)")
+                logger.error("   - GROQ_API_KEY (Llama - Fastest)")
+                logger.error("   - OPENAI_API_KEY (GPT-4 - Versatile)")
+                logger.error("   - GOOGLE_API_KEY (Gemini - Backup)")
         except Exception as e:
-            logger.error(f"❌ Failed to initialize Gemini: {e}")
+            logger.error(f"❌ Failed to initialize AI providers: {e}")
             self.enabled = False
     
     def analyze(self, 
@@ -55,7 +57,7 @@ class RealAnalysisEngine:
         if not self.enabled:
             return {
                 'error': 'AI Engine not configured',
-                'message': 'GOOGLE_API_KEY not set. Add to .env file.',
+                'message': 'No AI providers available. Set at least one API key (ANTHROPIC_API_KEY, GROQ_API_KEY, OPENAI_API_KEY, or GOOGLE_API_KEY)',
                 'status': 'not_configured'
             }
         
@@ -83,20 +85,13 @@ Be specific, cite evidence, and provide actionable insights.
 """
         
         try:
-            # Call Gemini API
+            # Call multi-provider AI with automatic fallback
             full_prompt = system_prompt + "\n\n" + user_prompt
-            response = self.model.generate_content(
-                full_prompt,
-                generation_config={
-                    'temperature': 0.3,  # Lower = more focused
-                    'top_p': 0.8,
-                    'top_k': 40,
-                    'max_output_tokens': 2048,
-                }
+            ai_response, metadata = self.ai_provider.generate(
+                prompt=full_prompt,
+                max_tokens=2048,
+                temperature=0.3  # Lower = more focused, analytical
             )
-            
-            # Extract response
-            ai_response = response.text
             
             # Parse response into structured format
             parsed = self._parse_ai_response(ai_response, domain)
@@ -107,7 +102,10 @@ Be specific, cite evidence, and provide actionable insights.
                 'directive': directive,
                 'analysis': parsed,
                 'raw_response': ai_response,
-                'model': 'gemini-pro',
+                'provider': metadata['provider'],
+                'model': metadata['model'],
+                'time_taken': metadata['time_taken'],
+                'cost_estimate': metadata['cost_estimate'],
                 'status': 'completed'
             }
             
@@ -116,7 +114,7 @@ Be specific, cite evidence, and provide actionable insights.
             return {
                 'success': False,
                 'error': str(e),
-                'message': 'AI analysis failed. Check API key and quota.',
+                'message': 'AI analysis failed with all providers. Check API keys and quotas.',
                 'status': 'failed'
             }
     
