@@ -136,9 +136,17 @@ def create_app(config_class=Config):
     try:
         from .api.real_analysis_routes import real_analysis as real_analysis_blueprint
         app.register_blueprint(real_analysis_blueprint)
-        app.logger.info("✅ Real AI analysis routes registered (GEMINI)")
+        app.logger.info("✅ Real AI analysis routes registered (MULTI-PROVIDER)")
     except Exception as e:
         app.logger.error(f"❌ Could not load real analysis routes: {e}")
+    
+    # AI Providers Management (Monitor multi-provider system)
+    try:
+        from .api.ai_providers_routes import ai_providers as ai_providers_blueprint
+        app.register_blueprint(ai_providers_blueprint)
+        app.logger.info("✅ AI Providers management registered (Anthropic/Groq/OpenAI/Gemini)")
+    except Exception as e:
+        app.logger.error(f"❌ Could not load AI providers routes: {e}")
     
     # Real Funding Routes (REAL DOCUMENT GENERATION)
     try:
