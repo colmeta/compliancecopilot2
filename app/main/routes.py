@@ -12,8 +12,13 @@ main = Blueprint('main', __name__)
 @main.route('/')
 def homepage():
     """Presidential-level landing page"""
-    if current_user.is_authenticated:
-        return redirect(url_for('main.dashboard'))
+    # Check authentication safely
+    try:
+        if current_user.is_authenticated:
+            return redirect(url_for('main.dashboard'))
+    except Exception:
+        pass  # User not logged in, that's fine
+    
     return render_template('landing_presidential.html')
 
 @main.route('/dashboard')
