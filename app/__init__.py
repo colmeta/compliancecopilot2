@@ -36,6 +36,14 @@ def create_app(config_class=Config):
     # Step 2: Initialize the extensions WITH the app
     db.init_app(app)
     login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
+    
+    # User loader callback (REQUIRED by Flask-Login) 
+    from app.models import User
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+    
     migrate.init_app(app, db)
     limiter.init_app(app)
     socketio.init_app(app, cors_allowed_origins="*")
