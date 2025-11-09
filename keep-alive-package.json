@@ -1,0 +1,16 @@
+{
+  "name": "clarity-keep-alive",
+  "version": "1.0.0",
+  "description": "Keep CLARITY backend awake on Render free tier",
+  "main": "keep-alive-cron.js",
+  "scripts": {
+    "start": "node keep-alive-cron.js",
+    "test": "node -e \"require('./keep-alive-cron').pingServer()\""
+  },
+  "dependencies": {
+    "cron": "^3.1.6"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
