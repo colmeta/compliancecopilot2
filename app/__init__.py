@@ -252,6 +252,14 @@ def create_app(config_class=Config):
     except Exception as e:
         app.logger.warning(f"⚠️ API Management not available: {e}")
     
+    # Extended Diagnostics (Check what's deployed)
+    try:
+        from .api.diagnostics_extended import diagnostics_extended as diagnostics_extended_blueprint
+        app.register_blueprint(diagnostics_extended_blueprint)
+        app.logger.info("✅ Extended diagnostics registered")
+    except Exception as e:
+        app.logger.warning(f"⚠️ Extended diagnostics not available: {e}")
+    
     # Additional Phase 4 features (Optional - load if available)
     optional_blueprints = [
         ('multimodal', 'api.multimodal_routes', '/api/multimodal'),
