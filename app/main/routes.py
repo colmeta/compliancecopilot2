@@ -9,21 +9,7 @@ import json
 
 main = Blueprint('main', __name__)
 
-@main.route('/')
-def homepage():
-    """API root - Returns JSON (frontend on Vercel)"""
-    try:
-        return jsonify({
-            'name': 'CLARITY Engine API',
-            'version': '5.0',
-            'status': 'live',
-            'features': ['multi_llm', 'funding_engine', 'outstanding_writing', 'ocr', 'expense_mgmt'],
-            'frontend_url': 'https://clarity-frontend.vercel.app',
-            'health': '/health',
-            'docs': '/api/docs'
-        }), 200
-    except Exception as e:
-        return jsonify({'error': 'Root route failed', 'details': str(e)}), 500
+# Root route removed - handled in __init__.py to avoid Flask-Login conflicts
 
 @main.route('/dashboard')
 @login_required
