@@ -87,26 +87,18 @@ def create_app(config_class=Config):
         app.logger.setLevel(logging.INFO)
         app.logger.info('CLARITY Engine startup')
     
-    # CRITICAL: Simple health check endpoint for Render (BEFORE blueprints)
-    @app.route('/health', methods=['GET', 'HEAD'])
+    # CRITICAL: Define routes BEFORE any blueprints to avoid conflicts
+    @app.route('/', methods=['GET', 'POST', 'OPTIONS'])
+    def api_root():
+        """API root - No dependencies"""
+        return {'name': 'CLARITY Engine API', 'version': '5.0', 'status': 'live', 'health': '/health'}, 200
+    
+    @app.route('/health', methods=['GET', 'HEAD', 'OPTIONS'])
     def health_check_endpoint():
-        """Instant health check - no dependencies"""
-        return jsonify({'status': 'ok', 'service': 'clarity', 'ready': True}), 200
+        """Health check - No dependencies"""
+        return {'status': 'ok', 'service': 'clarity', 'ready': True}, 200
 
     # --- Register Blueprints (STAGED - Only Core Ones First) ---
-    
-    # API-first root route (no templates needed)
-    @app.route('/', methods=['GET'])
-    def api_root():
-        """API root endpoint"""
-        return jsonify({
-            'name': 'CLARITY Engine API',
-            'version': '5.0',
-            'status': 'live',
-            'health': '/health',
-            'docs': '/api/docs',
-            'frontend': 'https://clarity-frontend.vercel.app'
-        }), 200
     
     # Core Routes (dashboard, etc - DISABLED to avoid Flask-Login conflicts)
     # All routes moved to API blueprints or defined directly above
