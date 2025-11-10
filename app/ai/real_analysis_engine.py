@@ -28,7 +28,7 @@ class RealAnalysisEngine:
         try:
             genai.configure(api_key=self.api_key)
             # Use gemini-pro (stable, widely available)
-            self.model = genai.GenerativeModel('gemini-pro')
+            self.model = genai.GenerativeModel('gemini-1.5-flash-latest')
             self.enabled = True
             logger.info("✅ Real AI Analysis Engine initialized (Gemini Pro)")
         except Exception as e:

@@ -108,7 +108,7 @@ class LLMRouter:
             self.providers.append(LLMProvider(
                 name='gemini_flash',
                 provider_type='google',
-                model='gemini-pro',
+                model='gemini-1.5-flash-latest',
                 api_key=os.getenv('GOOGLE_API_KEY'),
                 priority=3,
                 cost_per_1k_input=0.000075,
