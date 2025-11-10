@@ -260,6 +260,14 @@ def create_app(config_class=Config):
     except Exception as e:
         app.logger.warning(f"⚠️ Extended diagnostics not available: {e}")
     
+    # Image Text Rewrite (Complete working endpoint)
+    try:
+        from .api.image_rewrite_routes import image_rewrite as image_rewrite_blueprint
+        app.register_blueprint(image_rewrite_blueprint)
+        app.logger.info("✅ Image text rewrite registered (OCR + AI)")
+    except Exception as e:
+        app.logger.warning(f"⚠️ Image rewrite not available: {e}")
+    
     # Additional Phase 4 features (Optional - load if available)
     optional_blueprints = [
         ('multimodal', 'api.multimodal_routes', '/api/multimodal'),
