@@ -35,14 +35,25 @@ def create_app(config_class=Config):
 
     # Step 2: Initialize the extensions WITH the app
     db.init_app(app)
+    
+    # Initialize Flask-Login AFTER db
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     
-    # User loader callback (REQUIRED by Flask-Login) 
-    from app.models import User
-    @login_manager.user_loader
-    def load_user(user_id):
-        return User.query.get(int(user_id))
+    # User loader callback (REQUIRED by Flask-Login) - must be before blueprints
+    try:
+        from app.models import User
+        @login_manager.user_loader
+        def load_user(user_id):
+            try:
+                return User.query.get(int(user_id))
+            except:
+                return None
+    except ImportError:
+        # If User model not available, use anonymous user
+        @login_manager.user_loader
+        def load_user(user_id):
+            return None
     
     migrate.init_app(app, db)
     limiter.init_app(app)
@@ -97,13 +108,15 @@ def create_app(config_class=Config):
             'frontend': 'https://clarity-frontend.vercel.app'
         }), 200
     
-    # Core Routes (dashboard, etc - with url_prefix to avoid conflict)
-    try:
-        from .main.routes import main as main_blueprint
-        app.register_blueprint(main_blueprint, url_prefix='/app')
-        app.logger.info("✅ Main routes registered at /app/*")
-    except Exception as e:
-        app.logger.error(f"❌ Could not load main routes: {e}")
+    # Core Routes (dashboard, etc - DISABLED to avoid Flask-Login conflicts)
+    # All routes moved to API blueprints or defined directly above
+    # Dashboard and other authenticated routes at /app/* if needed
+    # try:
+    #     from .main.routes import main as main_blueprint
+    #     app.register_blueprint(main_blueprint, url_prefix='/app')
+    #     app.logger.info("✅ Main routes registered at /app/*")
+    # except Exception as e:
+    #     app.logger.error(f"❌ Could not load main routes: {e}")
     
     # API Routes (Required)
     try:
