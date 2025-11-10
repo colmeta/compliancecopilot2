@@ -92,23 +92,11 @@ def create_app(config_class=Config):
     def health_check_endpoint():
         """Health check - No dependencies"""
         return {'status': 'ok', 'service': 'clarity', 'ready': True}, 200
-    
-    @app.route('/', methods=['GET'])
-    def api_root():
-        """API root - Minimal response"""
-        return {'status': 'ok', 'service': 'clarity-api', 'health': '/health'}, 200
 
     # --- Register Blueprints (STAGED - Only Core Ones First) ---
     
-    # Core Routes (dashboard, etc - DISABLED to avoid Flask-Login conflicts)
-    # All routes moved to API blueprints or defined directly above
-    # Dashboard and other authenticated routes at /app/* if needed
-    # try:
-    #     from .main.routes import main as main_blueprint
-    #     app.register_blueprint(main_blueprint, url_prefix='/app')
-    #     app.logger.info("✅ Main routes registered at /app/*")
-    # except Exception as e:
-    #     app.logger.error(f"❌ Could not load main routes: {e}")
+    # Main blueprint COMPLETELY DISABLED - causes Flask-Login conflicts
+    # All routes in API blueprints or defined above
     
     # API Routes (Required)
     try:
@@ -319,6 +307,13 @@ def create_app(config_class=Config):
     
     # Health check already defined above at line 80-83
     
+    # Root route defined at END after all blueprints to override any conflicts
+    @app.route('/', methods=['GET', 'POST', 'OPTIONS'])
+    def root_redirect():
+        """Root endpoint - defined last to override any blueprint conflicts"""
+        from flask import jsonify
+        return jsonify({'status': 'ok', 'service': 'clarity-api', 'health': '/health', 'frontend': 'https://clarity-engine-auto.vercel.app'}), 200
+    
     # --- Error Handlers ---
     @app.errorhandler(404)
     def not_found_error(error):
@@ -326,7 +321,10 @@ def create_app(config_class=Config):
     
     @app.errorhandler(500)
     def internal_error(error):
-        db.session.rollback()
+        try:
+            db.session.rollback()
+        except:
+            pass
         return jsonify({'error': 'Internal server error'}), 500
     
     app.logger.info("CLARITY Engine initialized successfully!")
