@@ -87,16 +87,16 @@ def create_app(config_class=Config):
         app.logger.setLevel(logging.INFO)
         app.logger.info('CLARITY Engine startup')
     
-    # CRITICAL: Define routes BEFORE any blueprints to avoid conflicts
-    @app.route('/', methods=['GET', 'POST', 'OPTIONS'])
-    def api_root():
-        """API root - No dependencies"""
-        return {'name': 'CLARITY Engine API', 'version': '5.0', 'status': 'live', 'health': '/health'}, 200
-    
+    # CRITICAL: Define routes BEFORE any blueprints
     @app.route('/health', methods=['GET', 'HEAD', 'OPTIONS'])
     def health_check_endpoint():
         """Health check - No dependencies"""
         return {'status': 'ok', 'service': 'clarity', 'ready': True}, 200
+    
+    @app.route('/', methods=['GET'])
+    def api_root():
+        """API root - Minimal response"""
+        return {'status': 'ok', 'service': 'clarity-api', 'health': '/health'}, 200
 
     # --- Register Blueprints (STAGED - Only Core Ones First) ---
     
