@@ -55,7 +55,7 @@ class ModelRouter:
     # Model Registry
     MODELS = {
         'gemini-1.5-flash': ModelSpec(
-            name='gemini-1.5-flash',
+            name='gemini-1.5-flash-latest',
             provider='google',
             cost_per_1k_input=0.000075,
             cost_per_1k_output=0.0003,
@@ -134,7 +134,7 @@ class ModelRouter:
             
             if not available_models:
                 return {
-                    'model': 'gemini-1.5-flash',  # Fallback
+                    'model': 'gemini-1.5-flash-latest',  # Fallback
                     'reasoning': 'No models available for tier, using fallback'
                 }
             
@@ -150,7 +150,7 @@ class ModelRouter:
             
             if not available_models:
                 return {
-                    'model': 'gemini-1.5-flash',
+                    'model': 'gemini-1.5-flash-latest',
                     'reasoning': 'No models match requirements, using fallback'
                 }
             
@@ -184,7 +184,7 @@ class ModelRouter:
         except Exception as e:
             logger.error(f"Model routing error: {e}", exc_info=True)
             return {
-                'model': 'gemini-1.5-flash',
+                'model': 'gemini-1.5-flash-latest',
                 'reasoning': f'Routing error, using fallback: {str(e)}'
             }
     
