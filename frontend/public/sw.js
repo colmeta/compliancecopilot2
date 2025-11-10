@@ -1,14 +1,7 @@
 // CLARITY Engine - Service Worker (PWA Support)
-const CACHE_NAME = 'clarity-v1';
+const CACHE_NAME = 'clarity-v2';
 const urlsToCache = [
   '/',
-  '/work',
-  '/funding',
-  '/docs',
-  '/api-keys',
-  '/compliance',
-  '/legal',
-  '/financial',
 ];
 
 // Install event - cache critical assets
@@ -17,7 +10,9 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('CLARITY: Cache opened');
-        return cache.addAll(urlsToCache);
+        return cache.addAll(urlsToCache).catch(() => {
+          console.log('CLARITY: Failed to cache some URLs, continuing anyway');
+        });
       })
   );
   self.skipWaiting();
