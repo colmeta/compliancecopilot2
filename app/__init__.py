@@ -84,11 +84,24 @@ def create_app(config_class=Config):
 
     # --- Register Blueprints (STAGED - Only Core Ones First) ---
     
-    # Core Routes (Required) - MUST BE FIRST to handle root route
+    # API-first root route (no templates needed)
+    @app.route('/', methods=['GET'])
+    def api_root():
+        """API root endpoint"""
+        return jsonify({
+            'name': 'CLARITY Engine API',
+            'version': '5.0',
+            'status': 'live',
+            'health': '/health',
+            'docs': '/api/docs',
+            'frontend': 'https://clarity-frontend.vercel.app'
+        }), 200
+    
+    # Core Routes (dashboard, etc - with url_prefix to avoid conflict)
     try:
         from .main.routes import main as main_blueprint
-        app.register_blueprint(main_blueprint)  # NO url_prefix - handles root /
-        app.logger.info("✅ Main routes registered (handling root /)")
+        app.register_blueprint(main_blueprint, url_prefix='/app')
+        app.logger.info("✅ Main routes registered at /app/*")
     except Exception as e:
         app.logger.error(f"❌ Could not load main routes: {e}")
     
