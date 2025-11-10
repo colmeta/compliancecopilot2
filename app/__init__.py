@@ -252,21 +252,23 @@ def create_app(config_class=Config):
     except Exception as e:
         app.logger.warning(f"⚠️ API Management not available: {e}")
     
-    # Extended Diagnostics (Check what's deployed)
-    try:
-        from .api.diagnostics_extended import diagnostics_extended as diagnostics_extended_blueprint
-        app.register_blueprint(diagnostics_extended_blueprint)
-        app.logger.info("✅ Extended diagnostics registered")
-    except Exception as e:
-        app.logger.warning(f"⚠️ Extended diagnostics not available: {e}")
+    # Extended Diagnostics (Check what's deployed) - DISABLED TEMPORARILY
+    # Causing 500 errors, need to debug
+    # try:
+    #     from .api.diagnostics_extended import diagnostics_extended as diagnostics_extended_blueprint
+    #     app.register_blueprint(diagnostics_extended_blueprint)
+    #     app.logger.info("✅ Extended diagnostics registered")
+    # except Exception as e:
+    #     app.logger.warning(f"⚠️ Extended diagnostics not available: {e}")
     
-    # Image Text Rewrite (Complete working endpoint)
-    try:
-        from .api.image_rewrite_routes import image_rewrite as image_rewrite_blueprint
-        app.register_blueprint(image_rewrite_blueprint)
-        app.logger.info("✅ Image text rewrite registered (OCR + AI)")
-    except Exception as e:
-        app.logger.warning(f"⚠️ Image rewrite not available: {e}")
+    # Image Text Rewrite (Complete working endpoint) - DISABLED TEMPORARILY
+    # Causing 500 errors, need to debug
+    # try:
+    #     from .api.image_rewrite_routes import image_rewrite as image_rewrite_blueprint
+    #     app.register_blueprint(image_rewrite_blueprint)
+    #     app.logger.info("✅ Image text rewrite registered (OCR + AI)")
+    # except Exception as e:
+    #     app.logger.warning(f"⚠️ Image rewrite not available: {e}")
     
     # Additional Phase 4 features (Optional - load if available)
     optional_blueprints = [
