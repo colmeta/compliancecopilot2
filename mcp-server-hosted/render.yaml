@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: clarity-mcp-server
+    runtime: node
+    plan: starter  # $7/month
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CLARITY_API_URL
+        value: https://veritas-engine-zae0.onrender.com
+      - key: CLARITY_API_KEY
+        sync: false  # Set in Render dashboard
+    healthCheckPath: /health

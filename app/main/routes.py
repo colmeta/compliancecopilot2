@@ -11,16 +11,23 @@ main = Blueprint('main', __name__)
 
 @main.route('/')
 def homepage():
-    """This is the PUBLIC landing page for the entire service."""
-    return "<h1>Welcome to the Pearl AI Clarity Engine.</h1><p>Please <a href='/auth/login'>login</a> or <a href='/auth/register'>register</a> to continue.</p>"
+    """Presidential-level landing page"""
+    # Check authentication safely
+    try:
+        if current_user.is_authenticated:
+            return redirect(url_for('main.dashboard'))
+    except Exception:
+        pass  # User not logged in, that's fine
+    
+    return render_template('landing_presidential.html')
 
 @main.route('/dashboard')
 @login_required
 def dashboard():
-    """User's dashboard with API key management."""
+    """Fortune 50 Command Deck - Main dashboard"""
     # Get all API keys for the current user
     api_keys = APIKey.query.filter_by(user_id=current_user.id).order_by(APIKey.created_at.desc()).all()
-    return render_template('dashboard.html', api_keys=api_keys)
+    return render_template('dashboard_presidential.html', api_keys=api_keys)
 
 @main.route('/analysis')
 @login_required
@@ -39,6 +46,12 @@ def about():
 def vault():
     """Intelligence Vault management page."""
     return render_template('vault.html')
+
+@main.route('/funding')
+@login_required
+def funding():
+    """Funding Readiness Engine - Presidential Interface"""
+    return render_template('funding_interface.html')
 
 @main.route('/dashboard/generate-key', methods=['POST'])
 @login_required

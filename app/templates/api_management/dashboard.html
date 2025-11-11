@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}API Management - CLARITY{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">🔑 API Key Management</h1>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Your API Keys</h5>
+                </div>
+                <div class="card-body">
+                    {% if api_keys %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Key ID</th>
+                                <th>Created</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for key in api_keys %}
+                            <tr>
+                                <td><code>{{ key.id }}</code></td>
+                                <td>{{ key.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    {% if key.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Revoked</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if key.is_active %}
+                                    <button class="btn btn-sm btn-danger" onclick="revokeKey({{ key.id }})">
+                                        Revoke
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No API keys generated yet.</p>
+                    {% endif %}
+                    
+                    <button class="btn btn-primary mt-3" onclick="generateKey()">
+                        ➕ Generate New API Key
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">📚 Quick Start Guide</h5>
+                </div>
+                <div class="card-body">
+                    <h6>1. Generate an API Key</h6>
+                    <p>Click "Generate New API Key" above. Save the key immediately - it won't be shown again!</p>
+                    
+                    <h6>2. Make API Requests</h6>
+                    <p>Include your API key in the <code>X-API-KEY</code> header:</p>
+                    <pre class="bg-light p-3"><code>curl -X POST https://clarity.ai/api/analyze \
+  -H "X-API-KEY: your-api-key-here" \
+  -H "Content-Type: application/json" \
+  -d '{"directive": "Analyze this data", "documents": [...]}'</code></pre>
+                    
+                    <h6>3. View Full Documentation</h6>
+                    <a href="{{ url_for('api_mgmt.documentation') }}" class="btn btn-info">
+                        View API Documentation
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">📊 Usage Stats</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Your Tier:</strong> {{ user.subscription.tier if user.subscription else 'Free' }}</p>
+                    <p><strong>API Keys:</strong> {{ api_keys|length }}</p>
+                    <p><strong>Active Keys:</strong> {{ api_keys|selectattr('is_active')|list|length }}</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0">⚠️ Security Tips</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="small">
+                        <li>Never share your API keys publicly</li>
+                        <li>Rotate keys regularly</li>
+                        <li>Revoke unused keys</li>
+                        <li>Use environment variables in code</li>
+                        <li>Monitor API usage for anomalies</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API Key Modal -->
+<div class="modal fade" id="keyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">✅ API Key Generated</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="alert alert-warning">
+                    <strong>⚠️ Save this key now!</strong> It will not be shown again.
+                </p>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="generatedKey" readonly>
+                    <button class="btn btn-outline-secondary" type="button" onclick="copyKey()">
+                        📋 Copy
+                    </button>
+                </div>
+                <p class="text-muted small">Store this key securely (e.g., password manager, environment variables)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function generateKey() {
+    fetch('{{ url_for("api_mgmt.generate_key") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('generatedKey').value = data.api_key;
+            const modal = new bootstrap.Modal(document.getElementById('keyModal'));
+            modal.show();
+            
+            // Reload page after modal closes
+            document.getElementById('keyModal').addEventListener('hidden.bs.modal', function () {
+                location.reload();
+            });
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+function copyKey() {
+    const keyInput = document.getElementById('generatedKey');
+    keyInput.select();
+    document.execCommand('copy');
+    alert('API key copied to clipboard!');
+}
+
+function revokeKey(keyId) {
+    if (confirm('Are you sure you want to revoke this API key? This cannot be undone.')) {
+        fetch(`{{ url_for("api_mgmt.revoke_key", key_id=0) }}`.replace('/0', `/${keyId}`), {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('API key revoked successfully');
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

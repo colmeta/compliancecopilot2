@@ -1,0 +1,68 @@
+# ==============================================================================
+# Render Deployment - Simple Version (Using Existing DB & Redis)
+# ==============================================================================
+# This version uses your existing clarity-pearl-postgres and Clarity-pearl
+
+services:
+  # Web Service (Flask App)
+  - type: web_service
+    name: clarity-empire-web
+    runtime: python
+    plan: starter  # or 'free' for free tier
+    buildCommand: "./build-render.sh"
+    startCommand: "gunicorn run:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+    branch: cursor/complete-enterprise-ai-platform-development-0349
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.6
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: false
+      # Set these manually in Render dashboard:
+      - key: DATABASE_URL
+        sync: false  # Add existing DB connection string
+      - key: REDIS_URL
+        sync: false  # Add existing Redis connection string
+      - key: CELERY_BROKER_URL
+        sync: false  # Same as REDIS_URL
+      - key: CELERY_RESULT_BACKEND
+        sync: false  # Same as REDIS_URL
+      - key: FLASK_SECRET_KEY
+        generateValue: true  # Auto-generate
+      - key: GOOGLE_API_KEY
+        sync: false  # Your Gemini key
+      - key: OPENAI_API_KEY
+        sync: false  # Optional
+      - key: ANTHROPIC_API_KEY
+        sync: false  # Optional
+      - key: GROQ_API_KEY
+        sync: false  # Optional
+    
+  # Background Worker (Celery)
+  - type: background_worker
+    name: clarity-empire-worker
+    runtime: python
+    plan: starter  # or 'free'
+    buildCommand: "./build-render.sh"
+    startCommand: "celery -A celery_worker.celery_app worker --loglevel=info --concurrency=2"
+    branch: cursor/complete-enterprise-ai-platform-development-0349
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.6
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: CELERY_BROKER_URL
+        sync: false
+      - key: CELERY_RESULT_BACKEND
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false

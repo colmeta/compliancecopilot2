@@ -1,0 +1,49 @@
+# Render Blueprint for CLARITY Engine
+# Defines system dependencies and build configuration
+
+services:
+  - type: web
+    name: clarity-backend
+    env: python
+    region: oregon
+    plan: free
+    
+    # Build configuration
+    buildCommand: |
+      # Install system dependencies
+      apt-get update
+      apt-get install -y tesseract-ocr tesseract-ocr-eng libtesseract-dev poppler-utils
+      
+      # Install Python dependencies
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      
+      # Run database migrations
+      export FLASK_APP=run.py
+      flask db upgrade
+    
+    # Start command
+    startCommand: gunicorn run:app
+    
+    # Environment variables
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      
+      - key: DATABASE_URL
+        sync: false  # Set in Render dashboard
+      
+      - key: GOOGLE_API_KEY
+        sync: false  # Set in Render dashboard
+      
+      - key: MAIL_USERNAME
+        sync: false  # Set in Render dashboard
+      
+      - key: MAIL_PASSWORD
+        sync: false  # Set in Render dashboard
+      
+      - key: ENABLE_EMAIL_DELIVERY
+        value: true
+    
+    # Health check (simple path that responds instantly)
+    healthCheckPath: /health

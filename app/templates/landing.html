@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLARITY - Fortune 50-Grade AI Intelligence Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 0;
+        }
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .pricing-card {
+            transition: transform 0.3s;
+        }
+        .pricing-card:hover {
+            transform: translateY(-10px);
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">🏛️ CLARITY</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#pricing">Pricing</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('api_mgmt.documentation') }}">API Docs</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Login</a></li>
+                    <li class="nav-item"><a class="btn btn-primary ms-2" href="{{ url_for('auth.register') }}">Get Started</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section class="hero text-center">
+        <div class="container">
+            <h1 class="display-3 fw-bold mb-4">Fortune 50-Grade AI Intelligence</h1>
+            <p class="lead mb-5">The only platform that combines data science, expense management, and document intelligence powered by multiple LLMs</p>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg me-3">Start Free Trial</a>
+            <a href="#features" class="btn btn-outline-light btn-lg">Learn More</a>
+            
+            <div class="mt-5">
+                <p class="mb-2">Trusted by:</p>
+                <div class="d-flex justify-content-center flex-wrap gap-4">
+                    <span class="badge bg-light text-dark fs-6">Fortune 50 Companies</span>
+                    <span class="badge bg-light text-dark fs-6">Government Agencies</span>
+                    <span class="badge bg-light text-dark fs-6">World Bank</span>
+                    <span class="badge bg-light text-dark fs-6">Small Businesses</span>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section id="features" class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Why CLARITY is #1</h2>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="feature-icon">📊</div>
+                        <h4>Data Science Engine</h4>
+                        <p>Visual Capitalist-quality analytics. Statistical analysis, beautiful charts, presidential-grade narratives.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="feature-icon">💰</div>
+                        <h4>Expense Management</h4>
+                        <p>Scan receipts, track expenses, get AI-powered cost-saving recommendations. Save 15-25% on average.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="feature-icon">🤖</div>
+                        <h4>12 Domain Accelerators</h4>
+                        <p>Specialized AI for Legal, Financial, Healthcare, Education, Security, and more.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="feature-icon">📝</div>
+                        <h4>Data Keystone Engine</h4>
+                        <p>4-agent autonomous data entry. Hardcopy receipts → structured database automatically.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="feature-icon">✍️</div>
+                        <h4>Human Touch Writer</h4>
+                        <p>AI writing that matches your organization's voice. No more robotic content.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="feature-icon">🔄</div>
+                        <h4>Multi-LLM Failover</h4>
+                        <p>Never goes down. Automatic failover across Gemini, GPT-4, Claude, and Groq.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Simple, Transparent Pricing</h2>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card pricing-card h-100">
+                        <div class="card-body">
+                            <h3 class="card-title">Free</h3>
+                            <h2 class="mb-4">$0<small class="text-muted">/month</small></h2>
+                            <ul class="list-unstyled">
+                                <li>✅ 10 documents/month</li>
+                                <li>✅ 20 analyses/month</li>
+                                <li>✅ 100 MB storage</li>
+                                <li>✅ All 12 accelerators</li>
+                                <li>✅ Community support</li>
+                            </ul>
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary w-100 mt-3">Start Free</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card pricing-card h-100 border-primary">
+                        <div class="card-header bg-primary text-white">Most Popular</div>
+                        <div class="card-body">
+                            <h3 class="card-title">Pro</h3>
+                            <h2 class="mb-4">$49<small class="text-muted">/month</small></h2>
+                            <ul class="list-unstyled">
+                                <li>✅ 500 documents/month</li>
+                                <li>✅ 1,000 analyses/month</li>
+                                <li>✅ 10 GB storage</li>
+                                <li>✅ Data Science Engine</li>
+                                <li>✅ Expense Management</li>
+                                <li>✅ Team workspaces (5)</li>
+                                <li>✅ API access (10K calls)</li>
+                                <li>✅ Email support</li>
+                            </ul>
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary w-100 mt-3">Upgrade to Pro</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card pricing-card h-100">
+                        <div class="card-body">
+                            <h3 class="card-title">Enterprise</h3>
+                            <h2 class="mb-4">$499<small class="text-muted">/month</small></h2>
+                            <ul class="list-unstyled">
+                                <li>✅ Unlimited everything</li>
+                                <li>✅ All AI models</li>
+                                <li>✅ SOC2, HIPAA, GDPR</li>
+                                <li>✅ SSO integration</li>
+                                <li>✅ 99.9% SLA</li>
+                                <li>✅ 24/7 dedicated support</li>
+                                <li>✅ Unlimited API access</li>
+                                <li>✅ Custom accelerators</li>
+                            </ul>
+                            <a href="mailto:sales@clarity.ai" class="btn btn-dark w-100 mt-3">Contact Sales</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Stats Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <h2 class="display-4 text-primary">80%</h2>
+                    <p>Cost Reduction</p>
+                </div>
+                <div class="col-md-3">
+                    <h2 class="display-4 text-primary">95%</h2>
+                    <p>Time Savings</p>
+                </div>
+                <div class="col-md-3">
+                    <h2 class="display-4 text-primary">12</h2>
+                    <p>Domain Accelerators</p>
+                </div>
+                <div class="col-md-3">
+                    <h2 class="display-4 text-primary">4</h2>
+                    <p>LLM Providers</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="bg-primary text-white py-5">
+        <div class="container text-center">
+            <h2 class="mb-4">Ready to Transform Your Work?</h2>
+            <p class="lead mb-4">Join thousands of professionals using CLARITY</p>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg">Start Free Trial - No Credit Card Required</a>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container text-center">
+            <p class="mb-0">© 2024 CLARITY - Fortune 50-Grade AI Intelligence Platform</p>
+            <p class="small text-muted">Built with excellence. Deployed with confidence. Scaled without limits.</p>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

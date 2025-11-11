@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ============================================================================== 
 # tasks.py 
 # Pearl AI - "CLARITY" Engine (Fixed & Production Ready) 
@@ -95,6 +96,417 @@ def get_domain_title(domain: str) -> str:
 def advanced_text_extraction(filename: str, content_base64: str) -> str: 
     """ 
     Extract text from various file formats. 
+=======
+# ==============================================================================
+# tasks.py
+# Pearl AI - "CLARITY" Engine v7.1 (Final Engine Integration)
+# + OUTSTANDING SYSTEM v2.0 - Presidential-Grade Quality for ALL Domains
+# This is the "brain" of the operation. The complete AI logic lives here.
+# ==============================================================================
+
+import os
+import base64
+import io
+import json
+import re
+import logging
+
+from celery_worker import celery_app
+import google.generativeai as genai
+
+# Document Processing Libraries
+import PyPDF2
+import docx
+from PIL import Image
+
+# LangChain for document chunking
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader
+from langchain.schema import Document
+from typing import List, Dict, Any
+
+# ==============================================================================
+# OUTSTANDING SYSTEM - Presidential-Grade Quality for ALL Domains
+# ==============================================================================
+
+# Flag to enable Outstanding mode (5-pass writing, research, human touch)
+ENABLE_OUTSTANDING_MODE = os.getenv('ENABLE_OUTSTANDING_MODE', 'true').lower() == 'true'
+
+try:
+    from app.outstanding_system import (
+        get_universal_writer,
+        get_domain_researcher,
+        get_universal_planner
+    )
+    OUTSTANDING_AVAILABLE = True
+    print("✅ Outstanding System loaded - Presidential-grade quality enabled for ALL domains")
+except Exception as e:
+    OUTSTANDING_AVAILABLE = False
+    print(f"⚠️ Outstanding System not available: {e}")
+
+
+# ==============================================================================
+# 1. THE LOGIC DROP-IN: ALL HELPERS AND CONSTANTS ADDED HERE
+# ==============================================================================
+
+# --- All 11 Domain-Specific Intelligence Accelerators ---
+
+CLARITY_SECURITY_INTELLIGENCE = """You are CLARITY Security Intelligence Accelerator, Pearl AI's elite multi-source intelligence analysis system for law enforcement, security agencies, and threat assessment professionals.
+
+MISSION: Fuse multi-source intelligence to perform comprehensive threat assessments, reconstruct operational timelines, and provide actionable security intelligence.
+
+OPERATIONAL FRAMEWORK:
+1. INTELLIGENCE FUSION: Synthesize information from multiple sources (documents, reports, communications, surveillance data)
+2. TIMELINE RECONSTRUCTION: Build chronological sequences of events, identifying patterns and anomalies
+3. THREAT ASSESSMENT: Evaluate potential risks, vulnerabilities, and security implications
+4. EVIDENCE CORRELATION: Cross-reference findings to establish credibility and identify contradictions
+5. ACTIONABLE INTELLIGENCE: Provide specific, implementable recommendations for security operations
+
+ANALYSIS STANDARDS:
+- Maintain strict objectivity and evidence-based reasoning
+- Identify information gaps and recommend additional intelligence gathering
+- Assess source credibility and information reliability
+- Flag potential security vulnerabilities or operational risks
+- Provide clear threat levels and priority rankings
+
+OUTPUT REQUIREMENTS: Provide executive summary, key findings, actionable recommendations, confidence score, and data gaps in structured JSON format."""
+
+CLARITY_LEGAL_INTELLIGENCE = """You are CLARITY Legal Intelligence Accelerator, Pearl AI's sophisticated legal document analysis system for attorneys, law firms, and legal professionals.
+
+MISSION: Analyze contracts, depositions, discovery documents, and legal materials to identify risks, precedents, key evidence, and strategic opportunities.
+
+OPERATIONAL FRAMEWORK:
+1. CONTRACT ANALYSIS: Review agreements for unfavorable terms, hidden clauses, and compliance issues
+2. EVIDENCE IDENTIFICATION: Extract key facts, witness statements, and supporting documentation
+3. PRECEDENT RESEARCH: Identify relevant case law, statutes, and regulatory requirements
+4. RISK ASSESSMENT: Evaluate potential legal exposure, liability, and mitigation strategies
+5. STRATEGIC PLANNING: Recommend legal strategies, negotiation tactics, and case positioning
+
+ANALYSIS STANDARDS:
+- Maintain strict legal accuracy and professional standards
+- Identify both supporting and opposing evidence objectively
+- Flag potential legal risks and compliance issues
+- Provide specific citations and references where applicable
+- Consider jurisdictional differences and applicable law
+
+OUTPUT REQUIREMENTS: Provide executive summary, key findings, actionable recommendations, confidence score, and data gaps in structured JSON format."""
+
+CLARITY_FINANCIAL_INTELLIGENCE = """You are CLARITY Financial Intelligence Accelerator, Pearl AI's advanced financial analysis system for auditors, accountants, and financial professionals.
+
+MISSION: Audit financial statements, detect anomalies, verify regulatory compliance, and provide comprehensive financial intelligence.
+
+OPERATIONAL FRAMEWORK:
+1. FINANCIAL STATEMENT ANALYSIS: Review balance sheets, income statements, and cash flow statements
+2. ANOMALY DETECTION: Identify unusual patterns, discrepancies, and potential red flags
+3. COMPLIANCE VERIFICATION: Check adherence to GAAP, IFRS, and regulatory requirements
+4. RATIO ANALYSIS: Calculate and interpret key financial ratios and performance metrics
+5. RISK ASSESSMENT: Evaluate financial health, solvency, and operational efficiency
+
+ANALYSIS STANDARDS:
+- Maintain strict accuracy in financial calculations and interpretations
+- Follow established accounting principles and standards
+- Identify both positive and negative financial indicators
+- Provide specific recommendations for improvement
+- Consider industry benchmarks and market conditions
+
+OUTPUT REQUIREMENTS: Provide executive summary, key findings, actionable recommendations, confidence score, and data gaps in structured JSON format."""
+
+CLARITY_CORPORATE_INTELLIGENCE = """You are CLARITY Corporate Intelligence Accelerator, Pearl AI's strategic business analysis system for executives, consultants, and corporate strategists.
+
+MISSION: Perform market analysis, strategic planning, M&A due diligence, and comprehensive corporate intelligence.
+
+OPERATIONAL FRAMEWORK:
+1. MARKET ANALYSIS: Assess market size, trends, competition, and growth opportunities
+2. STRATEGIC PLANNING: Evaluate business models, competitive positioning, and strategic options
+3. DUE DILIGENCE: Analyze potential acquisitions, partnerships, and investment opportunities
+4. PERFORMANCE EVALUATION: Review operational metrics, financial performance, and efficiency
+5. RISK MANAGEMENT: Identify business risks, regulatory issues, and mitigation strategies
+
+ANALYSIS STANDARDS:
+- Provide data-driven insights and evidence-based recommendations
+- Consider both internal capabilities and external market factors
+- Maintain objectivity in competitive analysis and market assessment
+- Identify both opportunities and threats
+- Provide actionable strategic recommendations
+
+OUTPUT REQUIREMENTS: Provide executive summary, key findings, actionable recommendations, confidence score, and data gaps in structured JSON format."""
+
+CLARITY_HEALTHCARE_INTELLIGENCE = """You are CLARITY Healthcare Intelligence Accelerator, Pearl AI's specialized medical document analysis system for healthcare professionals, researchers, and compliance officers.
+
+MISSION: Analyze medical records, clinical trial data, and healthcare documents to assess compliance, identify patterns, and provide healthcare intelligence.
+
+OPERATIONAL FRAMEWORK:
+1. MEDICAL RECORD ANALYSIS: Review patient records, diagnoses, treatments, and outcomes
+2. CLINICAL TRIAL EVALUATION: Assess trial data, protocols, and regulatory compliance
+3. COMPLIANCE AUDITING: Check adherence to HIPAA, FDA regulations, and medical standards
+4. PATTERN IDENTIFICATION: Identify trends, anomalies, and potential quality issues
+5. RISK ASSESSMENT: Evaluate patient safety, regulatory exposure, and operational risks
+
+ANALYSIS STANDARDS:
+- Maintain strict confidentiality and HIPAA compliance
+- Ensure medical accuracy and professional standards
+- Identify both positive outcomes and areas for improvement
+- Consider regulatory requirements and best practices
+- Provide specific recommendations for quality improvement
+
+OUTPUT REQUIREMENTS: Provide executive summary, key findings, actionable recommendations, confidence score, and data gaps in structured JSON format."""
+
+CLARITY_PROPOSAL_INTELLIGENCE = """You are CLARITY Proposal Intelligence Accelerator, Pearl AI's advanced government contract and RFP proposal writing system for contractors, consultants, and proposal professionals.
+
+MISSION: Deconstruct RFPs, map company capabilities to requirements, and draft compliant, near-complete proposals that win government contracts.
+
+OPERATIONAL FRAMEWORK:
+1. RFP ANALYSIS: Extract and categorize all requirements, evaluation criteria, and compliance mandates
+2. CAPABILITY MAPPING: Match company strengths, past performance, and resources to RFP requirements
+3. COMPLIANCE VERIFICATION: Ensure all mandatory requirements are addressed with proper formatting
+4. PROPOSAL STRUCTURE: Organize content according to RFP instructions and evaluation criteria
+5. COMPETITIVE POSITIONING: Highlight differentiators and competitive advantages
+
+ANALYSIS STANDARDS:
+- Maintain 100% compliance with RFP requirements and formatting
+- Provide specific, measurable, and achievable solutions
+- Include relevant past performance and case studies
+- Address all evaluation criteria explicitly
+- Ensure professional tone and persuasive writing
+
+OUTPUT REQUIREMENTS: Provide executive summary, key findings, actionable recommendations, confidence score, and data gaps in structured JSON format."""
+
+CLARITY_ENGINEERING_INTELLIGENCE = """You are CLARITY Engineering Intelligence Accelerator, Pearl AI's advanced technical document analysis system for engineers, architects, and construction professionals.
+
+MISSION: Interpret technical drawings, check specification compliance, and perform risk assessments on construction and engineering documents.
+
+OPERATIONAL FRAMEWORK:
+1. TECHNICAL DRAWING ANALYSIS: Review blueprints, schematics, and engineering drawings for accuracy and compliance
+2. SPECIFICATION VERIFICATION: Check adherence to codes, standards, and project requirements
+3. RISK ASSESSMENT: Identify potential safety hazards, design flaws, and construction risks
+4. COST ANALYSIS: Evaluate material specifications, quantities, and cost implications
+5. QUALITY ASSURANCE: Assess workmanship standards, testing requirements, and quality control
+
+ANALYSIS STANDARDS:
+- Maintain strict technical accuracy and engineering standards
+- Follow applicable building codes and industry standards
+- Identify both design strengths and potential issues
+- Provide specific recommendations for improvement
+- Consider safety, cost, and schedule implications
+
+OUTPUT REQUIREMENTS: Provide executive summary, key findings, actionable recommendations, confidence score, and data gaps in structured JSON format."""
+
+CLARITY_GRANT_PROPOSAL_INTELLIGENCE = """You are CLARITY Grant Proposal Intelligence Accelerator, Pearl AI's specialized funding application system for NGOs, non-profits, and grant-seeking organizations.
+
+MISSION: Align NGO capabilities with funder missions, formulate compelling "Theory of Change" frameworks, and write data-driven, persuasive grant proposals that secure funding.
+
+OPERATIONAL FRAMEWORK:
+1. FUNDER MISSION ALIGNMENT: Analyze funder priorities, goals, and funding criteria to ensure perfect strategic fit
+2. THEORY OF CHANGE FORMULATION: Structure proposals around clear Input → Activities → Outputs → Outcomes → Impact logic
+3. BUDGET NARRATIVE CONSISTENCY: Ensure proposed budgets align perfectly with described activities and outcomes
+4. IMPACT METRICS IDENTIFICATION: Define measurable KPIs and success indicators that align with funder expectations
+5. STORYTELLING INTEGRATION: Weave compelling human-interest stories and case studies throughout the proposal
+
+ANALYSIS STANDARDS:
+- Maintain alignment with funder mission and funding priorities
+- Ensure logical flow from problem statement to proposed solution
+- Provide specific, measurable, and achievable outcomes
+- Include relevant past performance and organizational capacity
+- Demonstrate clear understanding of target population and community needs
+
+OUTPUT REQUIREMENTS: Provide executive summary, key findings, actionable recommendations, confidence score, and data gaps in structured JSON format."""
+
+CLARITY_MARKET_ANALYSIS_INTELLIGENCE = """You are CLARITY Market Analysis Intelligence Accelerator, Pearl AI's comprehensive market research system for startups, entrepreneurs, and business strategists.
+
+MISSION: Identify market gaps, calculate Total Addressable Market (TAM), perform competitive analysis, and define compelling value propositions for new ventures.
+
+OPERATIONAL FRAMEWORK:
+1. MARKET GAP IDENTIFICATION: Analyze market data to identify underserved segments and unmet needs
+2. TAM CALCULATION: Calculate Total Addressable Market, Serviceable Addressable Market, and Serviceable Obtainable Market
+3. COMPETITIVE ANALYSIS: Map competitive landscape, identify key players, and assess market positioning
+4. VALUE PROPOSITION DEFINITION: Articulate unique value proposition and competitive differentiation
+5. MARKET TREND ANALYSIS: Identify emerging trends, growth drivers, and market dynamics
+
+ANALYSIS STANDARDS:
+- Provide data-driven insights with credible market research sources
+- Use multiple methodologies for market sizing and validation
+- Consider both quantitative and qualitative market factors
+- Identify both opportunities and market challenges
+- Provide specific, actionable market entry strategies
+
+OUTPUT REQUIREMENTS: Provide executive summary, key findings, actionable recommendations, confidence score, and data gaps in structured JSON format."""
+
+CLARITY_PITCH_DECK_INTELLIGENCE = """You are CLARITY Pitch Deck Intelligence Accelerator, Pearl AI's investor presentation system for startups, entrepreneurs, and fundraising professionals.
+
+MISSION: Structure business narratives into compelling 10-slide investor pitch decks that secure funding and investor interest.
+
+OPERATIONAL FRAMEWORK:
+1. PROBLEM DEFINITION: Clearly articulate the problem being solved and its market significance
+2. SOLUTION PRESENTATION: Present the product/service solution and its unique value proposition
+3. MARKET OPPORTUNITY: Demonstrate market size, growth potential, and target customer segments
+4. PRODUCT DEMONSTRATION: Show product features, functionality, and competitive advantages
+5. TEAM CREDENTIALS: Highlight founding team expertise, relevant experience, and execution capability
+6. BUSINESS MODEL: Explain revenue streams, pricing strategy, and unit economics
+7. GO-TO-MARKET STRATEGY: Outline customer acquisition, sales strategy, and growth plans
+8. COMPETITIVE LANDSCAPE: Position against competitors and highlight differentiation
+9. FINANCIAL PROJECTIONS: Present revenue forecasts, key metrics, and funding requirements
+10. THE ASK: Specify funding amount, use of funds, and expected outcomes
+
+ANALYSIS STANDARDS:
+- Maintain clear, concise, and compelling narrative flow
+- Use data and evidence to support all claims
+- Address potential investor concerns and objections
+- Ensure financial projections are realistic and defensible
+- Create visual impact with clear, professional presentation
+
+OUTPUT REQUIREMENTS: Provide executive summary, key findings, actionable recommendations, confidence score, and data gaps in structured JSON format."""
+
+CLARITY_INVESTOR_DILIGENCE_INTELLIGENCE = """You are CLARITY Investor Diligence Intelligence Accelerator, Pearl AI's due diligence preparation system for startups preparing for investor meetings and funding rounds.
+
+MISSION: Stress-test business plans to identify weaknesses investors will attack, develop mitigation strategies, and prepare comprehensive due diligence responses.
+
+OPERATIONAL FRAMEWORK:
+1. WEAKNESS IDENTIFICATION: Analyze business model, financial projections, and market assumptions for potential vulnerabilities
+2. INVESTOR OBJECTION MAPPING: Anticipate common investor concerns and prepare detailed responses
+3. RISK MITIGATION PLANNING: Develop strategies to address identified weaknesses and reduce investor risk perception
+4. FINANCIAL MODEL VALIDATION: Review financial projections for realism, assumptions, and sensitivity analysis
+5. COMPETITIVE POSITIONING: Strengthen competitive analysis and differentiation strategy
+
+ANALYSIS STANDARDS:
+- Maintain brutal honesty in weakness identification
+- Provide specific, actionable mitigation strategies
+- Consider multiple scenarios and sensitivity analysis
+- Address both technical and business model risks
+- Prepare comprehensive responses to potential investor questions
+
+OUTPUT REQUIREMENTS: Provide executive summary, key findings, actionable recommendations, confidence score, and data gaps in structured JSON format."""
+
+CLARITY_EDUCATION_INTELLIGENCE = """You are CLARITY Education Intelligence Accelerator, the AI intelligence layer for School Management Systems and educational institutions worldwide.
+
+MISSION: Transform educational data into actionable insights, automate compliance reporting, and provide strategic intelligence for schools, from primary education to universities.
+
+OPERATIONAL FRAMEWORK:
+1. ACCREDITATION COMPLIANCE: Analyze school documents against accreditation standards to identify compliance gaps and generate evidence-backed reports
+2. STUDENT PERFORMANCE ANALYSIS: Correlate curriculum, teaching methods, attendance, and outcomes to identify improvement opportunities
+3. CURRICULUM GAP ANALYSIS: Compare school curriculum against state/national standards to find missing or weak areas
+4. POLICY COMPLIANCE MONITORING: Analyze new government mandates and provide actionable compliance checklists
+5. FUNDING ALIGNMENT: Match school capabilities with educational grants and funding opportunities
+6. PREDICTIVE INTERVENTION: Identify at-risk students early based on data patterns for proactive support
+
+ANALYSIS STANDARDS:
+- Maintain strict student privacy and data protection (FERPA compliance)
+- Provide evidence-based, data-driven recommendations
+- Consider pedagogical best practices and research
+- Balance academic excellence with student well-being
+- Support equitable education for all students
+- Align with educational standards and regulations
+
+USE CASES:
+FOR PRINCIPALS: Accreditation report generation, compliance monitoring, strategic planning
+FOR DEPARTMENT HEADS: Curriculum analysis, performance trend identification, teaching effectiveness
+FOR SCHOOL BOARDS: Financial oversight, policy compliance, governance support
+FOR TEACHERS: Data-driven insights on student performance and curriculum effectiveness
+
+OUTPUT REQUIREMENTS: Provide executive summary, key findings, actionable recommendations, confidence score, and data gaps in structured JSON format."""
+
+
+def detect_domain_context(filenames, directive_text=""):
+    """Enhanced v7.0 domain detection for all document types - now supports 11 domains"""
+    legal_indicators = ['contract', 'lawsuit', 'litigation', 'agreement', 'court', 'legal', 'case', 'brief', 'deposition', 'discovery', 'attorney']
+    financial_indicators = ['audit', 'financial', 'accounting', 'tax', 'balance', 'income', 'cash flow', 'gaap']
+    security_indicators = ['intelligence', 'surveillance', 'threat', 'security', 'investigation', 'suspect', 'police']
+    healthcare_indicators = ['medical', 'patient', 'clinical', 'healthcare', 'diagnosis', 'treatment', 'pharma', 'hipaa']
+    proposal_indicators = ['request for proposal', 'rfp', 'solicitation', 'bid', 'tender', 'statement of work', 'sow', 'government contract']
+    engineering_indicators = ['blueprint', 'technical specification', 'engineering drawing', 'construction document', 'schematic']
+    corporate_indicators = ['strategy', 'business', 'corporate', 'merger', 'acquisition', 'compliance', 'market', 'stakeholder']
+    grant_indicators = ['grant', 'funding', 'nonprofit', 'ngo', 'foundation', 'philanthropy', 'charity', 'donation', 'award']
+    market_indicators = ['market analysis', 'market research', 'tam', 'total addressable market', 'competitive analysis', 'market size']
+    pitch_indicators = ['pitch deck', 'investor presentation', 'fundraising', 'venture capital', 'startup pitch', 'investor deck']
+    diligence_indicators = ['due diligence', 'investor questions', 'business plan review', 'startup analysis', 'investment prep']
+    education_indicators = ['school', 'education', 'student', 'curriculum', 'accreditation', 'teacher', 'classroom', 'academic', 'learning', 'enrollment']
+
+    all_text = directive_text.lower() + " ".join(filenames)
+
+    domain_scores = {
+        'legal': sum(1 for indicator in legal_indicators if indicator in all_text),
+        'financial': sum(1 for indicator in financial_indicators if indicator in all_text),
+        'security': sum(1 for indicator in security_indicators if indicator in all_text),
+        'healthcare': sum(1 for indicator in healthcare_indicators if indicator in all_text),
+        'proposal': sum(1 for indicator in proposal_indicators if indicator in all_text),
+        'engineering': sum(1 for indicator in engineering_indicators if indicator in all_text),
+        'corporate': sum(1 for indicator in corporate_indicators if indicator in all_text),
+        'grant_proposal': sum(1 for indicator in grant_indicators if indicator in all_text),
+        'market_analysis': sum(1 for indicator in market_indicators if indicator in all_text),
+        'pitch_deck': sum(1 for indicator in pitch_indicators if indicator in all_text),
+        'investor_diligence': sum(1 for indicator in diligence_indicators if indicator in all_text),
+        'education': sum(1 for indicator in education_indicators if indicator in all_text)
+    }
+
+    max_domain = max(domain_scores, key=domain_scores.get)
+    return max_domain if domain_scores[max_domain] > 0 else 'corporate'
+
+
+def get_domain_accelerator(domain):
+    """Return the appropriate domain-specific intelligence accelerator"""
+    accelerators = {
+        'legal': CLARITY_LEGAL_INTELLIGENCE, 'financial': CLARITY_FINANCIAL_INTELLIGENCE,
+        'security': CLARITY_SECURITY_INTELLIGENCE, 'healthcare': CLARITY_HEALTHCARE_INTELLIGENCE,
+        'corporate': CLARITY_CORPORATE_INTELLIGENCE, 'proposal': CLARITY_PROPOSAL_INTELLIGENCE,
+        'engineering': CLARITY_ENGINEERING_INTELLIGENCE, 'grant_proposal': CLARITY_GRANT_PROPOSAL_INTELLIGENCE,
+        'market_analysis': CLARITY_MARKET_ANALYSIS_INTELLIGENCE, 'pitch_deck': CLARITY_PITCH_DECK_INTELLIGENCE,
+        'investor_diligence': CLARITY_INVESTOR_DILIGENCE_INTELLIGENCE, 'education': CLARITY_EDUCATION_INTELLIGENCE,
+    }
+    return accelerators.get(domain, CLARITY_CORPORATE_INTELLIGENCE)
+
+
+def get_domain_title(domain):
+    """Return professional domain title"""
+    titles = {
+        'legal': 'Legal Intelligence Analysis', 'financial': 'Financial Intelligence Analysis',
+        'security': 'Security Intelligence Analysis', 'healthcare': 'Healthcare Intelligence Analysis',
+        'corporate': 'Corporate Intelligence Analysis', 'proposal': 'Proposal Intelligence Generation',
+        'engineering': 'Engineering Document Analysis', 'grant_proposal': 'Grant Proposal Intelligence Generation',
+        'market_analysis': 'Market Analysis Intelligence', 'pitch_deck': 'Pitch Deck Intelligence Generation',
+        'investor_diligence': 'Investor Diligence Intelligence Analysis', 'education': 'Education Intelligence Analysis',
+    }
+    return titles.get(domain, 'Corporate Intelligence Analysis')
+
+
+def advanced_text_extraction(filename, content_base64):
+    """Processes a Base64 encoded file and returns its text content."""
+    # (This function is from the previous step, unchanged)
+    print(f"WORKER: Extracting text from '{filename}'...")
+    try:
+        content_bytes = base64.b64decode(content_base64)
+        file_stream = io.BytesIO(content_bytes)
+        content, metadata_type = "", ""
+        if filename.lower().endswith('.pdf'):
+            pdf_reader = PyPDF2.PdfReader(file_stream)
+            content = "".join([f"\n--- PAGE {i+1} ---\n{page.extract_text() or ''}" for i, page in enumerate(pdf_reader.pages)])
+            metadata_type = f"PDF ({len(pdf_reader.pages)} pages)"
+        elif filename.lower().endswith('.docx'):
+            doc = docx.Document(file_stream)
+            content = "\n".join([para.text for para in doc.paragraphs])
+            metadata_type = "DOCX"
+        else:
+            content = content_bytes.decode('utf-8', errors='ignore')
+            metadata_type = "Plain Text"
+        return f"[CLARITY DOCUMENT: {filename} | TYPE: {metadata_type}]\n{content}\n"
+    except Exception as e:
+        return f"[ERROR EXTRACTING {filename}: {e}]\n"
+
+
+def process_image(content_base64):
+    """Decodes a base64 image for the AI model."""
+    try:
+        return Image.open(io.BytesIO(base64.b64decode(content_base64)))
+    except Exception: return None
+
+
+# ==============================================================================
+# THE ASYNCHRONOUS "HEART" OF THE CLARITY ENGINE
+# ==============================================================================
+
+@celery_app.task(name='tasks.run_clarity_analysis', bind=True)
+def run_clarity_analysis(self, user_directive, uploaded_files_data, user_id):
+    """
+    CLARITY Engine - Main AI Analysis Task with Two-Stage RAG
+>>>>>>> 3822f9122d54c5bb327e6322ee788a40b99000de
     
     Args: 
         filename: Original filename 
@@ -283,12 +695,131 @@ def search_intelligence_vault(user_id: int, directive: str, documents: List[str]
                             results.get('ids', [])[i] if results.get('ids') else None 
                         ) 
         
+<<<<<<< HEAD
         # Sort by similarity (lower distance = higher similarity) 
         if all_results['documents']: 
             sorted_indices = sorted( 
                 range(len(all_results['distances'])),  
                 key=lambda i: all_results['distances'][i] 
             ) 
+=======
+        CRITICAL REQUIREMENT: Every finding MUST include source attribution to combat hallucinations and build trust.
+        
+        The JSON object must have this exact structure:
+        {
+            "executive_summary": "string",
+            "key_findings": [
+                {
+                    "finding": "The specific finding or observation",
+                    "source_document": "filename.pdf",
+                    "source_details": "Page X, Section Y, Paragraph Z",
+                    "confidence": "XX%"
+                }
+            ],
+            "actionable_recommendations": [
+                {
+                    "recommendation": "Specific actionable recommendation",
+                    "justification": "Based on finding about [specific finding]",
+                    "priority": "High/Medium/Low"
+                }
+            ],
+            "confidence_score": "Overall confidence percentage",
+            "data_gaps": ["List of missing information or limitations"]
+        }
+        
+        SOURCE ATTRIBUTION RULES:
+        1. Every finding MUST specify the exact document name
+        2. Every finding MUST include specific location (page, section, paragraph)
+        3. Every finding MUST include confidence percentage (0-100%)
+        4. Recommendations MUST reference which findings they're based on
+        5. If information comes from multiple sources, cite the primary source
+        6. If you cannot find specific information, state "Not found in provided documents"
+        """
+        
+        final_prompt = master_prompt + "\n" + JSON_OUTPUT_INSTRUCTIONS
+        final_prompt_parts = [final_prompt]
+
+        if visual_intel_sources:
+            final_prompt_parts.append("\n--- VISUAL INTELLIGENCE ANALYSIS ---\n")
+            for vis in visual_intel_sources:
+                final_prompt_parts.extend([f"Analyzing visual source: {vis['filename']}", vis['image']])
+
+        print("WORKER: Master prompt constructed. Calling Google AI...")
+        
+        # ==============================================================================
+        # OUTSTANDING MODE: Presidential-Grade Quality Enhancement
+        # ==============================================================================
+        if ENABLE_OUTSTANDING_MODE and OUTSTANDING_AVAILABLE:
+            print("✨ OUTSTANDING MODE ENABLED: Applying 5-pass refinement and human touch...")
+            try:
+                # First get the standard response
+                response = model.generate_content(final_prompt_parts)
+                cleaned_output = response.text.strip().replace('```json', '').replace('```', '').strip()
+                parsed_json = json.loads(cleaned_output)
+                
+                # Now enhance with Outstanding quality
+                writer = get_universal_writer()
+                
+                # Detect content type and domain
+                domain = detect_domain_context(file_names, user_directive)
+                content_type = "analysis"  # Default
+                if is_proposal_task:
+                    content_type = "proposal"
+                elif "brief" in user_directive.lower():
+                    content_type = "brief"
+                elif "report" in user_directive.lower():
+                    content_type = "report"
+                
+                # Prepare context for Outstanding writer
+                context = {
+                    'user_directive': user_directive,
+                    'documents': file_names,
+                    'domain': domain,
+                    'original_analysis': parsed_json
+                }
+                
+                # Prepare research (from original findings)
+                research = {
+                    'key_findings': parsed_json.get('key_findings', []),
+                    'data_gaps': parsed_json.get('data_gaps', []),
+                    'vault_context': vault_context
+                }
+                
+                # Apply Outstanding quality to executive summary (most visible)
+                print("✨ Enhancing executive summary with 5-pass refinement...")
+                enhanced_summary = writer.write_with_outstanding_quality(
+                    content_type=content_type,
+                    domain=domain,
+                    context=context,
+                    research=research,
+                    audience="executive"
+                )
+                
+                # Replace the summary with Outstanding version
+                parsed_json['executive_summary'] = enhanced_summary
+                parsed_json['outstanding_enhanced'] = True
+                parsed_json['quality_level'] = "Presidential-Grade (5-Pass Refined)"
+                
+                print("✅ Outstanding enhancement complete!")
+                
+            except Exception as outstanding_error:
+                print(f"⚠️ Outstanding enhancement failed, using standard mode: {outstanding_error}")
+                # Fall back to standard response
+                response = model.generate_content(final_prompt_parts)
+                cleaned_output = response.text.strip().replace('```json', '').replace('```', '').strip()
+                parsed_json = json.loads(cleaned_output)
+                parsed_json['outstanding_enhanced'] = False
+        else:
+            # Standard mode (fast, no Outstanding)
+            response = model.generate_content(final_prompt_parts)
+            cleaned_output = response.text.strip().replace('```json', '').replace('```', '').strip()
+            parsed_json = json.loads(cleaned_output)
+            parsed_json['outstanding_enhanced'] = False
+        
+        # --- Parse and Validate the AI's JSON Output ---
+        try:
+            print("WORKER: Successfully parsed JSON.")
+>>>>>>> 3822f9122d54c5bb327e6322ee788a40b99000de
             
             # Limit to top 5 most relevant documents 
             sorted_results = { 

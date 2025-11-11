@@ -13,6 +13,7 @@ import secrets
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
+    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
@@ -133,7 +134,7 @@ class UsageMetrics(db.Model):
     count = db.Column(db.Integer, nullable=False, default=0)
     period = db.Column(db.String(20), nullable=False, index=True)  # YYYY-MM format for monthly tracking
     timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    metadata = db.Column(db.Text, nullable=True)  # JSON for additional details
+    extra_data = db.Column(db.Text, nullable=True)  # JSON for additional details (renamed from 'metadata' - SQLAlchemy reserved word)
     
     # Relationship to user
     user = db.relationship('User', backref='usage_metrics')
@@ -250,7 +251,7 @@ class AnalyticsSnapshot(db.Model):
     date = db.Column(db.Date, nullable=False, index=True)
     metric_name = db.Column(db.String(100), nullable=False, index=True)
     value = db.Column(db.Float, nullable=False)
-    metadata = db.Column(db.Text, nullable=True)  # JSON for additional context
+    extra_context = db.Column(db.Text, nullable=True)  # JSON for additional context (renamed from 'metadata' - SQLAlchemy reserved)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     
     # Relationship to user

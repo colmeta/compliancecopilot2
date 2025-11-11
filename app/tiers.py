@@ -1,567 +1,534 @@
 # ==============================================================================
 # app/tiers.py
-# Multi-Tier Subscription System - The Monetization Engine
+# Multi-Tier Subscription System - Fortune 500 Grade Pricing
 # ==============================================================================
 """
-This module manages the multi-tier subscription system for CLARITY.
-Defines tier limits, feature access, and usage tracking for free/pro/enterprise tiers.
+CLARITY Tier System: Free/Pro/Enterprise
+
+This module defines the capabilities and limits for each subscription tier.
+Built to scale from individual users to Fortune 500 enterprises.
 """
 
-from typing import Dict, Any, Optional
-from datetime import datetime, timedelta
-import logging
-
-logger = logging.getLogger(__name__)
-
 # ==============================================================================
-# TIER CONFIGURATION - The Feature Matrix
+# TIER DEFINITIONS - The Monetization Architecture
 # ==============================================================================
 
 TIER_LIMITS = {
     'free': {
-        # Core Features
+        # Document Processing
         'documents_per_month': 10,
         'analysis_per_month': 20,
         'vault_storage_mb': 100,
+        'max_file_size_mb': 5,
         
-        # Multi-Modal Features
+        # AI Capabilities
+        'ai_model': 'gemini-pro',  # Stable, reliable model
+        'context_window': 32000,
         'audio_transcription': False,
         'video_processing': False,
-        'ocr_processing': 'tesseract',  # Free OCR only
+        'advanced_ocr': False,
+        'multimodal_analysis': False,
         
-        # Collaboration Features
+        # Collaboration
         'team_vaults': False,
         'workspace_members': 0,
         'document_sharing': False,
+        'real_time_collaboration': False,
         
-        # Analytics Features
+        # Analytics & Intelligence
         'advanced_analytics': False,
-        'user_analytics': True,  # Basic analytics only
-        'admin_analytics': False,
+        'custom_accelerators': False,
         'ai_performance_tracking': False,
-        'analytics_retention_days': 30,
+        'usage_dashboard': 'basic',
         
-        # AI Features
-        'model_selection': 'basic',  # Only basic models
-        'response_caching': 'shared',  # Shared cache only
-        'prompt_optimization': False,
-        
-        # Security & Compliance
+        # Enterprise Features
         'audit_logging': False,
         'compliance_frameworks': False,
-        'data_retention_policies': False,
-        'encryption': 'basic',  # Basic encryption only
-        'advanced_rate_limiting': False,
-        
-        # Support
-        'priority_support': False,
+        'sso_integration': False,
+        'dedicated_support': False,
         'sla_guarantee': False,
         
-        # AI Model Optimization
-        'model_routing': False,
-        'response_caching': False,
-        'prompt_optimization': False,
-        'cost_optimization': False,
+        # Data Entry Automation
+        'keystone_engine': False,
+        'planning_engine': 'basic',
+        'human_touch_writer': False,
         
-        # Rate Limits
-        'api_calls_per_minute': 10,
-        'concurrent_analyses': 1,
-        'file_size_mb': 10,
+        # API Access
+        'api_access': False,
+        'api_calls_per_month': 0,
+        'webhook_notifications': False,
+        
+        # Pricing
+        'price_monthly': 0,
+        'price_annually': 0,
     },
     
     'pro': {
-        # Core Features
+        # Document Processing
         'documents_per_month': 500,
         'analysis_per_month': 1000,
-        'vault_storage_mb': 10000,
+        'vault_storage_mb': 10000,  # 10 GB
+        'max_file_size_mb': 50,
         
-        # Multi-Modal Features
-        'audio_transcription': 'whisper',  # Free Whisper + paid services
+        # AI Capabilities
+        'ai_model': 'gemini-1.5-pro',  # Balanced performance
+        'context_window': 128000,
+        'audio_transcription': 'whisper',  # Free Whisper transcription
         'video_processing': True,
-        'ocr_processing': 'all',  # All OCR services
+        'advanced_ocr': 'tesseract',  # Free Tesseract OCR
+        'multimodal_analysis': True,
         
-        # Collaboration Features
-        'team_vaults': 5,
-        'workspace_members': 25,
+        # Collaboration
+        'team_vaults': True,
+        'workspace_members': 5,
         'document_sharing': True,
+        'real_time_collaboration': True,
         
-        # Analytics Features
+        # Analytics & Intelligence
         'advanced_analytics': True,
-        'user_analytics': True,
-        'admin_analytics': False,  # Pro users don't get admin access
+        'custom_accelerators': True,
         'ai_performance_tracking': True,
-        'analytics_retention_days': 365,
+        'usage_dashboard': 'advanced',
         
-        # AI Features
-        'model_selection': 'standard',  # Standard models
-        'response_caching': 'user',  # User-specific cache
-        'prompt_optimization': True,
-        
-        # AI Model Optimization
-        'model_routing': True,
-        'response_caching': True,
-        'prompt_optimization': True,
-        'cost_optimization': True,
-        
-        # Security & Compliance
+        # Enterprise Features
         'audit_logging': True,
-        'compliance_frameworks': 'basic',  # Basic compliance
-        'data_retention_policies': True,
-        'encryption': 'advanced',  # Advanced encryption
-        'advanced_rate_limiting': True,
+        'compliance_frameworks': ['GDPR'],
+        'sso_integration': False,
+        'dedicated_support': 'email',
+        'sla_guarantee': False,
         
-        # Support
-        'priority_support': True,
-        'sla_guarantee': True,
+        # Data Entry Automation
+        'keystone_engine': True,
+        'planning_engine': 'advanced',
+        'human_touch_writer': True,
         
-        # Rate Limits
-        'api_calls_per_minute': 100,
-        'concurrent_analyses': 5,
-        'file_size_mb': 100,
+        # API Access
+        'api_access': True,
+        'api_calls_per_month': 10000,
+        'webhook_notifications': True,
+        
+        # Pricing
+        'price_monthly': 49,
+        'price_annually': 490,  # ~17% discount
     },
     
     'enterprise': {
-        # Core Features
+        # Document Processing
         'documents_per_month': -1,  # Unlimited
-        'analysis_per_month': -1,
-        'vault_storage_mb': -1,
+        'analysis_per_month': -1,  # Unlimited
+        'vault_storage_mb': -1,  # Unlimited
+        'max_file_size_mb': 500,
         
-        # Multi-Modal Features
-        'audio_transcription': 'all',  # All services available
+        # AI Capabilities
+        'ai_model': 'all',  # Access to all models with intelligent routing
+        'context_window': 1000000,  # Gemini 1.5 Ultra context
+        'audio_transcription': 'all',  # All services (Whisper, Google, AssemblyAI)
         'video_processing': True,
-        'ocr_processing': 'all',
+        'advanced_ocr': 'all',  # All services (Tesseract, Google Vision, AWS Textract)
+        'multimodal_analysis': True,
         
-        # Collaboration Features
-        'team_vaults': -1,  # Unlimited
-        'workspace_members': -1,
+        # Collaboration
+        'team_vaults': True,
+        'workspace_members': -1,  # Unlimited
         'document_sharing': True,
+        'real_time_collaboration': True,
         
-        # Analytics Features
+        # Analytics & Intelligence
         'advanced_analytics': True,
-        'user_analytics': True,
-        'admin_analytics': True,  # Full admin access
+        'custom_accelerators': True,
         'ai_performance_tracking': True,
-        'analytics_retention_days': 2555,  # 7 years
+        'usage_dashboard': 'enterprise',
         
-        # AI Features
-        'model_selection': 'all',  # All models available
-        'response_caching': 'enterprise',  # Enterprise cache with custom TTL
-        'prompt_optimization': True,
-        
-        # AI Model Optimization
-        'model_routing': True,
-        'response_caching': True,
-        'prompt_optimization': True,
-        'cost_optimization': True,
-        
-        # Security & Compliance
+        # Enterprise Features
         'audit_logging': True,
-        'compliance_frameworks': 'all',  # All compliance frameworks
-        'data_retention_policies': True,
-        'encryption': 'enterprise',  # Enterprise-grade encryption
-        'advanced_rate_limiting': True,
+        'compliance_frameworks': ['GDPR', 'HIPAA', 'SOC2', 'ISO27001'],
+        'sso_integration': True,
+        'dedicated_support': '24/7',
+        'sla_guarantee': '99.9%',
         
-        # Support
-        'priority_support': True,
-        'sla_guarantee': True,
+        # Data Entry Automation
+        'keystone_engine': True,
+        'planning_engine': 'enterprise',
+        'human_touch_writer': True,
         
-        # Rate Limits
-        'api_calls_per_minute': -1,  # Unlimited
-        'concurrent_analyses': -1,
-        'file_size_mb': -1,  # Unlimited
+        # API Access
+        'api_access': True,
+        'api_calls_per_month': -1,  # Unlimited
+        'webhook_notifications': True,
+        
+        # Pricing
+        'price_monthly': 499,
+        'price_annually': 4990,  # ~17% discount
     }
 }
 
+
 # ==============================================================================
-# TIER MANAGEMENT FUNCTIONS
+# TIER FEATURE DESCRIPTIONS - For Marketing and Sales
 # ==============================================================================
 
-def get_tier_limits(tier: str) -> Dict[str, Any]:
+TIER_FEATURES_DESCRIPTION = {
+    'free': {
+        'title': 'Free - Get Started',
+        'tagline': 'Perfect for individuals exploring AI-powered document analysis',
+        'best_for': 'Students, researchers, and individual professionals',
+        'key_features': [
+            '10 documents/month',
+            '20 AI analyses/month',
+            '100 MB storage',
+            'Basic Intelligence Vault',
+            'All 11 domain accelerators',
+            'Community support'
+        ],
+        'cta': 'Start Free'
+    },
+    
+    'pro': {
+        'title': 'Pro - Scale Your Intelligence',
+        'tagline': 'Advanced features for professionals and small teams',
+        'best_for': 'Consultants, small businesses, and professional teams',
+        'key_features': [
+            '500 documents/month',
+            '1,000 AI analyses/month',
+            '10 GB storage',
+            'Team workspaces (5 members)',
+            'Audio & video processing',
+            'Data Keystone Engine',
+            'Planning Engine',
+            'Human Touch Writer',
+            'Advanced analytics',
+            'API access (10k calls/month)',
+            'Email support'
+        ],
+        'cta': 'Upgrade to Pro'
+    },
+    
+    'enterprise': {
+        'title': 'Enterprise - Unstoppable Intelligence',
+        'tagline': 'Fortune 500-grade platform with unlimited capabilities',
+        'best_for': 'Large organizations, government agencies, and enterprises',
+        'key_features': [
+            'Unlimited documents & analyses',
+            'Unlimited storage',
+            'Unlimited team members',
+            'All AI models with intelligent routing',
+            'All transcription & OCR services',
+            'Full Data Keystone Engine',
+            'Enterprise Planning Engine',
+            'SOC2, HIPAA, GDPR compliance',
+            'SSO integration',
+            '99.9% SLA',
+            '24/7 dedicated support',
+            'Unlimited API access',
+            'Custom accelerators',
+            'White-label options'
+        ],
+        'cta': 'Contact Sales'
+    }
+}
+
+
+# ==============================================================================
+# TIER UTILITY FUNCTIONS
+# ==============================================================================
+
+def get_tier_limit(tier: str, feature: str) -> any:
     """
-    Get the limits for a specific tier.
+    Get the limit for a specific feature in a tier.
     
     Args:
-        tier: The tier name (free, pro, enterprise)
+        tier: Tier name ('free', 'pro', 'enterprise')
+        feature: Feature name (e.g., 'documents_per_month')
         
     Returns:
-        Dict containing all limits for the tier
+        The limit value, or None if feature doesn't exist
     """
-    return TIER_LIMITS.get(tier, TIER_LIMITS['free'])
+    return TIER_LIMITS.get(tier, {}).get(feature, None)
 
 
 def can_use_feature(tier: str, feature: str) -> bool:
     """
-    Check if a tier allows access to a specific feature.
+    Check if a tier has access to a specific feature.
     
     Args:
-        tier: The tier name
-        feature: The feature name
+        tier: Tier name ('free', 'pro', 'enterprise')
+        feature: Feature name
         
     Returns:
         True if feature is available, False otherwise
     """
-    limits = get_tier_limits(tier)
-    feature_value = limits.get(feature, False)
+    limit = get_tier_limit(tier, feature)
     
-    # Handle different feature value types
-    if isinstance(feature_value, bool):
-        return feature_value
-    elif isinstance(feature_value, str):
-        return feature_value != 'false' and feature_value != ''
-    elif isinstance(feature_value, (int, float)):
-        return feature_value > 0
-    else:
-        return bool(feature_value)
-
-
-def get_feature_limit(tier: str, feature: str) -> Any:
-    """
-    Get the specific limit value for a feature in a tier.
+    # Handle different types of limits
+    if limit is None:
+        return False
+    elif isinstance(limit, bool):
+        return limit
+    elif isinstance(limit, int) and limit == -1:
+        return True  # -1 means unlimited
+    elif isinstance(limit, int) and limit > 0:
+        return True
+    elif isinstance(limit, list):
+        return len(limit) > 0
+    elif isinstance(limit, str) and limit != 'false':
+        return True
     
-    Args:
-        tier: The tier name
-        feature: The feature name
-        
-    Returns:
-        The limit value for the feature
-    """
-    limits = get_tier_limits(tier)
-    return limits.get(feature, 0)
+    return False
 
 
-def is_unlimited(tier: str, feature: str) -> bool:
+def get_usage_limit(tier: str, metric_type: str) -> int:
     """
-    Check if a feature is unlimited for a tier.
+    Get the usage limit for a metric type.
     
     Args:
-        tier: The tier name
-        feature: The feature name
+        tier: Tier name ('free', 'pro', 'enterprise')
+        metric_type: Type of metric (e.g., 'documents', 'analysis')
         
     Returns:
-        True if feature is unlimited (-1), False otherwise
+        The limit value, -1 for unlimited, 0 for not allowed
     """
-    limit = get_feature_limit(tier, feature)
-    return limit == -1
-
-
-def get_available_services(tier: str, service_type: str) -> list:
-    """
-    Get list of available services for a tier and service type.
-    
-    Args:
-        tier: The tier name
-        service_type: Type of service (audio_transcription, ocr_processing, etc.)
-        
-    Returns:
-        List of available service names
-    """
-    service_config = get_feature_limit(tier, service_type)
-    
-    if service_config is False:
-        return []
-    elif service_config is True:
-        return ['all']
-    elif service_config == 'all':
-        return ['all']
-    elif isinstance(service_config, str):
-        return [service_config]
-    else:
-        return []
-
-
-def get_upgrade_prompt(tier: str, feature: str) -> str:
-    """
-    Generate an upgrade prompt for a feature not available in current tier.
-    
-    Args:
-        tier: Current tier
-        feature: Feature that requires upgrade
-        
-    Returns:
-        Upgrade prompt message
-    """
-    upgrade_map = {
-        'free': {
-            'audio_transcription': 'Upgrade to Pro to transcribe audio files with Whisper',
-            'video_processing': 'Upgrade to Pro to process video files',
-            'team_vaults': 'Upgrade to Pro to create collaborative workspaces',
-            'advanced_analytics': 'Upgrade to Pro for advanced analytics and insights',
-            'audit_logging': 'Upgrade to Pro for audit logging and compliance',
-        },
-        'pro': {
-            'admin_analytics': 'Upgrade to Enterprise for admin analytics dashboard',
-            'compliance_frameworks': 'Upgrade to Enterprise for full compliance frameworks',
-            'unlimited_usage': 'Upgrade to Enterprise for unlimited usage',
-        }
+    metric_map = {
+        'documents': 'documents_per_month',
+        'analysis': 'analysis_per_month',
+        'storage': 'vault_storage_mb',
+        'api_calls': 'api_calls_per_month'
     }
     
-    return upgrade_map.get(tier, {}).get(feature, f'Upgrade to access {feature}')
+    feature_key = metric_map.get(metric_type, metric_type)
+    limit = get_tier_limit(tier, feature_key)
+    
+    if limit is None or limit is False:
+        return 0
+    elif limit is True:
+        return -1  # Unlimited
+    elif isinstance(limit, int):
+        return limit
+    
+    return 0
 
 
-# ==============================================================================
-# USAGE TRACKING HELPERS
-# ==============================================================================
-
-def get_current_period() -> str:
+def get_tier_comparison() -> dict:
     """
-    Get current period string in YYYY-MM format for usage tracking.
+    Get a comparison table of all tier features.
     
     Returns:
-        Current period string
+        Dict with feature comparison across all tiers
     """
-    now = datetime.utcnow()
-    return now.strftime('%Y-%m')
-
-
-def get_period_start(period: str) -> datetime:
-    """
-    Get the start date of a period.
+    features = list(TIER_LIMITS['free'].keys())
     
-    Args:
-        period: Period string in YYYY-MM format
-        
-    Returns:
-        Start date of the period
-    """
-    year, month = map(int, period.split('-'))
-    return datetime(year, month, 1)
-
-
-def get_period_end(period: str) -> datetime:
-    """
-    Get the end date of a period.
-    
-    Args:
-        period: Period string in YYYY-MM format
-        
-    Returns:
-        End date of the period
-    """
-    year, month = map(int, period.split('-'))
-    if month == 12:
-        return datetime(year + 1, 1, 1) - timedelta(seconds=1)
-    else:
-        return datetime(year, month + 1, 1) - timedelta(seconds=1)
-
-
-def is_period_current(period: str) -> bool:
-    """
-    Check if a period is the current period.
-    
-    Args:
-        period: Period string in YYYY-MM format
-        
-    Returns:
-        True if period is current, False otherwise
-    """
-    return period == get_current_period()
-
-
-# ==============================================================================
-# TIER COMPARISON AND RECOMMENDATIONS
-# ==============================================================================
-
-def get_tier_comparison() -> Dict[str, Dict[str, Any]]:
-    """
-    Get a comparison of all tiers for display purposes.
-    
-    Returns:
-        Dict with tier comparisons
-    """
     comparison = {}
-    
-    for tier in ['free', 'pro', 'enterprise']:
-        limits = get_tier_limits(tier)
-        comparison[tier] = {
-            'name': tier.title(),
-            'price': get_tier_price(tier),
-            'features': {
-                'documents_per_month': limits['documents_per_month'],
-                'analysis_per_month': limits['analysis_per_month'],
-                'vault_storage_mb': limits['vault_storage_mb'],
-                'audio_transcription': limits['audio_transcription'],
-                'video_processing': limits['video_processing'],
-                'team_vaults': limits['team_vaults'],
-                'advanced_analytics': limits['advanced_analytics'],
-                'audit_logging': limits['audit_logging'],
-                'priority_support': limits['priority_support'],
-            }
+    for feature in features:
+        comparison[feature] = {
+            'free': TIER_LIMITS['free'].get(feature),
+            'pro': TIER_LIMITS['pro'].get(feature),
+            'enterprise': TIER_LIMITS['enterprise'].get(feature)
         }
     
     return comparison
 
 
-def get_tier_price(tier: str) -> str:
+def get_tier_pricing(tier: str) -> dict:
     """
-    Get the price display string for a tier.
+    Get pricing information for a tier.
     
     Args:
-        tier: The tier name
+        tier: Tier name
         
     Returns:
-        Price string
+        Dict with pricing information
     """
-    prices = {
-        'free': 'Free',
-        'pro': '$29/month',
-        'enterprise': 'Contact Sales'
+    tier_info = TIER_LIMITS.get(tier, {})
+    
+    return {
+        'tier': tier,
+        'price_monthly': tier_info.get('price_monthly', 0),
+        'price_annually': tier_info.get('price_annually', 0),
+        'savings_annually': tier_info.get('price_monthly', 0) * 12 - tier_info.get('price_annually', 0),
+        'description': TIER_FEATURES_DESCRIPTION.get(tier, {})
     }
-    return prices.get(tier, 'Unknown')
 
 
-def recommend_tier(usage_stats: Dict[str, int]) -> str:
+def get_upgrade_path(current_tier: str) -> dict:
     """
-    Recommend a tier based on usage statistics.
+    Get upgrade options for a tier.
     
     Args:
-        usage_stats: Dict with usage metrics
+        current_tier: Current tier name
         
     Returns:
-        Recommended tier name
+        Dict with upgrade options and benefits
     """
-    documents = usage_stats.get('documents_per_month', 0)
-    analyses = usage_stats.get('analysis_per_month', 0)
-    storage_mb = usage_stats.get('vault_storage_mb', 0)
+    tier_hierarchy = ['free', 'pro', 'enterprise']
     
-    # Simple recommendation logic
-    if documents > 100 or analyses > 200 or storage_mb > 1000:
-        return 'enterprise'
-    elif documents > 10 or analyses > 20 or storage_mb > 100:
-        return 'pro'
+    if current_tier not in tier_hierarchy:
+        return {'available': False}
+    
+    current_index = tier_hierarchy.index(current_tier)
+    
+    if current_index >= len(tier_hierarchy) - 1:
+        return {'available': False, 'message': 'You are on the highest tier'}
+    
+    next_tier = tier_hierarchy[current_index + 1]
+    next_tier_info = TIER_LIMITS[next_tier]
+    current_tier_info = TIER_LIMITS[current_tier]
+    
+    # Calculate additional benefits
+    benefits = []
+    for key, value in next_tier_info.items():
+        current_value = current_tier_info.get(key)
+        
+        if current_value != value:
+            if isinstance(value, int) and value == -1:
+                benefits.append(f"Unlimited {key.replace('_', ' ')}")
+            elif isinstance(value, bool) and value and not current_value:
+                benefits.append(f"Access to {key.replace('_', ' ')}")
+            elif isinstance(value, int) and isinstance(current_value, int) and value > current_value:
+                benefits.append(f"{key.replace('_', ' ')}: {current_value} → {value}")
+    
+    return {
+        'available': True,
+        'next_tier': next_tier,
+        'price_monthly': next_tier_info['price_monthly'],
+        'price_annually': next_tier_info['price_annually'],
+        'additional_benefits': benefits[:10],  # Top 10 benefits
+        'description': TIER_FEATURES_DESCRIPTION[next_tier]
+    }
+
+
+def check_usage_against_limit(tier: str, metric_type: str, current_usage: int) -> dict:
+    """
+    Check if current usage is within tier limits.
+    
+    Args:
+        tier: Tier name
+        metric_type: Type of metric
+        current_usage: Current usage count
+        
+    Returns:
+        Dict with usage status and recommendations
+    """
+    limit = get_usage_limit(tier, metric_type)
+    
+    if limit == -1:
+        return {
+            'within_limit': True,
+            'usage': current_usage,
+            'limit': 'unlimited',
+            'percentage': 0,
+            'status': 'unlimited'
+        }
+    
+    if limit == 0:
+        return {
+            'within_limit': False,
+            'usage': current_usage,
+            'limit': 0,
+            'percentage': 100,
+            'status': 'not_available',
+            'message': f'{metric_type} is not available in your current tier'
+        }
+    
+    percentage = (current_usage / limit) * 100 if limit > 0 else 0
+    within_limit = current_usage < limit
+    
+    status = 'ok'
+    message = None
+    
+    if percentage >= 100:
+        status = 'exceeded'
+        message = f'You have exceeded your {metric_type} limit. Please upgrade to continue.'
+    elif percentage >= 90:
+        status = 'warning'
+        message = f'You have used {percentage:.0f}% of your {metric_type} limit.'
+    elif percentage >= 75:
+        status = 'approaching'
+        message = f'You are approaching your {metric_type} limit.'
+    
+    return {
+        'within_limit': within_limit,
+        'usage': current_usage,
+        'limit': limit,
+        'percentage': round(percentage, 1),
+        'status': status,
+        'message': message
+    }
+
+
+# ==============================================================================
+# TIER VALIDATION AND ENFORCEMENT
+# ==============================================================================
+
+class TierViolationError(Exception):
+    """Raised when a tier limit is violated."""
+    pass
+
+
+def enforce_tier_limit(tier: str, feature: str, raise_error: bool = True) -> bool:
+    """
+    Enforce tier limits for a feature.
+    
+    Args:
+        tier: Tier name
+        feature: Feature name
+        raise_error: If True, raises exception on violation
+        
+    Returns:
+        True if allowed, False if not allowed
+        
+    Raises:
+        TierViolationError: If feature is not allowed and raise_error is True
+    """
+    allowed = can_use_feature(tier, feature)
+    
+    if not allowed and raise_error:
+        upgrade_info = get_upgrade_path(tier)
+        next_tier = upgrade_info.get('next_tier', 'pro')
+        
+        raise TierViolationError(
+            f"'{feature}' is not available in your current '{tier}' tier. "
+            f"Upgrade to '{next_tier}' to unlock this feature."
+        )
+    
+    return allowed
+
+
+# ==============================================================================
+# PRICING CALCULATOR
+# ==============================================================================
+
+def calculate_cost_savings(tier: str, billing_cycle: str = 'annually') -> dict:
+    """
+    Calculate cost savings for a tier.
+    
+    Args:
+        tier: Tier name
+        billing_cycle: 'monthly' or 'annually'
+        
+    Returns:
+        Dict with cost analysis
+    """
+    tier_info = TIER_LIMITS.get(tier, {})
+    monthly_price = tier_info.get('price_monthly', 0)
+    annual_price = tier_info.get('price_annually', 0)
+    
+    if billing_cycle == 'annually':
+        total_cost = annual_price
+        monthly_equivalent = annual_price / 12
+        savings = (monthly_price * 12) - annual_price
+        savings_percentage = (savings / (monthly_price * 12)) * 100 if monthly_price > 0 else 0
     else:
-        return 'free'
-
-
-# ==============================================================================
-# FEATURE FLAGS AND EXPERIMENTAL FEATURES
-# ==============================================================================
-
-EXPERIMENTAL_FEATURES = {
-    'ai_voice_analysis': ['enterprise'],  # Only for enterprise
-    'real_time_collaboration': ['pro', 'enterprise'],
-    'custom_model_training': ['enterprise'],
-    'api_webhooks': ['pro', 'enterprise'],
-    'white_label': ['enterprise'],
-}
-
-def is_experimental_feature_available(tier: str, feature: str) -> bool:
-    """
-    Check if an experimental feature is available for a tier.
+        total_cost = monthly_price * 12
+        monthly_equivalent = monthly_price
+        savings = 0
+        savings_percentage = 0
     
-    Args:
-        tier: The tier name
-        feature: The experimental feature name
-        
-    Returns:
-        True if feature is available, False otherwise
-    """
-    available_tiers = EXPERIMENTAL_FEATURES.get(feature, [])
-    return tier in available_tiers
-
-
-# ==============================================================================
-# VALIDATION AND ERROR HANDLING
-# ==============================================================================
-
-def validate_tier(tier: str) -> bool:
-    """
-    Validate that a tier name is valid.
-    
-    Args:
-        tier: The tier name to validate
-        
-    Returns:
-        True if valid, False otherwise
-    """
-    return tier in TIER_LIMITS
-
-
-def get_default_tier() -> str:
-    """
-    Get the default tier for new users.
-    
-    Returns:
-        Default tier name
-    """
-    return 'free'
-
-
-def get_tier_display_name(tier: str) -> str:
-    """
-    Get the display name for a tier.
-    
-    Args:
-        tier: The tier name
-        
-    Returns:
-        Display name for the tier
-    """
-    display_names = {
-        'free': 'Free',
-        'pro': 'Professional',
-        'enterprise': 'Enterprise'
+    return {
+        'tier': tier,
+        'billing_cycle': billing_cycle,
+        'monthly_price': monthly_price,
+        'annual_price': annual_price,
+        'total_annual_cost': total_cost,
+        'monthly_equivalent': round(monthly_equivalent, 2),
+        'annual_savings': round(savings, 2),
+        'savings_percentage': round(savings_percentage, 1)
     }
-    return display_names.get(tier, tier.title())
-
-
-# ==============================================================================
-# LOGGING AND MONITORING
-# ==============================================================================
-
-def log_tier_usage(user_id: int, tier: str, feature: str, action: str):
-    """
-    Log tier usage for monitoring and analytics.
-    
-    Args:
-        user_id: User ID
-        tier: User's tier
-        feature: Feature being used
-        action: Action performed
-    """
-    logger.info(f"Tier usage - User: {user_id}, Tier: {tier}, Feature: {feature}, Action: {action}")
-
-
-def log_tier_limit_exceeded(user_id: int, tier: str, feature: str, limit: Any, current: Any):
-    """
-    Log when a user exceeds their tier limits.
-    
-    Args:
-        user_id: User ID
-        tier: User's tier
-        feature: Feature that exceeded limit
-        limit: The limit value
-        current: Current usage value
-    """
-    logger.warning(f"Tier limit exceeded - User: {user_id}, Tier: {tier}, Feature: {feature}, Limit: {limit}, Current: {current}")
-
-
-# ==============================================================================
-# INITIALIZATION AND SETUP
-# ==============================================================================
-
-def initialize_tier_system():
-    """
-    Initialize the tier system and validate configuration.
-    """
-    logger.info("Initializing tier system...")
-    
-    # Validate all tier configurations
-    for tier, limits in TIER_LIMITS.items():
-        if not isinstance(limits, dict):
-            raise ValueError(f"Invalid tier configuration for {tier}")
-        
-        # Check for required features
-        required_features = [
-            'documents_per_month', 'analysis_per_month', 'vault_storage_mb',
-            'audio_transcription', 'video_processing', 'team_vaults'
-        ]
-        
-        for feature in required_features:
-            if feature not in limits:
-                raise ValueError(f"Missing required feature {feature} in tier {tier}")
-    
-    logger.info("Tier system initialized successfully")
-
-
-# Initialize on import
-initialize_tier_system()

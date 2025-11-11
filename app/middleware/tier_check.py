@@ -149,7 +149,7 @@ def track_usage(user_id: int, feature: str, amount: int = 1, metadata: Dict[str,
             usage_metric.count += amount
             usage_metric.timestamp = datetime.utcnow()
             if metadata:
-                usage_metric.metadata = str(metadata)
+                usage_metric.extra_data = str(metadata)
         else:
             # Create new metric
             usage_metric = UsageMetrics(
