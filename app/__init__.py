@@ -38,11 +38,43 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     
-    # User loader callback (REQUIRED by Flask-Login) 
-    from app.models import User
-    @login_manager.user_loader
-    def load_user(user_id):
-        return User.query.get(int(user_id))
+    # CRITICAL: User loader MUST be registered immediately after login_manager.init_app
+    # This must happen BEFORE any blueprints are registered that might use current_user
+    try:
+        @login_manager.user_loader
+        def load_user(user_id):
+            """Load user with error handling for database issues - NEVER CRASH"""
+            try:
+                # Check if database is initialized - if not, return None (user not logged in)
+                if not hasattr(db, 'engine') or db.engine is None:
+                    return None
+                
+                from app.models import User
+                # Try to query - if database isn't ready, this will fail gracefully
+                return User.query.get(int(user_id))
+            except (ValueError, TypeError, AttributeError):
+                # Invalid user_id format or missing attributes
+                return None
+            except Exception:
+                # Any database error (connection, query, etc.) - just return None
+                # This is expected for anonymous users or when DB isn't ready
+                return None
+        
+        # Verify user_loader is registered
+        if hasattr(login_manager, '_user_callback') and login_manager._user_callback is not None:
+            app.logger.info("✅ user_loader registered successfully")
+        else:
+            app.logger.error("CRITICAL: user_loader was not registered!")
+            # Fallback: register a dummy user_loader to prevent crashes
+            @login_manager.user_loader
+            def dummy_load_user(user_id):
+                return None
+    except Exception as e:
+        app.logger.error(f"CRITICAL ERROR registering user_loader: {e}")
+        # Fallback: register a dummy user_loader to prevent crashes
+        @login_manager.user_loader
+        def dummy_load_user(user_id):
+            return None
     
     migrate.init_app(app, db)
     limiter.init_app(app)
@@ -75,6 +107,13 @@ def create_app(config_class=Config):
         app.logger.addHandler(file_handler)
         app.logger.setLevel(logging.INFO)
         app.logger.info('CLARITY Engine startup')
+    
+    # Request logging to help debug errors
+    @app.before_request
+    def log_request_info():
+        app.logger.debug(f"Request: {request.method} {request.path}")
+        app.logger.debug(f"Headers: {dict(request.headers)}")
+    
     
     # CRITICAL: Simple health check endpoint for Render (BEFORE blueprints)
     @app.route('/health', methods=['GET', 'HEAD'])
@@ -290,9 +329,11 @@ def create_app(config_class=Config):
             app.logger.debug(f"⏸️  {name.title()} routes not available: {e}")
     
     # API-only root route (frontend will be on Vercel)
-    @app.route('/')
-    def root():
-        """API root - Frontend is deployed separately on Vercel"""
+    # NOTE: This route may be overridden by main blueprint's homepage route
+    # If main blueprint fails, this provides a fallback
+    @app.route('/api/root', methods=['GET'])
+    def api_root():
+        """API root - Always accessible even if main routes fail"""
         return jsonify({
             'name': 'CLARITY Engine API',
             'version': '5.0',
@@ -321,7 +362,29 @@ def create_app(config_class=Config):
     
     @app.errorhandler(500)
     def internal_error(error):
-        db.session.rollback()
+        import traceback
+        # Safely rollback database session if it exists
+        try:
+            if db.session:
+                db.session.rollback()
+        except Exception:
+            pass  # Database might not be initialized
+        
+        # Log the full error details
+        error_msg = str(error)
+        error_traceback = traceback.format_exc()
+        app.logger.error(f"500 Internal Server Error: {error_msg}")
+        app.logger.error(f"Traceback: {error_traceback}")
+        
+        # In development, return more details
+        if app.debug:
+            return jsonify({
+                'error': 'Internal server error',
+                'message': error_msg,
+                'traceback': error_traceback.split('\n')
+            }), 500
+        
+        # In production, return generic error but log details
         return jsonify({'error': 'Internal server error'}), 500
     
     app.logger.info("CLARITY Engine initialized successfully!")
