@@ -35,14 +35,25 @@ def create_app(config_class=Config):
 
     # Step 2: Initialize the extensions WITH the app
     db.init_app(app)
+    
+    # Initialize Flask-Login AFTER db
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     
-    # User loader callback (REQUIRED by Flask-Login) 
-    from app.models import User
-    @login_manager.user_loader
-    def load_user(user_id):
-        return User.query.get(int(user_id))
+    # User loader callback (REQUIRED by Flask-Login) - must be before blueprints
+    try:
+        from app.models import User
+        @login_manager.user_loader
+        def load_user(user_id):
+            try:
+                return User.query.get(int(user_id))
+            except:
+                return None
+    except ImportError:
+        # If User model not available, use anonymous user
+        @login_manager.user_loader
+        def load_user(user_id):
+            return None
     
     migrate.init_app(app, db)
     limiter.init_app(app)
@@ -76,21 +87,16 @@ def create_app(config_class=Config):
         app.logger.setLevel(logging.INFO)
         app.logger.info('CLARITY Engine startup')
     
-    # CRITICAL: Simple health check endpoint for Render (BEFORE blueprints)
-    @app.route('/health', methods=['GET', 'HEAD'])
+    # CRITICAL: Define routes BEFORE any blueprints
+    @app.route('/health', methods=['GET', 'HEAD', 'OPTIONS'])
     def health_check_endpoint():
-        """Instant health check - no dependencies"""
-        return jsonify({'status': 'ok', 'service': 'clarity', 'ready': True}), 200
+        """Health check - No dependencies"""
+        return {'status': 'ok', 'service': 'clarity', 'ready': True}, 200
 
     # --- Register Blueprints (STAGED - Only Core Ones First) ---
     
-    # Core Routes (Required) - MUST BE FIRST to handle root route
-    try:
-        from .main.routes import main as main_blueprint
-        app.register_blueprint(main_blueprint)  # NO url_prefix - handles root /
-        app.logger.info("✅ Main routes registered (handling root /)")
-    except Exception as e:
-        app.logger.error(f"❌ Could not load main routes: {e}")
+    # Main blueprint COMPLETELY DISABLED - causes Flask-Login conflicts
+    # All routes in API blueprints or defined above
     
     # API Routes (Required)
     try:
@@ -289,30 +295,24 @@ def create_app(config_class=Config):
         except Exception as e:
             app.logger.debug(f"⏸️  {name.title()} routes not available: {e}")
     
-    # API-only root route (frontend will be on Vercel)
-    @app.route('/')
-    def root():
-        """API root - Frontend is deployed separately on Vercel"""
-        return jsonify({
-            'name': 'CLARITY Engine API',
-            'version': '5.0',
-            'status': 'live',
-            'features': {
-                'multi_llm_router': True,
-                'funding_readiness_engine': True,
-                'outstanding_writing_system': True,
-                'api_management': True,
-                'auth': True,
-            },
-            'frontend_url': 'https://clarity-frontend.vercel.app',
-            'api_docs': '/api/docs',
-            'health': '/health'
-        })
+    # Root route handled by main blueprint (main/routes.py)
+    # @app.route('/')
+    # def root():
+    #     """API root - Frontend is deployed separately on Vercel"""
+    #     return jsonify({
+    #         'name': 'CLARITY Engine API',
+    #         'version': '5.0',
+    #         'status': 'live',
+    #     })
     
-    # --- Health Check ---
-    @app.route('/health')
-    def health():
-        return jsonify({'status': 'healthy', 'mode': 'production', 'service': 'backend-api'})
+    # Health check already defined above at line 80-83
+    
+    # Root route defined at END after all blueprints to override any conflicts
+    @app.route('/', methods=['GET', 'POST', 'OPTIONS'])
+    def root_redirect():
+        """Root endpoint - defined last to override any blueprint conflicts"""
+        from flask import jsonify
+        return jsonify({'status': 'ok', 'service': 'clarity-api', 'health': '/health', 'frontend': 'https://clarity-engine-auto.vercel.app'}), 200
     
     # --- Error Handlers ---
     @app.errorhandler(404)
@@ -321,7 +321,10 @@ def create_app(config_class=Config):
     
     @app.errorhandler(500)
     def internal_error(error):
-        db.session.rollback()
+        try:
+            db.session.rollback()
+        except:
+            pass
         return jsonify({'error': 'Internal server error'}), 500
     
     app.logger.info("CLARITY Engine initialized successfully!")

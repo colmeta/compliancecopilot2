@@ -17,8 +17,8 @@ export const metadata: Metadata = {
   viewport: {
     width: 'device-width',
     initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
+    maximumScale: 5,
+    userScalable: true,
   },
   appleWebApp: {
     capable: true,
@@ -39,13 +39,8 @@ export const metadata: Metadata = {
     description: 'Enterprise-grade AI intelligence platform',
   },
   icons: {
-    icon: [
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-    ],
-    apple: [
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-    ],
+    icon: '/icon.svg',
+    apple: '/icon.svg',
   },
 }
 
