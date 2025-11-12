@@ -404,3 +404,183 @@ class PromptPerformance(db.Model):
     
     def __repr__(self):
         return f'<PromptPerformance variant={self.variant_id} usage={self.usage_count}>'
+
+
+# --- SOC2 Compliance Models ---
+
+class SOC2Control(db.Model):
+    """SOC2 Control definitions - The Control Framework."""
+    
+    __tablename__ = 'soc2_controls'
+    id = db.Column(db.Integer, primary_key=True)
+    control_id = db.Column(db.String(50), unique=True, nullable=False, index=True)  # CC6.1, CC7.2, etc.
+    control_name = db.Column(db.String(256), nullable=False)
+    trust_service_criteria = db.Column(db.String(50), nullable=False, index=True)  # Security, Availability, Processing Integrity, Confidentiality, Privacy
+    description = db.Column(db.Text, nullable=True)
+    control_type = db.Column(db.String(50), nullable=False)  # preventive, detective, corrective
+    frequency = db.Column(db.String(50), nullable=False, default='continuous')  # continuous, daily, weekly, monthly, quarterly
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    tests = db.relationship('SOC2ControlTest', backref='control', lazy='dynamic')
+    evidence = db.relationship('SOC2Evidence', backref='control', lazy='dynamic')
+    
+    def __repr__(self):
+        return f'<SOC2Control id={self.control_id} name={self.control_name}>'
+
+
+class SOC2ControlTest(db.Model):
+    """SOC2 Control testing results - The Testing Engine."""
+    
+    __tablename__ = 'soc2_control_tests'
+    id = db.Column(db.Integer, primary_key=True)
+    control_id = db.Column(db.Integer, db.ForeignKey('soc2_controls.id'), nullable=False, index=True)
+    test_date = db.Column(db.DateTime, nullable=False, index=True)
+    tested_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    test_type = db.Column(db.String(50), nullable=False)  # design, operating_effectiveness
+    test_result = db.Column(db.String(50), nullable=False)  # passed, failed, exception
+    test_method = db.Column(db.String(100), nullable=False)  # inquiry, observation, inspection, re-performance
+    test_procedures = db.Column(db.Text, nullable=True)  # Description of test procedures
+    findings = db.Column(db.Text, nullable=True)  # Test findings and observations
+    exceptions = db.Column(db.Text, nullable=True)  # Any exceptions or deviations
+    remediation_plan = db.Column(db.Text, nullable=True)  # Plan to address failures
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    tester = db.relationship('User', backref='soc2_tests')
+    
+    def __repr__(self):
+        return f'<SOC2ControlTest control={self.control_id} result={self.test_result} date={self.test_date}>'
+
+
+class SOC2Evidence(db.Model):
+    """SOC2 Evidence collection - The Evidence Vault."""
+    
+    __tablename__ = 'soc2_evidence'
+    id = db.Column(db.Integer, primary_key=True)
+    control_id = db.Column(db.Integer, db.ForeignKey('soc2_controls.id'), nullable=False, index=True)
+    evidence_type = db.Column(db.String(100), nullable=False)  # log, screenshot, document, configuration, report
+    evidence_name = db.Column(db.String(256), nullable=False)
+    evidence_path = db.Column(db.String(1024), nullable=True)  # Path to evidence file
+    evidence_data = db.Column(db.Text, nullable=True)  # JSON or text data
+    collected_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    collected_at = db.Column(db.DateTime, nullable=False, index=True)
+    description = db.Column(db.Text, nullable=True)
+    is_valid = db.Column(db.Boolean, default=True, nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=True)  # When evidence becomes stale
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    collector = db.relationship('User', backref='soc2_evidence')
+    
+    def __repr__(self):
+        return f'<SOC2Evidence control={self.control_id} type={self.evidence_type} name={self.evidence_name}>'
+
+
+class SOC2Audit(db.Model):
+    """SOC2 Audit records - The Audit Tracker."""
+    
+    __tablename__ = 'soc2_audits'
+    id = db.Column(db.Integer, primary_key=True)
+    audit_type = db.Column(db.String(50), nullable=False, index=True)  # type1, type2, continuous
+    audit_period_start = db.Column(db.DateTime, nullable=False)
+    audit_period_end = db.Column(db.DateTime, nullable=False)
+    auditor_name = db.Column(db.String(256), nullable=True)
+    auditor_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    status = db.Column(db.String(50), nullable=False, default='planned')  # planned, in_progress, completed, certified
+    overall_opinion = db.Column(db.String(50), nullable=True)  # unqualified, qualified, adverse, disclaimer
+    compliance_score = db.Column(db.Float, nullable=True)  # 0.0 to 1.0
+    report_path = db.Column(db.String(1024), nullable=True)  # Path to audit report
+    findings_summary = db.Column(db.Text, nullable=True)  # Summary of audit findings
+    recommendations = db.Column(db.Text, nullable=True)  # Recommendations for improvement
+    certification_date = db.Column(db.DateTime, nullable=True)
+    certification_expires = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    auditor = db.relationship('User', backref='soc2_audits')
+    control_results = db.relationship('SOC2AuditControlResult', backref='audit', lazy='dynamic')
+    
+    def __repr__(self):
+        return f'<SOC2Audit type={self.audit_type} status={self.status} period={self.audit_period_start}>'
+
+
+class SOC2AuditControlResult(db.Model):
+    """SOC2 Audit control results - The Control Assessment."""
+    
+    __tablename__ = 'soc2_audit_control_results'
+    id = db.Column(db.Integer, primary_key=True)
+    audit_id = db.Column(db.Integer, db.ForeignKey('soc2_audits.id'), nullable=False, index=True)
+    control_id = db.Column(db.Integer, db.ForeignKey('soc2_controls.id'), nullable=False, index=True)
+    tested = db.Column(db.Boolean, default=False, nullable=False)
+    test_result = db.Column(db.String(50), nullable=True)  # passed, failed, exception
+    exceptions = db.Column(db.Text, nullable=True)  # Any exceptions found
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    control = db.relationship('SOC2Control', backref='audit_results')
+    
+    # Unique constraint: one result per control per audit
+    __table_args__ = (db.UniqueConstraint('audit_id', 'control_id', name='unique_audit_control'),)
+    
+    def __repr__(self):
+        return f'<SOC2AuditControlResult audit={self.audit_id} control={self.control_id} result={self.test_result}>'
+
+
+class SOC2Incident(db.Model):
+    """SOC2 Security incidents - The Incident Tracker."""
+    
+    __tablename__ = 'soc2_incidents'
+    id = db.Column(db.Integer, primary_key=True)
+    incident_type = db.Column(db.String(100), nullable=False, index=True)  # security_breach, data_loss, unauthorized_access, etc.
+    severity = db.Column(db.String(50), nullable=False, default='medium')  # low, medium, high, critical
+    title = db.Column(db.String(256), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    detected_at = db.Column(db.DateTime, nullable=False, index=True)
+    reported_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    status = db.Column(db.String(50), nullable=False, default='open')  # open, investigating, resolved, closed
+    resolution = db.Column(db.Text, nullable=True)
+    resolved_at = db.Column(db.DateTime, nullable=True)
+    resolved_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    impact_assessment = db.Column(db.Text, nullable=True)
+    remediation_steps = db.Column(db.Text, nullable=True)
+    affected_controls = db.Column(db.Text, nullable=True)  # JSON list of affected control IDs
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    reporter = db.relationship('User', foreign_keys=[reported_by], backref='reported_incidents')
+    resolver = db.relationship('User', foreign_keys=[resolved_by], backref='resolved_incidents')
+    
+    def __repr__(self):
+        return f'<SOC2Incident type={self.incident_type} severity={self.severity} status={self.status}>'
+
+
+class SOC2AccessReview(db.Model):
+    """SOC2 Access reviews - The Access Governance."""
+    
+    __tablename__ = 'soc2_access_reviews'
+    id = db.Column(db.Integer, primary_key=True)
+    review_period_start = db.Column(db.DateTime, nullable=False, index=True)
+    review_period_end = db.Column(db.DateTime, nullable=False)
+    reviewed_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    review_type = db.Column(db.String(50), nullable=False, default='quarterly')  # monthly, quarterly, annual
+    total_users_reviewed = db.Column(db.Integer, default=0, nullable=False)
+    users_with_excessive_access = db.Column(db.Integer, default=0, nullable=False)
+    users_removed = db.Column(db.Integer, default=0, nullable=False)
+    findings = db.Column(db.Text, nullable=True)
+    recommendations = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(50), nullable=False, default='in_progress')  # in_progress, completed, approved
+    completed_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    reviewer = db.relationship('User', backref='access_reviews')
+    
+    def __repr__(self):
+        return f'<SOC2AccessReview period={self.review_period_start} status={self.status}>'

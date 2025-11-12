@@ -681,7 +681,7 @@ def handle_hipaa_compliance():
             'error': str(e)
         }), 500
 
-@security.route('/compliance/soc2', methods=['POST'])
+@security.route('/compliance/soc2/audit', methods=['POST'])
 @api_key_required
 @require_tier('enterprise')  # Only enterprise users can handle SOC2 audits
 def handle_soc2_audit():
@@ -692,9 +692,12 @@ def handle_soc2_audit():
     
     Request:
         - audit_type: Type of SOC2 audit ('type1', 'type2', 'continuous')
+        - period_start: Start date of audit period (ISO format, optional)
+        - period_end: End date of audit period (ISO format, optional)
+        - auditor_name: Name of the auditor (optional)
     
     Response:
-        - result: SOC2 audit result
+        - result: SOC2 audit result with comprehensive report
     """
     try:
         # Get current user
@@ -706,18 +709,27 @@ def handle_soc2_audit():
             return jsonify({'error': 'audit_type is required'}), 400
         
         audit_type = data['audit_type']
+        period_start = None
+        period_end = None
+        auditor_name = data.get('auditor_name')
+        
+        if 'period_start' in data:
+            period_start = datetime.fromisoformat(data['period_start'].replace('Z', '+00:00'))
+        if 'period_end' in data:
+            period_end = datetime.fromisoformat(data['period_end'].replace('Z', '+00:00'))
         
         # Handle SOC2 audit
         manager = ComplianceManager()
-        result = manager.handle_soc2_audit(audit_type, user.id)
+        result = manager.handle_soc2_audit(
+            audit_type=audit_type,
+            auditor_id=user.id,
+            period_start=period_start,
+            period_end=period_end,
+            auditor_name=auditor_name
+        )
         
         if result['success']:
-            return jsonify({
-                'success': True,
-                'audit_type': result['audit_type'],
-                'compliance_event_id': result['compliance_event_id'],
-                'audit_report': result['audit_report']
-            }), 200
+            return jsonify(result), 200
         else:
             return jsonify({
                 'success': False,
@@ -730,6 +742,187 @@ def handle_soc2_audit():
             'success': False,
             'error': str(e)
         }), 500
+
+
+@security.route('/compliance/soc2/controls', methods=['POST'])
+@api_key_required
+@require_tier('enterprise')
+def create_soc2_control():
+    """Create a new SOC2 control."""
+    try:
+        user = g.current_user
+        data = request.get_json()
+        
+        required_fields = ['control_id', 'control_name', 'trust_service_criteria']
+        if not all(field in data for field in required_fields):
+            return jsonify({'error': f'Missing required fields: {required_fields}'}), 400
+        
+        manager = ComplianceManager()
+        result = manager.create_soc2_control(
+            control_id=data['control_id'],
+            control_name=data['control_name'],
+            trust_service_criteria=data['trust_service_criteria'],
+            description=data.get('description'),
+            control_type=data.get('control_type', 'preventive'),
+            frequency=data.get('frequency', 'continuous')
+        )
+        
+        if result['success']:
+            return jsonify(result), 201
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        logger.error(f"Create SOC2 control error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@security.route('/compliance/soc2/controls/<int:control_id>/test', methods=['POST'])
+@api_key_required
+@require_tier('enterprise')
+def test_soc2_control(control_id):
+    """Test a SOC2 control."""
+    try:
+        user = g.current_user
+        data = request.get_json() or {}
+        
+        manager = ComplianceManager()
+        result = manager.test_soc2_control(
+            control_id=control_id,
+            tested_by=user.id,
+            test_type=data.get('test_type', 'operating_effectiveness'),
+            test_method=data.get('test_method', 'inquiry'),
+            test_procedures=data.get('test_procedures'),
+            findings=data.get('findings')
+        )
+        
+        if result['success']:
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        logger.error(f"Test SOC2 control error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@security.route('/compliance/soc2/controls/<int:control_id>/evidence', methods=['POST'])
+@api_key_required
+@require_tier('enterprise')
+def collect_soc2_evidence(control_id):
+    """Collect evidence for a SOC2 control."""
+    try:
+        user = g.current_user
+        data = request.get_json()
+        
+        required_fields = ['evidence_type', 'evidence_name']
+        if not all(field in data for field in required_fields):
+            return jsonify({'error': f'Missing required fields: {required_fields}'}), 400
+        
+        manager = ComplianceManager()
+        result = manager.collect_soc2_evidence(
+            control_id=control_id,
+            evidence_type=data['evidence_type'],
+            evidence_name=data['evidence_name'],
+            collected_by=user.id,
+            evidence_path=data.get('evidence_path'),
+            evidence_data=data.get('evidence_data'),
+            description=data.get('description')
+        )
+        
+        if result['success']:
+            return jsonify(result), 201
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        logger.error(f"Collect SOC2 evidence error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@security.route('/compliance/soc2/incidents', methods=['POST'])
+@api_key_required
+@require_tier('enterprise')
+def report_soc2_incident():
+    """Report a SOC2 security incident."""
+    try:
+        user = g.current_user
+        data = request.get_json()
+        
+        required_fields = ['incident_type', 'title', 'description']
+        if not all(field in data for field in required_fields):
+            return jsonify({'error': f'Missing required fields: {required_fields}'}), 400
+        
+        manager = ComplianceManager()
+        result = manager.report_soc2_incident(
+            incident_type=data['incident_type'],
+            title=data['title'],
+            description=data['description'],
+            reported_by=user.id,
+            severity=data.get('severity', 'medium')
+        )
+        
+        if result['success']:
+            return jsonify(result), 201
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        logger.error(f"Report SOC2 incident error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@security.route('/compliance/soc2/access-reviews', methods=['POST'])
+@api_key_required
+@require_tier('enterprise')
+def conduct_access_review():
+    """Conduct a SOC2 access review."""
+    try:
+        user = g.current_user
+        data = request.get_json() or {}
+        
+        period_start = None
+        period_end = None
+        if 'period_start' in data:
+            period_start = datetime.fromisoformat(data['period_start'].replace('Z', '+00:00'))
+        if 'period_end' in data:
+            period_end = datetime.fromisoformat(data['period_end'].replace('Z', '+00:00'))
+        
+        manager = ComplianceManager()
+        result = manager.conduct_access_review(
+            reviewed_by=user.id,
+            review_type=data.get('review_type', 'quarterly'),
+            period_start=period_start,
+            period_end=period_end
+        )
+        
+        if result['success']:
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        logger.error(f"Conduct access review error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@security.route('/compliance/soc2/dashboard', methods=['GET'])
+@api_key_required
+@require_tier('enterprise')
+def get_soc2_dashboard():
+    """Get comprehensive SOC2 compliance dashboard."""
+    try:
+        manager = ComplianceManager()
+        result = manager.get_soc2_dashboard()
+        
+        if result['success']:
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 500
+            
+    except Exception as e:
+        logger.error(f"Get SOC2 dashboard error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # ==============================================================================
 # ERROR HANDLERS

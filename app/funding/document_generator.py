@@ -6,7 +6,7 @@ NO MORE SIMULATIONS
 
 import os
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from datetime import datetime
 import google.generativeai as genai
 from io import BytesIO
@@ -41,7 +41,8 @@ class FundingDocumentGenerator:
     def generate_package(self,
                         discovery_answers: Dict[str, str],
                         funding_level: str,
-                        selected_documents: List[str]) -> Dict:
+                        selected_documents: List[str],
+                        extracted_info: Optional[Dict[str, Any]] = None) -> Dict:
         """
         Generate complete funding package
         
@@ -49,6 +50,7 @@ class FundingDocumentGenerator:
             discovery_answers: User's answers to discovery questions
             funding_level: seed/series-a/series-b/growth/ipo
             selected_documents: List of document IDs to generate
+            extracted_info: Optional information extracted from uploaded documents
         
         Returns:
             Dictionary with generated documents and metadata
@@ -62,6 +64,9 @@ class FundingDocumentGenerator:
         
         logger.info(f"Generating {len(selected_documents)} documents for {funding_level} funding")
         
+        # Merge extracted info with discovery answers (discovery answers take precedence)
+        merged_answers = self._merge_answers(extracted_info or {}, discovery_answers)
+        
         results = {
             'success': True,
             'documents': [],
@@ -69,16 +74,17 @@ class FundingDocumentGenerator:
             'completed': 0,
             'failed': 0,
             'metadata': {
-                'project_name': discovery_answers.get('project_name', 'Untitled'),
+                'project_name': merged_answers.get('project_name') or merged_answers.get('company_name', 'Untitled'),
                 'funding_level': funding_level,
-                'generated_at': datetime.utcnow().isoformat()
+                'generated_at': datetime.utcnow().isoformat(),
+                'source': 'document_first' if extracted_info else 'question_based'
             }
         }
         
         # Generate each document
         for doc_id in selected_documents:
             try:
-                doc_result = self._generate_document(doc_id, discovery_answers, funding_level)
+                doc_result = self._generate_document(doc_id, merged_answers, funding_level)
                 if doc_result['success']:
                     results['documents'].append(doc_result)
                     results['completed'] += 1
@@ -90,6 +96,42 @@ class FundingDocumentGenerator:
                 results['failed'] += 1
         
         return results
+    
+    def _merge_answers(
+        self, 
+        extracted_info: Dict[str, Any], 
+        discovery_answers: Dict[str, str]
+    ) -> Dict[str, str]:
+        """
+        Merge extracted information with discovery answers.
+        Discovery answers take precedence when both exist.
+        
+        Args:
+            extracted_info: Information extracted from documents
+            discovery_answers: User's answers to questions
+        
+        Returns:
+            Merged answers dictionary
+        """
+        merged = {}
+        
+        # Start with extracted info
+        for key, value in extracted_info.items():
+            if value and str(value).strip():  # Only include non-empty values
+                merged[key] = str(value).strip()
+        
+        # Override with discovery answers (user input takes precedence)
+        for key, value in discovery_answers.items():
+            if value and str(value).strip():
+                merged[key] = str(value).strip()
+        
+        # Handle special cases
+        if not merged.get('company_name') and merged.get('project_name'):
+            merged['company_name'] = merged['project_name']
+        elif not merged.get('project_name') and merged.get('company_name'):
+            merged['project_name'] = merged['company_name']
+        
+        return merged
     
     def _generate_document(self, 
                           doc_id: str, 

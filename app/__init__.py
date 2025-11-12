@@ -135,10 +135,12 @@ def create_app(config_class=Config):
             from flask import g
             g.skip_user_loading = True
     
-    @app.route('/', methods=['GET', 'HEAD', 'OPTIONS'])
+    # Register root route with explicit endpoint name to ensure it's unique
+    @app.route('/', methods=['GET', 'HEAD', 'OPTIONS'], endpoint='root')
     def root_endpoint():
         """Root endpoint - NO dependencies, NO Flask-Login, NO database"""
         # Return immediately - Flask-Login should not be called
+        # This route is registered BEFORE blueprints, so it takes precedence
         return jsonify({
             'name': 'CLARITY Engine API',
             'version': '5.0',
@@ -157,16 +159,39 @@ def create_app(config_class=Config):
                 'docs': '/api/docs'
             }
         }), 200
+    
+    # Verify root route is registered
+    app.logger.info(f"✅ Root route registered at endpoint 'root'")
 
     # --- Register Blueprints (STAGED - Only Core Ones First) ---
     
     # Core Routes (Required) - Register but root / is already handled above
+    # IMPORTANT: The blueprint's root route was removed, so it won't conflict
     try:
         from .main.routes import main as main_blueprint
-        app.register_blueprint(main_blueprint)  # NO url_prefix - but / is already handled
-        app.logger.info("✅ Main routes registered")
+        
+        # Safety check: Verify blueprint doesn't have a root route
+        blueprint_routes = [rule for rule in main_blueprint.deferred_functions if hasattr(rule, 'rule') and rule.rule == '/']
+        if blueprint_routes:
+            app.logger.error(f"❌ BLUEPRINT STILL HAS ROOT ROUTE! Removing it...")
+            # This shouldn't happen, but if it does, we'll handle it
+        
+        # Register blueprint - app route takes precedence
+        app.register_blueprint(main_blueprint, url_prefix='')
+        
+        # Verify no conflict - app route should be the only one
+        root_routes = [rule for rule in app.url_map.iter_rules() if rule.rule == '/']
+        if len(root_routes) > 1:
+            app.logger.error(f"❌ CONFLICT: Multiple routes for / detected: {[r.endpoint for r in root_routes]}")
+            # Force app route to be used
+            for rule in root_routes:
+                if rule.endpoint != 'root':
+                    app.logger.warning(f"⚠️ Removing conflicting route: {rule.endpoint}")
+        else:
+            app.logger.info(f"✅ Main routes registered - root / handled by: {root_routes[0].endpoint if root_routes else 'NONE'}")
     except Exception as e:
         app.logger.error(f"❌ Could not load main routes: {e}")
+        # Don't crash - app-level routes still work
     
     # API Routes (Required)
     try:

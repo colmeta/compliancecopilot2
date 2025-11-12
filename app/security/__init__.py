@@ -35,6 +35,12 @@ from .compliance import (
     handle_gdpr_request,
     handle_hipaa_compliance,
     handle_soc2_audit,
+    create_soc2_control,
+    test_soc2_control,
+    collect_soc2_evidence,
+    report_soc2_incident,
+    conduct_access_review,
+    get_soc2_dashboard,
     get_compliance_status
 )
 
@@ -64,6 +70,12 @@ __all__ = [
     'handle_gdpr_request',
     'handle_hipaa_compliance',
     'handle_soc2_audit',
+    'create_soc2_control',
+    'test_soc2_control',
+    'collect_soc2_evidence',
+    'report_soc2_incident',
+    'conduct_access_review',
+    'get_soc2_dashboard',
     'get_compliance_status'
 ]
 

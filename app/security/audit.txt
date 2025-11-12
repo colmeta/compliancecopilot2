@@ -1,0 +1,287 @@
+"""
+app/security/audit.py
+Enterprise audit and compliance helpers (Phase 4 foundation)
+FIXED VERSION - Celery-safe with proper Flask context checking
+
+Provides:
+- log_action(): universal audit logging helper that writes to AuditLog
+- compliance_check(): lightweight compliance check / stub for pipelines
+- data_classification(): simple PII detection helper for tagging data
+
+These functions are intentionally lightweight and safe to call from
+background tasks and request handlers. They persist AuditLog and
+ComplianceEvent models defined in `app/models.py`.
+"""
+
+import re
+import json
+import logging
+from datetime import datetime, timedelta
+from typing import Optional, Dict, Any, List
+
+from app import db
+from app.models import AuditLog, ComplianceEvent
+
+logger = logging.getLogger(__name__)
+
+
+def log_action(user_id: Optional[int], action: str, resource_type: Optional[str] = None,
+               resource_id: Optional[str] = None, details: Optional[Dict[str, Any]] = None,
+               ip_address: Optional[str] = None, user_agent: Optional[str] = None,
+               status: str = 'success') -> Dict[str, Any]:
+    """Log an audit action to the database.
+    
+    This function is safe to call from both Flask request contexts AND
+    Celery worker contexts. It gracefully handles missing request context.
+
+    Args:
+        user_id: ID of the user performing the action (None for system)
+        action: Short action name (upload/download/login, etc.)
+        resource_type: Type of resource affected
+        resource_id: Optional resource id
+        details: Arbitrary details (will be JSON-encoded)
+        ip_address: Optional IP address (falls back to request remote_addr if in Flask context)
+        user_agent: Optional user agent string
+        status: 'success'|'failure'|'warning'
+
+    Returns:
+        Dict with success/status
+    """
+    try:
+        # CRITICAL FIX: Check if we're in Flask request context before accessing request
+        if ip_address is None:
+            try:
+                from flask import has_request_context, request
+                if has_request_context():
+                    # We're in a Flask request context, safe to access request
+                    ip_address = request.remote_addr
+                else:
+                    # We're in a Celery worker or other non-request context
+                    ip_address = 'celery_worker'
+            except Exception as e:
+                logger.debug(f"Could not get IP from request context: {e}")
+                ip_address = 'unknown'
+
+        if user_agent is None:
+            try:
+                from flask import has_request_context, request
+                if has_request_context():
+                    user_agent = request.headers.get('User-Agent')
+                else:
+                    user_agent = 'celery_worker'
+            except Exception:
+                user_agent = 'unknown'
+
+        entry = AuditLog(
+            user_id=user_id,
+            action=action,
+            resource_type=resource_type,
+            resource_id=str(resource_id) if resource_id is not None else None,
+            details=json.dumps(details) if details is not None else None,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            timestamp=datetime.utcnow(),
+            status=status
+        )
+
+        db.session.add(entry)
+        db.session.commit()
+
+        logger.info(f"Audit logged: user={user_id} action={action} resource={resource_type}:{resource_id}")
+        return {'success': True, 'id': entry.id}
+
+    except Exception as e:
+        logger.exception(f"Failed to log audit action: {e}")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return {'success': False, 'error': str(e)}
+
+
+def compliance_check(event_type: str, user_id: Optional[int] = None,
+                     data_classification: Optional[str] = None,
+                     details: Optional[Dict[str, Any]] = None,
+                     retention_days: Optional[int] = None) -> Dict[str, Any]:
+    """Create a ComplianceEvent and return a simple verdict.
+
+    This is a small helper to consistently record compliance-related events.
+    Real compliance logic (e.g. GDPR exports) should call into this helper
+    and add domain-specific handling.
+    
+    Safe to call from both Flask and Celery contexts.
+    """
+    try:
+        event = ComplianceEvent(
+            event_type=event_type,
+            user_id=user_id,
+            data_classification=data_classification,
+            retention_date=(datetime.utcnow() + timedelta(days=retention_days)) if retention_days else None,
+            details=json.dumps(details) if details is not None else None,
+            timestamp=datetime.utcnow(),
+            handled=False
+        )
+
+        db.session.add(event)
+        db.session.commit()
+
+        logger.info(f"Compliance event recorded: {event_type} (id={event.id})")
+        return {'success': True, 'event_id': event.id}
+
+    except Exception as e:
+        logger.exception(f"Failed to create ComplianceEvent: {e}")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return {'success': False, 'error': str(e)}
+
+
+# Enhanced PII detection patterns
+_PII_PATTERNS: Dict[str, re.Pattern] = {
+    'email': re.compile(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+"),
+    'ssn': re.compile(r"\b\d{3}-\d{2}-\d{4}\b"),
+    'credit_card': re.compile(r"\b(?:\d[ -]*?){13,16}\b"),
+    'phone': re.compile(r"\b\+?\d[\d\s\-()]{7,}\b"),
+    'passport': re.compile(r"\b[A-Z]{1,2}\d{6,9}\b"),  # Common passport format
+    'national_id': re.compile(r"\b[A-Z]{2,3}\d{6,12}\b"),  # Generic national ID
+}
+
+
+def data_classification(text: str) -> List[Dict[str, Any]]:
+    """Basic data classification to detect PII.
+    
+    Returns a list of detected PII types with example matches.
+    This is intentionally conservative and should be replaced by a
+    more robust classifier for production.
+    
+    Enhanced with additional PII patterns for better detection.
+    
+    Args:
+        text: Text to analyze for PII
+        
+    Returns:
+        List of dicts with detected PII types, counts, and examples
+    """
+    findings: List[Dict[str, Any]] = []
+    if not text:
+        return findings
+
+    for label, pattern in _PII_PATTERNS.items():
+        matches = pattern.findall(text)
+        if matches:
+            # Deduplicate matches
+            unique_matches = list(set(matches))
+            findings.append({
+                'type': label,
+                'count': len(unique_matches),
+                'examples': unique_matches[:3]  # Show max 3 examples
+            })
+
+    return findings
+
+
+def safe_log_action(user_id: Optional[int], action: str, **kwargs) -> None:
+    """
+    Fire-and-forget audit logging that never raises exceptions.
+    
+    Use this when you want to log but don't want to handle errors.
+    Perfect for background tasks where audit logging is nice-to-have
+    but not critical.
+    
+    Args:
+        user_id: User ID
+        action: Action name
+        **kwargs: Additional log_action parameters
+    """
+    try:
+        log_action(user_id, action, **kwargs)
+    except Exception as e:
+        logger.warning(f"Audit logging failed (non-critical): {e}")
+
+
+def get_audit_trail(user_id: int, limit: int = 100, action_filter: Optional[str] = None) -> List[Dict[str, Any]]:
+    """
+    Retrieve audit trail for a user.
+    
+    Args:
+        user_id: User ID to get audit trail for
+        limit: Maximum number of records to return
+        action_filter: Optional action type to filter by
+        
+    Returns:
+        List of audit log entries as dicts
+    """
+    try:
+        query = AuditLog.query.filter_by(user_id=user_id)
+        
+        if action_filter:
+            query = query.filter_by(action=action_filter)
+        
+        logs = query.order_by(AuditLog.timestamp.desc()).limit(limit).all()
+        
+        return [
+            {
+                'id': log.id,
+                'action': log.action,
+                'resource_type': log.resource_type,
+                'resource_id': log.resource_id,
+                'timestamp': log.timestamp.isoformat(),
+                'status': log.status,
+                'ip_address': log.ip_address,
+                'details': json.loads(log.details) if log.details else None
+            }
+            for log in logs
+        ]
+        
+    except Exception as e:
+        logger.error(f"Failed to retrieve audit trail for user {user_id}: {e}")
+        return []
+
+
+def check_user_compliance_status(user_id: int) -> Dict[str, Any]:
+    """
+    Check a user's compliance status.
+    
+    Returns information about pending compliance events, consent status, etc.
+    
+    Args:
+        user_id: User ID to check
+        
+    Returns:
+        Dict with compliance status information
+    """
+    try:
+        # Get unhandled compliance events
+        pending_events = ComplianceEvent.query.filter_by(
+            user_id=user_id,
+            handled=False
+        ).count()
+        
+        # Get recent consent records
+        from app.models import ConsentRecord
+        consents = ConsentRecord.query.filter_by(user_id=user_id).order_by(
+            ConsentRecord.timestamp.desc()
+        ).limit(10).all()
+        
+        consent_status = {
+            consent.consent_type: {
+                'granted': consent.granted,
+                'timestamp': consent.timestamp.isoformat()
+            }
+            for consent in consents
+        }
+        
+        return {
+            'success': True,
+            'pending_compliance_events': pending_events,
+            'consent_status': consent_status,
+            'compliant': pending_events == 0
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to check compliance status for user {user_id}: {e}")
+        return {
+            'success': False,
+            'error': str(e)
+        }

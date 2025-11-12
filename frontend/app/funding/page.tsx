@@ -3,7 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 
-type Step = 'welcome' | 'discovery' | 'configure' | 'generating' | 'results'
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://veritas-faxh.onrender.com'
+
+type Step = 'welcome' | 'workflow' | 'discovery' | 'documents' | 'gap-questions' | 'configure' | 'generating' | 'results'
+type Workflow = 'questions' | 'documents' | null
 
 interface DiscoveryAnswers {
   [key: string]: string
@@ -17,8 +20,13 @@ interface DocumentConfig {
 
 export default function FundingEngine() {
   const [step, setStep] = useState<Step>('welcome')
+  const [workflow, setWorkflow] = useState<Workflow>(null)
   const [discoveryAnswers, setDiscoveryAnswers] = useState<DiscoveryAnswers>({})
   const [currentQuestion, setCurrentQuestion] = useState(0)
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
+  const [extractedInfo, setExtractedInfo] = useState<any>(null)
+  const [gapQuestions, setGapQuestions] = useState<any[]>([])
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [config, setConfig] = useState<DocumentConfig>({
     fundingLevel: 'seed',
     targetAudience: 'investors',
@@ -219,7 +227,23 @@ export default function FundingEngine() {
     
     try {
       // Call real backend API
-      const response = await fetch('https://veritas-engine-zae0.onrender.com/api/funding/generate', {
+      const apiEndpoint = workflow === 'documents' 
+        ? `${BACKEND_URL}/v2/funding/generate-from-documents`
+        : `${BACKEND_URL}/v2/funding/generate`
+      
+      // Convert files to base64 if using document workflow
+      const documents = workflow === 'documents' && uploadedFiles.length > 0
+        ? await Promise.all(uploadedFiles.map(async (file) => {
+            const base64 = await fileToBase64(file)
+            return {
+              filename: file.name,
+              content_base64: base64,
+              content_type: file.type || 'application/pdf'
+            }
+          }))
+        : undefined
+
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -227,7 +251,13 @@ export default function FundingEngine() {
         body: JSON.stringify({
           email: userEmail,
           discovery_answers: discoveryAnswers,
-          config: config
+          documents: documents,
+          config: {
+            ...config,
+            formats: ['pdf', 'word', 'pptx'],
+            delivery: 'email',
+            refine_existing: workflow === 'documents'
+          }
         })
       })
 
@@ -239,31 +269,68 @@ export default function FundingEngine() {
       
       if (result.success) {
         setTaskId(result.task_id)
+        
+        // Check if questions are needed (document-first workflow)
+        if (result.status === 'questions_needed') {
+          setExtractedInfo(result.extracted_info)
+          setGapQuestions(result.questions)
+          setStep('gap-questions')
+          setIsSubmitting(false)
+          return
+        }
+        
         setStep('generating')
         setGenerationProgress(0)
         
-        // Simulate progress for now (in production, would poll /status endpoint)
-        const totalDocs = config.selectedDocuments.length
-        const docs: any[] = []
-
-        for (let i = 0; i < totalDocs; i++) {
-          // Simulate API call to backend
-          await new Promise(resolve => setTimeout(resolve, 1000))
-          
-          const docType = documentTypes.find(d => d.id === config.selectedDocuments[i])
-          docs.push({
-            id: config.selectedDocuments[i],
-            name: docType?.name,
+        // Real progress tracking - poll status endpoint
+        const totalDocs = result.generation?.documents_generated || config.selectedDocuments.length
+        let progress = 0
+        
+        // Poll for completion
+        const pollInterval = setInterval(async () => {
+          try {
+            const statusResponse = await fetch(`${BACKEND_URL}/api/funding/status/${result.task_id}`)
+            if (statusResponse.ok) {
+              const status = await statusResponse.json()
+              progress = status.progress || progress + 10
+              setGenerationProgress(Math.min(progress, 95))
+              
+              if (status.status === 'completed' || progress >= 100) {
+                clearInterval(pollInterval)
+                setGenerationProgress(100)
+                
+                // Get final documents
+                if (result.documents) {
+                  setGeneratedDocuments(result.documents.map((doc: any) => ({
+                    id: doc.id,
+                    name: doc.name,
+                    category: doc.category,
+                    pages: doc.pages,
+                    status: 'complete',
+                    refined: doc.refined || false
+                  })))
+                }
+                setStep('results')
+              }
+            }
+          } catch (err) {
+            console.error('Status polling error:', err)
+          }
+        }, 2000)
+        
+        // Fallback: if no status endpoint, use result data
+        if (result.documents) {
+          setGeneratedDocuments(result.documents.map((doc: any) => ({
+            id: doc.id,
+            name: doc.name,
+            category: doc.category,
+            pages: doc.pages,
             status: 'complete',
-            url: '#',
-            preview: 'Generated with Outstanding Edition quality...'
-          })
-
-          setGenerationProgress(((i + 1) / totalDocs) * 100)
+            refined: doc.refined || false
+          })))
+          setGenerationProgress(100)
+          setStep('results')
         }
-
-        setGeneratedDocuments(docs)
-        setStep('results')
       } else {
         throw new Error(result.error || 'Generation failed')
       }
@@ -272,6 +339,84 @@ export default function FundingEngine() {
       setError(err.message || 'Failed to connect to backend. Please try again.')
       setIsSubmitting(false)
     }
+  }
+
+  // Helper function to convert file to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        const base64 = (reader.result as string).split(',')[1]
+        resolve(base64)
+      }
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+  }
+
+  // Handle document upload and analysis
+  const handleDocumentUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    
+    const fileArray = Array.from(files)
+    setUploadedFiles(fileArray)
+    setIsAnalyzing(true)
+    setError('')
+    
+    try {
+      // Convert files to base64
+      const documents = await Promise.all(fileArray.map(async (file) => {
+        const base64 = await fileToBase64(file)
+        return {
+          filename: file.name,
+          content_base64: base64,
+          content_type: file.type || 'application/pdf'
+        }
+      }))
+      
+      // Analyze documents
+      const response = await fetch(`${BACKEND_URL}/v2/funding/analyze-documents`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          documents: documents,
+          funding_level: config.fundingLevel
+        })
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Analysis failed: ${response.status}`)
+      }
+      
+      const result = await response.json()
+      
+      if (result.success) {
+        setExtractedInfo(result.extracted_info)
+        setGapQuestions(result.questions)
+        setIsAnalyzing(false)
+        
+        // If there are gaps, go to gap questions step
+        if (result.questions && result.questions.length > 0) {
+          setStep('gap-questions')
+        } else {
+          // No gaps, go directly to configure
+          setStep('configure')
+        }
+      } else {
+        throw new Error(result.error || 'Document analysis failed')
+      }
+    } catch (err: any) {
+      console.error('Document analysis error:', err)
+      setError(err.message || 'Failed to analyze documents')
+      setIsAnalyzing(false)
+    }
+  }
+
+  // Handle gap question answers
+  const handleGapAnswer = (field: string, value: string) => {
+    setDiscoveryAnswers({ ...discoveryAnswers, [field]: value })
   }
 
   const getCategoryColor = (category: string) => {
@@ -339,13 +484,272 @@ export default function FundingEngine() {
             </div>
 
             <button
-              onClick={() => setStep('discovery')}
+              onClick={() => setStep('workflow')}
               className="px-12 py-5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 text-xl font-black rounded-xl transition-all transform hover:scale-105 shadow-2xl"
             >
               Start Your Journey →
             </button>
 
             <p className="mt-6 text-slate-500 text-sm">Takes ~15 minutes • Outstanding Edition • Human Touch</p>
+          </div>
+        )}
+
+        {/* Workflow Selection Step */}
+        {step === 'workflow' && (
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h1 className="text-4xl md:text-5xl font-black mb-4 text-white">
+                Choose Your Path
+              </h1>
+              <p className="text-xl text-slate-400">
+                Start with questions or upload your existing documents
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+              {/* Question-Based Workflow */}
+              <button
+                onClick={() => {
+                  setWorkflow('questions')
+                  setStep('discovery')
+                }}
+                className="p-8 rounded-2xl bg-slate-800/50 border-2 border-slate-700 hover:border-amber-500 transition-all text-left group"
+              >
+                <div className="text-5xl mb-4">💬</div>
+                <h2 className="text-2xl font-bold text-white mb-3">Answer Questions</h2>
+                <p className="text-slate-400 mb-4">
+                  Perfect if you're starting from scratch. We'll ask you 10 thoughtful questions to understand your vision.
+                </p>
+                <ul className="text-slate-300 text-sm space-y-2 mb-4">
+                  <li>✓ No documents needed</li>
+                  <li>✓ Guided discovery process</li>
+                  <li>✓ Complete from scratch</li>
+                </ul>
+                <div className="text-amber-400 font-semibold group-hover:text-amber-300">
+                  Start with Questions →
+                </div>
+              </button>
+
+              {/* Document-First Workflow */}
+              <button
+                onClick={() => {
+                  setWorkflow('documents')
+                  setStep('documents')
+                }}
+                className="p-8 rounded-2xl bg-slate-800/50 border-2 border-slate-700 hover:border-amber-500 transition-all text-left group"
+              >
+                <div className="text-5xl mb-4">📄</div>
+                <h2 className="text-2xl font-bold text-white mb-3">Upload Documents</h2>
+                <p className="text-slate-400 mb-4">
+                  Already have some documents? Upload them and we'll extract information, then ask only what's missing.
+                </p>
+                <ul className="text-slate-300 text-sm space-y-2 mb-4">
+                  <li>✓ Upload existing docs</li>
+                  <li>✓ Smart gap detection</li>
+                  <li>✓ Refine or generate new</li>
+                </ul>
+                <div className="text-amber-400 font-semibold group-hover:text-amber-300">
+                  Upload Documents →
+                </div>
+              </button>
+            </div>
+
+            <div className="text-center">
+              <button
+                onClick={() => setStep('welcome')}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                ← Back
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Document Upload Step */}
+        {step === 'documents' && (
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-8">
+              <h1 className="text-4xl md:text-5xl font-black mb-4 text-white">
+                Upload Your Documents
+              </h1>
+              <p className="text-xl text-slate-400">
+                Upload pitch decks, business plans, financials, or any funding documents you have
+              </p>
+            </div>
+
+            <div className="p-8 rounded-2xl bg-slate-800/50 border border-white/10 backdrop-blur-xl mb-6">
+              <input
+                type="file"
+                id="document-upload"
+                multiple
+                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                onChange={(e) => handleDocumentUpload(e.target.files)}
+                className="hidden"
+              />
+              <label
+                htmlFor="document-upload"
+                className="block border-2 border-dashed border-slate-600 rounded-xl p-12 text-center cursor-pointer hover:border-amber-500 transition-all"
+              >
+                <div className="text-5xl mb-4">📤</div>
+                <p className="text-white text-lg font-semibold mb-2">
+                  Click to upload or drag and drop
+                </p>
+                <p className="text-slate-400 text-sm">
+                  PDF, Word, Images (PDF, DOCX, JPG, PNG)
+                </p>
+              </label>
+
+              {uploadedFiles.length > 0 && (
+                <div className="mt-6 space-y-2">
+                  <p className="text-white font-semibold mb-3">Uploaded Files:</p>
+                  {uploadedFiles.map((file, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg">
+                      <span className="text-slate-300 text-sm">{file.name}</span>
+                      <span className="text-slate-500 text-xs">
+                        {(file.size / 1024).toFixed(1)} KB
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {isAnalyzing && (
+                <div className="mt-6 p-4 rounded-lg bg-blue-500/10 border border-blue-500/30">
+                  <p className="text-blue-300 text-center">
+                    🔍 Analyzing documents and extracting information...
+                  </p>
+                </div>
+              )}
+
+              {error && (
+                <div className="mt-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30">
+                  <p className="text-red-300 text-sm">{error}</p>
+                </div>
+              )}
+
+              {extractedInfo && !isAnalyzing && (
+                <div className="mt-6 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+                  <p className="text-green-300 text-sm mb-2">
+                    ✅ Successfully extracted information from {uploadedFiles.length} document(s)
+                  </p>
+                  {gapQuestions.length > 0 ? (
+                    <p className="text-slate-300 text-sm">
+                      {gapQuestions.length} question(s) need to be answered to complete.
+                    </p>
+                  ) : (
+                    <p className="text-slate-300 text-sm">
+                      All information extracted! Ready to generate documents.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setStep('workflow')}
+                className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-all"
+              >
+                ← Back
+              </button>
+
+              {extractedInfo && (
+                <button
+                  onClick={() => {
+                    if (gapQuestions.length > 0) {
+                      setStep('gap-questions')
+                    } else {
+                      setStep('configure')
+                    }
+                  }}
+                  className="px-8 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold rounded-xl transition-all"
+                >
+                  Continue →
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Gap Questions Step */}
+        {step === 'gap-questions' && (
+          <div className="max-w-3xl mx-auto">
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-slate-400 text-sm">
+                  Question {currentQuestion + 1} of {gapQuestions.length}
+                </span>
+                <span className="text-slate-400 text-sm">
+                  {Math.round(((currentQuestion + 1) / gapQuestions.length) * 100)}% complete
+                </span>
+              </div>
+              <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-amber-500 to-amber-600 transition-all duration-300"
+                  style={{ width: `${((currentQuestion + 1) / gapQuestions.length) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+
+            <div className="p-8 rounded-2xl bg-slate-800/50 border border-white/10 backdrop-blur-xl mb-6">
+              <div className="text-5xl mb-6">❓</div>
+              <div className="mb-4">
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  gapQuestions[currentQuestion]?.priority === 'high'
+                    ? 'bg-red-500/20 text-red-300'
+                    : gapQuestions[currentQuestion]?.priority === 'medium'
+                    ? 'bg-yellow-500/20 text-yellow-300'
+                    : 'bg-blue-500/20 text-blue-300'
+                }`}>
+                  {gapQuestions[currentQuestion]?.priority?.toUpperCase()} PRIORITY
+                </span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 leading-relaxed">
+                {gapQuestions[currentQuestion]?.question}
+              </h2>
+              {gapQuestions[currentQuestion]?.why_important && (
+                <p className="text-slate-400 text-sm mb-6">
+                  💡 {gapQuestions[currentQuestion].why_important}
+                </p>
+              )}
+
+              <textarea
+                value={discoveryAnswers[gapQuestions[currentQuestion]?.field] || ''}
+                onChange={(e) => handleGapAnswer(gapQuestions[currentQuestion]?.field, e.target.value)}
+                placeholder="Type your answer here..."
+                className="w-full px-6 py-4 bg-slate-900/50 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all resize-none"
+                rows={6}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => {
+                  if (currentQuestion > 0) {
+                    setCurrentQuestion(currentQuestion - 1)
+                  } else {
+                    setStep('documents')
+                  }
+                }}
+                className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-all"
+              >
+                ← Previous
+              </button>
+
+              <button
+                onClick={() => {
+                  if (currentQuestion < gapQuestions.length - 1) {
+                    setCurrentQuestion(currentQuestion + 1)
+                  } else {
+                    setStep('configure')
+                  }
+                }}
+                disabled={!discoveryAnswers[gapQuestions[currentQuestion]?.field]}
+                className="px-8 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-slate-900 font-bold rounded-xl transition-all"
+              >
+                {currentQuestion === gapQuestions.length - 1 ? 'Continue to Documents →' : 'Next →'}
+              </button>
+            </div>
           </div>
         )}
 
@@ -624,33 +1028,42 @@ export default function FundingEngine() {
               <p className="text-lg text-green-400 mb-6">
                 📧 Check your email: <span className="font-bold">{userEmail}</span>
               </p>
-              <div className="p-6 rounded-xl bg-blue-500/10 border border-blue-500/30 mb-6">
-                <p className="text-blue-300 text-center">
-                  <span className="font-bold">⚡ Free Tier:</span> Preview generated instantly. Your complete funding package with real AI-powered documents will be emailed within 5-15 minutes.
+              <div className="p-6 rounded-xl bg-green-500/10 border border-green-500/30 mb-6">
+                <p className="text-green-300 text-center">
+                  <span className="font-bold">✅ Success!</span> Your funding package has been generated and will be emailed to <span className="font-bold">{userEmail}</span> within 5-15 minutes.
                 </p>
-                <p className="text-blue-400 text-sm text-center mt-2">
+                <p className="text-green-400 text-sm text-center mt-2">
                   Task ID: <code className="bg-slate-900/50 px-2 py-1 rounded">{taskId}</code>
                 </p>
               </div>
               <div className="flex flex-wrap gap-3 justify-center">
-                <button 
-                  onClick={() => alert('Download feature available in paid tier. Check your email for full package!')}
+                <a
+                  href={`${BACKEND_URL}/api/funding/download/${taskId}`}
                   className="px-6 py-3 bg-green-500 hover:bg-green-400 text-white font-bold rounded-xl transition-all"
                 >
                   Download All as ZIP
-                </button>
+                </a>
                 <button 
-                  onClick={() => alert(`Email will be sent to ${userEmail} when generation completes`)}
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(`${BACKEND_URL}/api/funding/resend-email`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ task_id: taskId, email: userEmail })
+                      })
+                      if (response.ok) {
+                        alert('Email resent successfully!')
+                      } else {
+                        alert('Email resend failed. Please check your email inbox.')
+                      }
+                    } catch (err) {
+                      alert('Email already sent. Please check your inbox.')
+                    }
+                  }}
                   className="px-6 py-3 bg-blue-500 hover:bg-blue-400 text-white font-bold rounded-xl transition-all"
                 >
                   Resend Email
                 </button>
-                <a
-                  href={`mailto:nsubugacollin@gmail.com?subject=Refinement Request - Task ${taskId}&body=Please refine my funding package. Task ID: ${taskId}`}
-                  className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-all"
-                >
-                  Request Refinement
-                </a>
               </div>
             </div>
 
@@ -666,15 +1079,24 @@ export default function FundingEngine() {
                     <span className="text-green-400 text-2xl">✓</span>
                   </div>
                   <div className="flex gap-2">
-                    <button className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white text-sm font-semibold rounded-lg transition-all">
+                    <a
+                      href={`${BACKEND_URL}/api/funding/document/${doc.id}/${taskId}`}
+                      target="_blank"
+                      className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white text-sm font-semibold rounded-lg transition-all text-center"
+                    >
                       View
-                    </button>
-                    <button className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-semibold rounded-lg transition-all">
+                    </a>
+                    <a
+                      href={`${BACKEND_URL}/api/funding/download/${taskId}/${doc.id}`}
+                      className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-semibold rounded-lg transition-all text-center"
+                    >
                       Download
-                    </button>
-                    <button className="px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-amber-400 text-sm font-semibold rounded-lg transition-all">
-                      Refine
-                    </button>
+                    </a>
+                    {doc.refined && (
+                      <span className="px-4 py-2 bg-green-500/20 border border-green-500/30 text-green-400 text-sm font-semibold rounded-lg">
+                        ✨ Refined
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
