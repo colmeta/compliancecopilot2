@@ -7,10 +7,13 @@ import { useSearchParams } from 'next/navigation'
 // Backend API URL
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://veritas-faxh.onrender.com'
 
+type Mode = 'ask' | 'plan' | 'agent'
+
 function CommandDeckContent() {
   const searchParams = useSearchParams()
   const initialDomain = searchParams?.get('domain') || 'legal'
   
+  const [mode, setMode] = useState<Mode>('ask')
   const [selectedDomain, setSelectedDomain] = useState(initialDomain)
   const [directive, setDirective] = useState('')
   const [files, setFiles] = useState<File[]>([])
@@ -18,6 +21,10 @@ function CommandDeckContent() {
   const [submitting, setSubmitting] = useState(false)
   const [taskId, setTaskId] = useState('')
   const [analysis, setAnalysis] = useState<any>(null)
+  const [plan, setPlan] = useState<any>(null)
+  const [planApproved, setPlanApproved] = useState(false)
+  const [executing, setExecuting] = useState(false)
+  const [executionResults, setExecutionResults] = useState<any[]>([])
   const [error, setError] = useState('')
 
   const domains: Record<string, any> = {
@@ -51,15 +58,157 @@ function CommandDeckContent() {
     setError('')
     
     try {
-      // Call real backend API
-      const response = await fetch(`${BACKEND_URL}/instant/analyze`, {
+      if (mode === 'ask') {
+        // Ask mode: Direct execution
+        const response = await fetch(`${BACKEND_URL}/instant/analyze`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            directive: directive,
+            domain: selectedDomain
+          })
+        })
+
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`)
+        }
+
+        const result = await response.json()
+        
+        if (result.success) {
+          setTaskId(result.task_id)
+          setAnalysis(result.analysis)
+          setSubmitted(true)
+        } else {
+          throw new Error(result.error || 'Analysis failed')
+        }
+      } else if (mode === 'plan') {
+        // Plan mode: Create plan first
+        const response = await fetch(`${BACKEND_URL}/api/planning/create-plan`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            task_description: directive,
+            task_type: 'analysis',
+            domain: selectedDomain,
+            context: {
+              files: files.length > 0 ? files.map(f => f.name) : [],
+              user_tier: 'free'
+            }
+          })
+        })
+
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`)
+        }
+
+        const result = await response.json()
+        
+        if (result.success) {
+          setPlan(result.plan)
+          setSubmitted(true)
+        } else {
+          throw new Error(result.error || 'Plan creation failed')
+        }
+      } else if (mode === 'agent') {
+        // Agent mode: Create plan and execute automatically
+        // First create plan
+        const planResponse = await fetch(`${BACKEND_URL}/api/planning/create-plan`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            task_description: directive,
+            task_type: 'analysis',
+            domain: selectedDomain,
+            context: {
+              files: files.length > 0 ? files.map(f => f.name) : [],
+              user_tier: 'free'
+            }
+          })
+        })
+
+        if (!planResponse.ok) {
+          throw new Error(`Plan creation failed: ${planResponse.status}`)
+        }
+
+        const planResult = await planResponse.json()
+        
+        if (!planResult.success) {
+          throw new Error(planResult.error || 'Plan creation failed')
+        }
+
+        setPlan(planResult.plan)
+        setPlanApproved(true)
+        setExecuting(true)
+
+        // Auto-approve and execute
+        const executeResponse = await fetch(`${BACKEND_URL}/api/planning/execute-plan`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            plan: planResult.plan,
+            mode: 'agent',
+            auto_approve: true,
+            context: {
+              directive: directive,
+              domain: selectedDomain
+            }
+          })
+        })
+
+        if (!executeResponse.ok) {
+          throw new Error(`Execution failed: ${executeResponse.status}`)
+        }
+
+        const executeResult = await executeResponse.json()
+        
+        if (executeResult.success) {
+          setPlan(executeResult.plan)
+          setExecutionResults(executeResult.execution_results || [])
+          setExecuting(false)
+          setSubmitted(true)
+          
+          // Also get analysis result (would come from execution)
+          if (executeResult.analysis) {
+            setAnalysis(executeResult.analysis)
+          }
+        } else {
+          throw new Error(executeResult.error || 'Execution failed')
+        }
+      }
+    } catch (err: any) {
+      console.error('Error:', err)
+      setError(err.message || 'Failed to connect to backend')
+      alert(`Error: ${err.message}. Please try again.`)
+      setExecuting(false)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleApprovePlan = async () => {
+    if (!plan) return
+
+    setSubmitting(true)
+    setError('')
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/planning/approve-plan`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          directive: directive,
-          domain: selectedDomain
+          plan: plan,
+          plan_id: plan.plan_id
         })
       })
 
@@ -70,19 +219,229 @@ function CommandDeckContent() {
       const result = await response.json()
       
       if (result.success) {
-        setTaskId(result.task_id)
-        setAnalysis(result.analysis)
-        setSubmitted(true)
+        setPlan(result.plan)
+        setPlanApproved(true)
       } else {
-        throw new Error(result.error || 'Analysis failed')
+        throw new Error(result.error || 'Plan approval failed')
       }
     } catch (err: any) {
-      console.error('Analysis error:', err)
-      setError(err.message || 'Failed to connect to backend')
+      console.error('Approval error:', err)
+      setError(err.message || 'Failed to approve plan')
       alert(`Error: ${err.message}. Please try again.`)
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const handleExecutePlan = async () => {
+    if (!plan || !planApproved) return
+
+    setExecuting(true)
+    setError('')
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/planning/execute-plan`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          plan: plan,
+          mode: 'manual',
+          auto_approve: false,
+          context: {
+            directive: directive,
+            domain: selectedDomain
+          }
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`)
+      }
+
+      const result = await response.json()
+      
+      if (result.success) {
+        setPlan(result.plan)
+        setExecutionResults(result.execution_results || [])
+        setExecuting(false)
+        
+        // Get analysis result
+        if (result.analysis) {
+          setAnalysis(result.analysis)
+        }
+      } else {
+        throw new Error(result.error || 'Execution failed')
+      }
+    } catch (err: any) {
+      console.error('Execution error:', err)
+      setError(err.message || 'Failed to execute plan')
+      setExecuting(false)
+    }
+  }
+
+  // Show plan review if in plan mode and plan exists but not approved
+  if (submitted && mode === 'plan' && plan && !planApproved) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+        <header className="border-b border-white/10 bg-slate-900/50 backdrop-blur-xl sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="text-2xl font-black bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
+                CLARITY
+              </div>
+              <span className="text-sm text-slate-400">by Clarity Pearl</span>
+            </Link>
+          </div>
+        </header>
+        <main className="max-w-5xl mx-auto px-4 py-12">
+          <div className="text-center mb-12">
+            <div className="text-6xl mb-6">📋</div>
+            <h1 className="text-4xl md:text-5xl font-black mb-4 text-white">
+              Execution Plan Created
+            </h1>
+            <p className="text-xl text-slate-300">
+              Review the plan before execution
+            </p>
+          </div>
+
+          <div className="bg-slate-800/50 rounded-2xl p-8 border border-white/10 backdrop-blur-xl mb-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-white mb-2">Approach</h2>
+              <p className="text-slate-300">{plan.approach}</p>
+            </div>
+
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-white mb-4">Execution Steps</h2>
+              <div className="space-y-4">
+                {plan.steps?.map((step: any, index: number) => (
+                  <div key={index} className="p-4 rounded-lg bg-slate-900/50 border border-slate-700">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-300 font-bold">
+                        {step.step_number}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-white font-bold mb-1">{step.title}</h3>
+                        <p className="text-slate-400 text-sm mb-2">{step.description}</p>
+                        <p className="text-slate-500 text-xs italic">Why: {step.rationale}</p>
+                        <div className="mt-2 flex items-center gap-4 text-xs text-slate-500">
+                          <span>⏱️ {step.estimated_time} min</span>
+                          {step.dependencies && step.dependencies.length > 0 && (
+                            <span>Depends on: {step.dependencies.join(', ')}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/30 mb-6">
+              <p className="text-blue-300 text-sm">
+                <strong>Total Estimated Time:</strong> {plan.total_estimated_time} minutes
+              </p>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  setSubmitted(false)
+                  setPlan(null)
+                }}
+                className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-all"
+              >
+                ← Back to Edit
+              </button>
+              <button
+                onClick={handleApprovePlan}
+                disabled={submitting}
+                className="flex-1 px-8 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-slate-700 disabled:to-slate-700 text-white font-bold rounded-xl transition-all"
+              >
+                {submitting ? 'Approving...' : '✓ Approve & Execute Plan'}
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  // Show execution progress if executing
+  if (executing && mode === 'agent') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+        <header className="border-b border-white/10 bg-slate-900/50 backdrop-blur-xl sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="text-2xl font-black bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
+                CLARITY
+              </div>
+              <span className="text-sm text-slate-400">by Clarity Pearl</span>
+            </Link>
+          </div>
+        </header>
+        <main className="max-w-5xl mx-auto px-4 py-12">
+          <div className="text-center mb-12">
+            <div className="text-6xl mb-6 animate-pulse">🤖</div>
+            <h1 className="text-4xl md:text-5xl font-black mb-4 text-white">
+              Agent Executing Plan
+            </h1>
+            <p className="text-xl text-slate-300">
+              Autonomous execution in progress...
+            </p>
+          </div>
+
+          {plan && (
+            <div className="bg-slate-800/50 rounded-2xl p-8 border border-white/10 backdrop-blur-xl mb-8">
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-slate-400">Progress</span>
+                  <span className="text-white font-bold">
+                    {plan.completed_steps || 0} / {plan.total_steps || plan.steps?.length || 0} steps
+                  </span>
+                </div>
+                <div className="w-full h-3 bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-500"
+                    style={{
+                      width: `${((plan.completed_steps || 0) / (plan.total_steps || plan.steps?.length || 1)) * 100}%`
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {plan.steps?.map((step: any, index: number) => (
+                  <div
+                    key={index}
+                    className={`p-4 rounded-lg border ${
+                      step.status === 'completed'
+                        ? 'bg-green-500/10 border-green-500/30'
+                        : step.status === 'in_progress'
+                        ? 'bg-blue-500/10 border-blue-500/30 animate-pulse'
+                        : 'bg-slate-900/50 border-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">
+                        {step.status === 'completed' ? '✓' : step.status === 'in_progress' ? '⟳' : '○'}
+                      </span>
+                      <span className={`font-semibold ${
+                        step.status === 'completed' ? 'text-green-300' : step.status === 'in_progress' ? 'text-blue-300' : 'text-slate-400'
+                      }`}>
+                        {step.title}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+    )
   }
 
   if (submitted) {
@@ -289,6 +648,59 @@ function CommandDeckContent() {
                     <h2 className="text-3xl font-black text-white">{currentDomain.name}</h2>
                     <p className="text-slate-400">CLARITY Engine Active</p>
                   </div>
+                </div>
+              </div>
+
+              {/* Mode Selector */}
+              <div className="mb-8">
+                <label className="block text-white font-bold mb-4 text-lg">
+                  Choose Your Mode
+                </label>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <button
+                    onClick={() => setMode('ask')}
+                    className={`p-6 rounded-xl border-2 transition-all text-left ${
+                      mode === 'ask'
+                        ? 'border-amber-500 bg-amber-500/10'
+                        : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                    }`}
+                  >
+                    <div className="text-3xl mb-2">💬</div>
+                    <h3 className="text-white font-bold mb-1">Ask</h3>
+                    <p className="text-slate-400 text-sm">
+                      Direct execution. Get instant results.
+                    </p>
+                  </button>
+                  
+                  <button
+                    onClick={() => setMode('plan')}
+                    className={`p-6 rounded-xl border-2 transition-all text-left ${
+                      mode === 'plan'
+                        ? 'border-blue-500 bg-blue-500/10'
+                        : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                    }`}
+                  >
+                    <div className="text-3xl mb-2">📋</div>
+                    <h3 className="text-white font-bold mb-1">Plan</h3>
+                    <p className="text-slate-400 text-sm">
+                      Review plan first, then execute.
+                    </p>
+                  </button>
+                  
+                  <button
+                    onClick={() => setMode('agent')}
+                    className={`p-6 rounded-xl border-2 transition-all text-left ${
+                      mode === 'agent'
+                        ? 'border-green-500 bg-green-500/10'
+                        : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                    }`}
+                  >
+                    <div className="text-3xl mb-2">🤖</div>
+                    <h3 className="text-white font-bold mb-1">Agent</h3>
+                    <p className="text-slate-400 text-sm">
+                      Autonomous execution with plan.
+                    </p>
+                  </button>
                 </div>
               </div>
 

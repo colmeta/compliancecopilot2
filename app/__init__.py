@@ -241,6 +241,14 @@ def create_app(config_class=Config):
     except Exception as e:
         app.logger.error(f"❌ Could not load real analysis routes: {e}")
     
+    # Planning Engine Routes (Ask/Plan/Agent Modes)
+    try:
+        from .api.planning_routes import planning as planning_blueprint
+        app.register_blueprint(planning_blueprint)
+        app.logger.info("✅ Planning engine routes registered (Ask/Plan/Agent modes)")
+    except Exception as e:
+        app.logger.error(f"❌ Could not load planning routes: {e}")
+    
     # AI Providers Management - DISABLED TEMPORARILY (causing 500 errors)
     # try:
     #     from .api.ai_providers_routes import ai_providers as ai_providers_blueprint
