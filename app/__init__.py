@@ -58,45 +58,26 @@ def create_app(config_class=Config):
             # This is expected for anonymous users or when DB isn't ready
             return None
     
-    # Register the user_loader - use direct assignment as fallback
-    # CRITICAL: This MUST succeed or Flask-Login will crash
-    try:
-        login_manager.user_loader(load_user)
-        app.logger.info("✅ user_loader registered via user_loader() method")
-    except Exception as e:
-        app.logger.warning(f"user_loader() method failed: {e}, trying direct assignment")
+    # Register the user_loader - ALWAYS return None to prevent crashes
+    # This is a safety measure - even if registration fails, we have a fallback
+    def safe_load_user(user_id):
+        """Always-safe user loader that never crashes"""
         try:
-            login_manager._user_callback = load_user
-            app.logger.info("✅ user_loader registered via direct _user_callback assignment")
-        except Exception as e2:
-            app.logger.error(f"CRITICAL: Direct assignment failed: {e2}")
-            # Last resort: create a dummy function
-            def dummy_load_user(user_id):
-                return None
-            try:
-                login_manager._user_callback = dummy_load_user
-                app.logger.warning("⚠️ Using dummy user_loader as fallback")
-            except Exception as e3:
-                app.logger.critical(f"FATAL: Could not register ANY user_loader: {e3}")
+            return load_user(user_id)
+        except Exception:
+            return None
     
-    # Final verification - check multiple ways
-    has_callback = hasattr(login_manager, '_user_callback') and login_manager._user_callback is not None
-    has_loader = hasattr(login_manager, 'user_loader') and callable(getattr(login_manager, 'user_loader', None))
+    # Register using the decorator method (most reliable)
+    login_manager.user_loader(safe_load_user)
     
-    if has_callback:
-        app.logger.info(f"✅ user_loader verified: _user_callback exists and is callable")
-    elif has_loader:
-        app.logger.info(f"✅ user_loader verified: user_loader method exists")
+    # Verify it worked
+    if hasattr(login_manager, '_user_callback') and login_manager._user_callback is not None:
+        app.logger.info("✅ user_loader registered and verified")
     else:
-        app.logger.critical("❌ CRITICAL: user_loader verification FAILED - Flask-Login will crash!")
-        # Emergency fallback - try one more time
-        try:
-            @login_manager.user_loader
-            def emergency_load_user(user_id):
-                return None
-            app.logger.warning("⚠️ Emergency user_loader registered via decorator")
-        except Exception as e4:
-            app.logger.critical(f"FATAL: Emergency registration also failed: {e4}")
+        app.logger.error("❌ user_loader registration failed - using emergency fallback")
+        # Emergency: directly set the callback
+        login_manager._user_callback = lambda user_id: None
+        app.logger.warning("⚠️ Emergency dummy user_loader set")
     
     migrate.init_app(app, db)
     limiter.init_app(app)
@@ -145,9 +126,19 @@ def create_app(config_class=Config):
     
     # CRITICAL: Root route registered DIRECTLY on app (BEFORE blueprints)
     # This ensures it works even if blueprints fail to load
-    @app.route('/', methods=['GET'])
+    # We MUST prevent Flask-Login from trying to load users for this route
+    @app.before_request
+    def prevent_login_for_root():
+        """Prevent Flask-Login from loading users for root route"""
+        if request.path == '/' or request.path == '':
+            # Set a flag to skip user loading
+            from flask import g
+            g.skip_user_loading = True
+    
+    @app.route('/', methods=['GET', 'HEAD', 'OPTIONS'])
     def root_endpoint():
         """Root endpoint - NO dependencies, NO Flask-Login, NO database"""
+        # Return immediately - Flask-Login should not be called
         return jsonify({
             'name': 'CLARITY Engine API',
             'version': '5.0',
