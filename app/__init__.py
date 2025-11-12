@@ -59,27 +59,44 @@ def create_app(config_class=Config):
             return None
     
     # Register the user_loader - use direct assignment as fallback
+    # CRITICAL: This MUST succeed or Flask-Login will crash
     try:
         login_manager.user_loader(load_user)
-        app.logger.info("✅ user_loader registered via decorator")
+        app.logger.info("✅ user_loader registered via user_loader() method")
     except Exception as e:
-        app.logger.warning(f"Decorator registration failed: {e}, trying direct assignment")
+        app.logger.warning(f"user_loader() method failed: {e}, trying direct assignment")
         try:
             login_manager._user_callback = load_user
-            app.logger.info("✅ user_loader registered via direct assignment")
+            app.logger.info("✅ user_loader registered via direct _user_callback assignment")
         except Exception as e2:
-            app.logger.error(f"CRITICAL: Could not register user_loader: {e2}")
+            app.logger.error(f"CRITICAL: Direct assignment failed: {e2}")
             # Last resort: create a dummy function
             def dummy_load_user(user_id):
                 return None
-            login_manager._user_callback = dummy_load_user
-            app.logger.warning("⚠️ Using dummy user_loader as fallback")
+            try:
+                login_manager._user_callback = dummy_load_user
+                app.logger.warning("⚠️ Using dummy user_loader as fallback")
+            except Exception as e3:
+                app.logger.critical(f"FATAL: Could not register ANY user_loader: {e3}")
     
-    # Final verification
-    if hasattr(login_manager, '_user_callback') and login_manager._user_callback is not None:
-        app.logger.info("✅ user_loader verified and ready")
+    # Final verification - check multiple ways
+    has_callback = hasattr(login_manager, '_user_callback') and login_manager._user_callback is not None
+    has_loader = hasattr(login_manager, 'user_loader') and callable(getattr(login_manager, 'user_loader', None))
+    
+    if has_callback:
+        app.logger.info(f"✅ user_loader verified: _user_callback exists and is callable")
+    elif has_loader:
+        app.logger.info(f"✅ user_loader verified: user_loader method exists")
     else:
-        app.logger.error("❌ CRITICAL: user_loader verification failed!")
+        app.logger.critical("❌ CRITICAL: user_loader verification FAILED - Flask-Login will crash!")
+        # Emergency fallback - try one more time
+        try:
+            @login_manager.user_loader
+            def emergency_load_user(user_id):
+                return None
+            app.logger.warning("⚠️ Emergency user_loader registered via decorator")
+        except Exception as e4:
+            app.logger.critical(f"FATAL: Emergency registration also failed: {e4}")
     
     migrate.init_app(app, db)
     limiter.init_app(app)
