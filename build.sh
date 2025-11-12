@@ -15,9 +15,11 @@ if [ -z "$GOOGLE_API_KEY" ]; then
     exit 1
 fi
 
+# CELERY_BROKER_URL is optional - only warn if not set
 if [ -z "$CELERY_BROKER_URL" ]; then
-    echo "❌ ERROR: CELERY_BROKER_URL environment variable is not set"
-    exit 1
+    echo "⚠️  WARNING: CELERY_BROKER_URL not set - Celery features will be disabled"
+else
+    echo "✅ CELERY_BROKER_URL configured"
 fi
 
 echo "✅ Environment variables validated"

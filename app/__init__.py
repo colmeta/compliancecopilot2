@@ -40,41 +40,46 @@ def create_app(config_class=Config):
     
     # CRITICAL: User loader MUST be registered immediately after login_manager.init_app
     # This must happen BEFORE any blueprints are registered that might use current_user
+    def load_user(user_id):
+        """Load user with error handling for database issues - NEVER CRASH"""
+        try:
+            # Check if database is initialized - if not, return None (user not logged in)
+            if not hasattr(db, 'engine') or db.engine is None:
+                return None
+            
+            from app.models import User
+            # Try to query - if database isn't ready, this will fail gracefully
+            return User.query.get(int(user_id))
+        except (ValueError, TypeError, AttributeError):
+            # Invalid user_id format or missing attributes
+            return None
+        except Exception:
+            # Any database error (connection, query, etc.) - just return None
+            # This is expected for anonymous users or when DB isn't ready
+            return None
+    
+    # Register the user_loader - use direct assignment as fallback
     try:
-        @login_manager.user_loader
-        def load_user(user_id):
-            """Load user with error handling for database issues - NEVER CRASH"""
-            try:
-                # Check if database is initialized - if not, return None (user not logged in)
-                if not hasattr(db, 'engine') or db.engine is None:
-                    return None
-                
-                from app.models import User
-                # Try to query - if database isn't ready, this will fail gracefully
-                return User.query.get(int(user_id))
-            except (ValueError, TypeError, AttributeError):
-                # Invalid user_id format or missing attributes
-                return None
-            except Exception:
-                # Any database error (connection, query, etc.) - just return None
-                # This is expected for anonymous users or when DB isn't ready
-                return None
-        
-        # Verify user_loader is registered
-        if hasattr(login_manager, '_user_callback') and login_manager._user_callback is not None:
-            app.logger.info("✅ user_loader registered successfully")
-        else:
-            app.logger.error("CRITICAL: user_loader was not registered!")
-            # Fallback: register a dummy user_loader to prevent crashes
-            @login_manager.user_loader
+        login_manager.user_loader(load_user)
+        app.logger.info("✅ user_loader registered via decorator")
+    except Exception as e:
+        app.logger.warning(f"Decorator registration failed: {e}, trying direct assignment")
+        try:
+            login_manager._user_callback = load_user
+            app.logger.info("✅ user_loader registered via direct assignment")
+        except Exception as e2:
+            app.logger.error(f"CRITICAL: Could not register user_loader: {e2}")
+            # Last resort: create a dummy function
             def dummy_load_user(user_id):
                 return None
-    except Exception as e:
-        app.logger.error(f"CRITICAL ERROR registering user_loader: {e}")
-        # Fallback: register a dummy user_loader to prevent crashes
-        @login_manager.user_loader
-        def dummy_load_user(user_id):
-            return None
+            login_manager._user_callback = dummy_load_user
+            app.logger.warning("⚠️ Using dummy user_loader as fallback")
+    
+    # Final verification
+    if hasattr(login_manager, '_user_callback') and login_manager._user_callback is not None:
+        app.logger.info("✅ user_loader verified and ready")
+    else:
+        app.logger.error("❌ CRITICAL: user_loader verification failed!")
     
     migrate.init_app(app, db)
     limiter.init_app(app)
@@ -120,14 +125,38 @@ def create_app(config_class=Config):
     def health_check_endpoint():
         """Instant health check - no dependencies"""
         return jsonify({'status': 'ok', 'service': 'clarity', 'ready': True}), 200
+    
+    # CRITICAL: Root route registered DIRECTLY on app (BEFORE blueprints)
+    # This ensures it works even if blueprints fail to load
+    @app.route('/', methods=['GET'])
+    def root_endpoint():
+        """Root endpoint - NO dependencies, NO Flask-Login, NO database"""
+        return jsonify({
+            'name': 'CLARITY Engine API',
+            'version': '5.0',
+            'status': 'live',
+            'service': 'veritas-engine',
+            'features': {
+                'multi_llm_router': True,
+                'funding_readiness_engine': True,
+                'outstanding_writing_system': True,
+                'api_management': True,
+                'auth': True,
+            },
+            'endpoints': {
+                'health': '/health',
+                'api_root': '/api/root',
+                'docs': '/api/docs'
+            }
+        }), 200
 
     # --- Register Blueprints (STAGED - Only Core Ones First) ---
     
-    # Core Routes (Required) - MUST BE FIRST to handle root route
+    # Core Routes (Required) - Register but root / is already handled above
     try:
         from .main.routes import main as main_blueprint
-        app.register_blueprint(main_blueprint)  # NO url_prefix - handles root /
-        app.logger.info("✅ Main routes registered (handling root /)")
+        app.register_blueprint(main_blueprint)  # NO url_prefix - but / is already handled
+        app.logger.info("✅ Main routes registered")
     except Exception as e:
         app.logger.error(f"❌ Could not load main routes: {e}")
     

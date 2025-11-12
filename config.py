@@ -26,8 +26,21 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # --- CELERY (BACKGROUND WORKER) CONFIGURATION ---
-    CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
-    CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')
+    # Auto-fix: If broker and result backend are the same, use different Redis databases
+    _celery_broker = os.environ.get('CELERY_BROKER_URL')
+    _celery_result = os.environ.get('CELERY_RESULT_BACKEND')
+    
+    # If they're the same Redis URL, automatically use different database numbers
+    if _celery_broker and _celery_result and _celery_broker == _celery_result:
+        # Extract base URL (remove database number if present)
+        import re
+        base_url = re.sub(r'/(\d+)$', '', _celery_broker)
+        # Use database 0 for broker, database 1 for results
+        CELERY_BROKER_URL = f"{base_url}/0" if 'redis://' in base_url or 'rediss://' in base_url else _celery_broker
+        CELERY_RESULT_BACKEND = f"{base_url}/1" if 'redis://' in base_url or 'rediss://' in base_url else _celery_result
+    else:
+        CELERY_BROKER_URL = _celery_broker
+        CELERY_RESULT_BACKEND = _celery_result
     
     # --- API KEYS ---
     GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
@@ -80,11 +93,11 @@ class Config:
     
     # --- Model Routing ---
     ENABLE_MODEL_ROUTING = os.environ.get('ENABLE_MODEL_ROUTING', 'true').lower() == 'true'
-    DEFAULT_MODEL = os.environ.get('DEFAULT_MODEL', 'gemini-1.5-flash')
+    DEFAULT_MODEL = os.environ.get('DEFAULT_MODEL', 'gemini-pro')  # Changed from gemini-1.5-flash (doesn't exist)
     
     # Model routing configuration
     MODEL_ROUTING = {
-        'simple': 'gemini-1.5-flash',
+        'simple': 'gemini-pro',  # Changed from gemini-1.5-flash (doesn't exist)
         'standard': 'gemini-1.5-pro',
         'complex': 'gemini-1.5-ultra',
         'multimodal': 'gemini-pro-vision'
@@ -155,7 +168,7 @@ class Config:
     
     # Model Cost Configuration
     MODEL_COST_CONFIG = {
-        'gemini-1.5-flash': {
+        'gemini-pro': {  # Changed from gemini-1.5-flash (doesn't exist)
             'input_cost_per_1k': 0.000075,
             'output_cost_per_1k': 0.0003,
             'tier': 'free'
@@ -204,6 +217,10 @@ class Config:
         required_vars = [
             'DATABASE_URL',
             'GOOGLE_API_KEY', 
+        ]
+        
+        # CELERY vars are optional - only warn if not set
+        optional_vars = [
             'CELERY_BROKER_URL',
             'CELERY_RESULT_BACKEND'
         ]
@@ -215,5 +232,11 @@ class Config:
         
         if missing_vars:
             raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
+        
+        # Warn about optional vars but don't fail
+        missing_optional = [var for var in optional_vars if not os.environ.get(var)]
+        if missing_optional:
+            import logging
+            logging.warning(f"Optional environment variables not set: {', '.join(missing_optional)}")
         
         return True
