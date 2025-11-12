@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://veritas-faxh.onrender.com'
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://veritas-engine-zae0.onrender.com'
 
 type Step = 'welcome' | 'workflow' | 'discovery' | 'documents' | 'gap-questions' | 'configure' | 'generating' | 'results'
 type Workflow = 'questions' | 'documents' | null
@@ -336,7 +336,15 @@ export default function FundingEngine() {
       }
     } catch (err: any) {
       console.error('Generation error:', err)
-      setError(err.message || 'Failed to connect to backend. Please try again.')
+      
+      // Detect network/fetch errors (likely Render hibernation)
+      let errorMessage = err.message || 'Failed to connect to backend. Please try again.'
+      
+      if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError') || err.name === 'TypeError') {
+        errorMessage = 'Backend is waking up (Render free tier hibernates after 15 min). Please wait 30-60 seconds and try again.'
+      }
+      
+      setError(errorMessage)
       setIsSubmitting(false)
     }
   }
@@ -409,7 +417,15 @@ export default function FundingEngine() {
       }
     } catch (err: any) {
       console.error('Document analysis error:', err)
-      setError(err.message || 'Failed to analyze documents')
+      
+      // Detect network/fetch errors (likely Render hibernation)
+      let errorMessage = err.message || 'Failed to analyze documents'
+      
+      if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError') || err.name === 'TypeError') {
+        errorMessage = 'Backend is waking up (Render free tier hibernates after 15 min). Please wait 30-60 seconds and try again.'
+      }
+      
+      setError(errorMessage)
       setIsAnalyzing(false)
     }
   }

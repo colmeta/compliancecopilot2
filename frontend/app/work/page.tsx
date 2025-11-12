@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
 // Backend API URL
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://veritas-faxh.onrender.com'
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://veritas-engine-zae0.onrender.com'
 
 type Mode = 'ask' | 'plan' | 'agent'
 
@@ -186,8 +186,16 @@ function CommandDeckContent() {
       }
     } catch (err: any) {
       console.error('Error:', err)
-      setError(err.message || 'Failed to connect to backend')
-      alert(`Error: ${err.message}. Please try again.`)
+      
+      // Detect network/fetch errors (likely Render hibernation)
+      let errorMessage = err.message || 'Failed to connect to backend'
+      
+      if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError') || err.name === 'TypeError') {
+        errorMessage = 'Backend is waking up (Render free tier hibernates after 15 min). Please wait 30-60 seconds and try again.'
+      }
+      
+      setError(errorMessage)
+      alert(`Error: ${errorMessage}\n\nIf this persists, the backend may be hibernating. Wait 30-60 seconds and retry.`)
       setExecuting(false)
     } finally {
       setSubmitting(false)

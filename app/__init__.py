@@ -90,6 +90,7 @@ def create_app(config_class=Config):
                 "http://localhost:3000",  # Local development
                 "https://*.vercel.app",    # Vercel deployments
                 "https://clarity-frontend.vercel.app",  # Production frontend
+                "https://clarity-engine-auto.vercel.app",  # Vercel auto-deployment
             ],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization"],
