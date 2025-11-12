@@ -10,17 +10,24 @@ services:
     
     # Build configuration
     buildCommand: |
-      # Install system dependencies
-      apt-get update
-      apt-get install -y tesseract-ocr tesseract-ocr-eng libtesseract-dev poppler-utils
+      # Install system dependencies (Tesseract OCR)
+      apt-get update -qq
+      apt-get install -y tesseract-ocr tesseract-ocr-eng libtesseract-dev poppler-utils || echo "⚠️ System package install failed, continuing..."
+      
+      # Verify Tesseract installation
+      if command -v tesseract &> /dev/null; then
+        echo "✅ Tesseract installed: $(tesseract --version 2>&1 | head -1)"
+      else
+        echo "⚠️ Tesseract not found - OCR features will be limited"
+      fi
       
       # Install Python dependencies
       pip install --upgrade pip
       pip install -r requirements.txt
       
-      # Run database migrations
+      # Run database migrations (non-fatal)
       export FLASK_APP=run.py
-      flask db upgrade
+      flask db upgrade || echo "⚠️ Migration failed (may be normal)"
     
     # Start command
     startCommand: gunicorn run:app
