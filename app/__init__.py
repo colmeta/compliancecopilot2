@@ -135,10 +135,12 @@ def create_app(config_class=Config):
             from flask import g
             g.skip_user_loading = True
     
-    @app.route('/', methods=['GET', 'HEAD', 'OPTIONS'])
+    # Register root route with explicit endpoint name to ensure it's unique
+    @app.route('/', methods=['GET', 'HEAD', 'OPTIONS'], endpoint='root')
     def root_endpoint():
         """Root endpoint - NO dependencies, NO Flask-Login, NO database"""
         # Return immediately - Flask-Login should not be called
+        # This route is registered BEFORE blueprints, so it takes precedence
         return jsonify({
             'name': 'CLARITY Engine API',
             'version': '5.0',
@@ -157,16 +159,27 @@ def create_app(config_class=Config):
                 'docs': '/api/docs'
             }
         }), 200
+    
+    # Verify root route is registered
+    app.logger.info(f"✅ Root route registered at endpoint 'root'")
 
     # --- Register Blueprints (STAGED - Only Core Ones First) ---
     
     # Core Routes (Required) - Register but root / is already handled above
+    # IMPORTANT: The blueprint's root route was removed, so it won't conflict
     try:
         from .main.routes import main as main_blueprint
-        app.register_blueprint(main_blueprint)  # NO url_prefix - but / is already handled
-        app.logger.info("✅ Main routes registered")
+        # Register blueprint - if it tries to register /, Flask will ignore it (app route takes precedence)
+        app.register_blueprint(main_blueprint, url_prefix='')
+        # Verify no conflict
+        root_routes = [rule for rule in app.url_map.iter_rules() if rule.rule == '/']
+        if len(root_routes) > 1:
+            app.logger.warning(f"⚠️ Multiple routes for / detected: {[r.endpoint for r in root_routes]}")
+        else:
+            app.logger.info(f"✅ Main routes registered - root / handled by: {root_routes[0].endpoint if root_routes else 'NONE'}")
     except Exception as e:
         app.logger.error(f"❌ Could not load main routes: {e}")
+        # Don't crash - app-level routes still work
     
     # API Routes (Required)
     try:
