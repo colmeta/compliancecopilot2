@@ -9,29 +9,9 @@ import json
 
 main = Blueprint('main', __name__)
 
-@main.route('/')
-def homepage():
-    """Presidential-level landing page - Always returns JSON to prevent 500 errors"""
-    # ABSOLUTELY NO Flask-Login, NO database, NO templates - just pure JSON
-    # This route must work even if Flask-Login isn't initialized
-    return jsonify({
-        'name': 'CLARITY Engine API',
-        'version': '5.0',
-        'status': 'live',
-        'service': 'veritas-engine',
-        'features': {
-            'multi_llm_router': True,
-            'funding_readiness_engine': True,
-            'outstanding_writing_system': True,
-            'api_management': True,
-            'auth': True,
-        },
-        'endpoints': {
-            'health': '/health',
-            'api_root': '/api/root',
-            'docs': '/api/docs'
-        }
-    }), 200
+# NOTE: Root route (/) is now handled directly in app/__init__.py
+# This prevents Flask-Login errors and ensures it works even if blueprints fail
+# DO NOT add a route for '/' here - it will conflict with the app-level route
 
 @main.route('/dashboard')
 @login_required
