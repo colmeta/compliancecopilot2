@@ -63,17 +63,46 @@ function CommandDeckContent() {
         // Track response time to detect hibernation (slow = hibernating, fast = awake)
         const startTime = Date.now()
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+        // Longer timeout for document processing (60 seconds if files, 30 if not)
+        const timeout = files.length > 0 ? 60000 : 30000
+        const timeoutId = setTimeout(() => controller.abort(), timeout)
+        
+        // Prepare request body with files if uploaded
+        let requestBody: any = {
+          directive: directive,
+          domain: selectedDomain
+        }
+        
+        // If files are uploaded, convert to base64 and add to request
+        if (files.length > 0) {
+          const filesData = await Promise.all(files.map(async (file) => {
+            const base64 = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader()
+              reader.onload = () => {
+                const result = reader.result as string
+                const base64Content = result.split(',')[1] // Remove data:type;base64, prefix
+                resolve(base64Content)
+              }
+              reader.onerror = reject
+              reader.readAsDataURL(file)
+            })
+            
+            return {
+              filename: file.name,
+              content_base64: base64,
+              content_type: file.type || 'application/pdf'
+            }
+          }))
+          
+          requestBody.files = filesData
+        }
         
         const response = await fetch(`${BACKEND_URL}/instant/analyze`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            directive: directive,
-            domain: selectedDomain
-          }),
+          body: JSON.stringify(requestBody),
           signal: controller.signal
         })
         
@@ -225,13 +254,21 @@ function CommandDeckContent() {
       let isHibernation = false
       
       // Only show hibernation message for:
-      // 1. AbortError (timeout) - request took too long
+      // 1. AbortError (timeout) - BUT only if response was very slow (> 25 seconds) indicating hibernation
       // 2. Network errors that aren't HTTP status codes (actual connection failures)
       // 3. NOT for HTTP errors (400, 401, 403, 404, 500) - those mean backend is awake
+      // 4. NOT for document processing timeouts - those are normal for large files
       if (err.name === 'AbortError') {
-        // Request timed out - likely hibernation
-        isHibernation = true
-        errorMessage = 'Backend is waking up (took too long to respond). Please wait 30-60 seconds and try again.'
+        // Request timed out - check if it's hibernation or just slow processing
+        if (files.length > 0) {
+          // Document processing can take time - not necessarily hibernation
+          isHibernation = false
+          errorMessage = 'Document processing timed out. The file may be too large or the backend is processing. Please try again or use a smaller file.'
+        } else {
+          // No files - timeout likely means hibernation
+          isHibernation = true
+          errorMessage = 'Backend is waking up (took too long to respond). Please wait 30-60 seconds and try again.'
+        }
       } else if (err.message?.includes('Failed to fetch') && 
                  !err.message?.includes('API error') && 
                  !err.message?.includes('400') && 
@@ -246,6 +283,9 @@ function CommandDeckContent() {
         // Backend responded quickly but with an error - NOT hibernation
         isHibernation = false
         errorMessage = err.message.replace('Backend is awake but returned an error - ', '')
+      } else {
+        // Any other error - backend is awake, just has an issue
+        isHibernation = false
       }
       
       setError(errorMessage)
