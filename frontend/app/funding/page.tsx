@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://veritas-engine-zae0.onrender.com'
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://veritas-faxh.onrender.com'
 
 type Step = 'welcome' | 'workflow' | 'discovery' | 'documents' | 'gap-questions' | 'configure' | 'generating' | 'results'
 type Workflow = 'questions' | 'documents' | null

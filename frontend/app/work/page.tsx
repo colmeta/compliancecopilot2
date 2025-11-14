@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
 // Backend API URL
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://veritas-engine-zae0.onrender.com'
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://veritas-faxh.onrender.com'
 
 type Mode = 'ask' | 'plan' | 'agent'
 
