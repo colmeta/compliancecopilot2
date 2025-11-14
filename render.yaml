@@ -9,25 +9,19 @@ services:
     plan: free
     
     # Build configuration
+    # Note: If using Dockerfile, this buildCommand is ignored
+    # If not using Dockerfile, ensure this runs:
     buildCommand: |
-      # Install system dependencies (Tesseract OCR)
+      set -e
+      echo "📦 Installing system dependencies..."
       apt-get update -qq
-      apt-get install -y tesseract-ocr tesseract-ocr-eng libtesseract-dev poppler-utils || echo "⚠️ System package install failed, continuing..."
-      
-      # Verify Tesseract installation
-      if command -v tesseract &> /dev/null; then
-        echo "✅ Tesseract installed: $(tesseract --version 2>&1 | head -1)"
-      else
-        echo "⚠️ Tesseract not found - OCR features will be limited"
-      fi
-      
-      # Install Python dependencies
+      apt-get install -y tesseract-ocr tesseract-ocr-eng libtesseract-dev poppler-utils
+      echo "✅ System packages installed"
+      tesseract --version || echo "⚠️ Tesseract verification failed"
       pip install --upgrade pip
       pip install -r requirements.txt
-      
-      # Run database migrations (non-fatal)
       export FLASK_APP=run.py
-      flask db upgrade || echo "⚠️ Migration failed (may be normal)"
+      flask db upgrade || echo "⚠️ Migration skipped"
     
     # Start command
     startCommand: gunicorn run:app
