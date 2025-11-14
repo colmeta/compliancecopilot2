@@ -60,6 +60,10 @@ function CommandDeckContent() {
     try {
       if (mode === 'ask') {
         // Ask mode: Direct execution
+        // Add timeout to detect hibernation
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+        
         const response = await fetch(`${BACKEND_URL}/instant/analyze`, {
           method: 'POST',
           headers: {
@@ -68,8 +72,11 @@ function CommandDeckContent() {
           body: JSON.stringify({
             directive: directive,
             domain: selectedDomain
-          })
+          }),
+          signal: controller.signal
         })
+        
+        clearTimeout(timeoutId)
 
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`)
@@ -86,6 +93,9 @@ function CommandDeckContent() {
         }
       } else if (mode === 'plan') {
         // Plan mode: Create plan first
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 30000)
+        
         const response = await fetch(`${BACKEND_URL}/api/planning/create-plan`, {
           method: 'POST',
           headers: {
@@ -99,8 +109,11 @@ function CommandDeckContent() {
               files: files.length > 0 ? files.map(f => f.name) : [],
               user_tier: 'free'
             }
-          })
+          }),
+          signal: controller.signal
         })
+        
+        clearTimeout(timeoutId)
 
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`)
@@ -117,6 +130,9 @@ function CommandDeckContent() {
       } else if (mode === 'agent') {
         // Agent mode: Create plan and execute automatically
         // First create plan
+        const controller1 = new AbortController()
+        const timeoutId1 = setTimeout(() => controller1.abort(), 30000)
+        
         const planResponse = await fetch(`${BACKEND_URL}/api/planning/create-plan`, {
           method: 'POST',
           headers: {
@@ -130,8 +146,11 @@ function CommandDeckContent() {
               files: files.length > 0 ? files.map(f => f.name) : [],
               user_tier: 'free'
             }
-          })
+          }),
+          signal: controller1.signal
         })
+        
+        clearTimeout(timeoutId1)
 
         if (!planResponse.ok) {
           throw new Error(`Plan creation failed: ${planResponse.status}`)
@@ -148,6 +167,9 @@ function CommandDeckContent() {
         setExecuting(true)
 
         // Auto-approve and execute
+        const controller2 = new AbortController()
+        const timeoutId2 = setTimeout(() => controller2.abort(), 60000) // Longer timeout for execution
+        
         const executeResponse = await fetch(`${BACKEND_URL}/api/planning/execute-plan`, {
           method: 'POST',
           headers: {
@@ -161,8 +183,11 @@ function CommandDeckContent() {
               directive: directive,
               domain: selectedDomain
             }
-          })
+          }),
+          signal: controller2.signal
         })
+        
+        clearTimeout(timeoutId2)
 
         if (!executeResponse.ok) {
           throw new Error(`Execution failed: ${executeResponse.status}`)
@@ -187,15 +212,28 @@ function CommandDeckContent() {
     } catch (err: any) {
       console.error('Error:', err)
       
-      // Detect network/fetch errors (likely Render hibernation)
+      // Detect specific error types
       let errorMessage = err.message || 'Failed to connect to backend'
+      let isHibernation = false
       
-      if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError') || err.name === 'TypeError') {
+      // Check if it's a network/timeout error (likely hibernation)
+      if (err.name === 'AbortError' || 
+          err.message?.includes('aborted') ||
+          err.message?.includes('timeout') ||
+          (err.message?.includes('Failed to fetch') && !err.message?.includes('400') && !err.message?.includes('401') && !err.message?.includes('403') && !err.message?.includes('404') && !err.message?.includes('500'))) {
+        isHibernation = true
         errorMessage = 'Backend is waking up (Render free tier hibernates after 15 min). Please wait 30-60 seconds and try again.'
       }
       
       setError(errorMessage)
-      alert(`Error: ${errorMessage}\n\nIf this persists, the backend may be hibernating. Wait 30-60 seconds and retry.`)
+      
+      // Only show hibernation-specific alert for actual hibernation
+      if (isHibernation) {
+        alert(`Backend is waking up...\n\nRender free tier services hibernate after 15 minutes of inactivity.\n\nPlease wait 30-60 seconds and try again.\n\n💡 Tip: The keep-alive service should prevent this. Check GitHub Actions if it persists.`)
+      } else {
+        alert(`Error: ${errorMessage}\n\nPlease check your connection and try again.`)
+      }
+      
       setExecuting(false)
     } finally {
       setSubmitting(false)
