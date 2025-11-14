@@ -1,0 +1,32 @@
+name: Keep Backend Alive
+
+on:
+  schedule:
+    # Run every 14 minutes to prevent Render hibernation
+    - cron: '*/14 * * * *'
+  workflow_dispatch:  # Allow manual trigger from GitHub Actions UI
+
+jobs:
+  ping-backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    
+    steps:
+      - name: Ping Backend Health Endpoint
+        run: |
+          echo "🔄 Pinging CLARITY backend to prevent hibernation..."
+          curl -f -s -m 30 https://veritas-engine-zae0.onrender.com/health || exit 1
+          echo "✅ Backend is alive!"
+        
+      - name: Ping Instant Endpoint (Optional)
+        continue-on-error: true
+        run: |
+          echo "🔄 Pinging instant endpoint..."
+          curl -f -s -m 30 https://veritas-engine-zae0.onrender.com/instant/health || echo "⚠️ Instant endpoint not available"
+        
+      - name: Ping Real AI Endpoint (Optional)
+        continue-on-error: true
+        run: |
+          echo "🔄 Pinging real AI endpoint..."
+          curl -f -s -m 30 https://veritas-engine-zae0.onrender.com/real/health || echo "⚠️ Real AI endpoint not available"
+
