@@ -60,7 +60,8 @@ function CommandDeckContent() {
     try {
       if (mode === 'ask') {
         // Ask mode: Direct execution
-        // Add timeout to detect hibernation
+        // Track response time to detect hibernation (slow = hibernating, fast = awake)
+        const startTime = Date.now()
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
         
@@ -77,9 +78,16 @@ function CommandDeckContent() {
         })
         
         clearTimeout(timeoutId)
+        const responseTime = Date.now() - startTime
 
         if (!response.ok) {
-          throw new Error(`API error: ${response.status}`)
+          // If response was fast (< 5 seconds), backend is awake but has an error
+          if (responseTime < 5000) {
+            throw new Error(`API error: ${response.status} - Backend is awake but returned an error`)
+          } else {
+            // Slow response might indicate hibernation, but we got a response so it's an API error
+            throw new Error(`API error: ${response.status}`)
+          }
         }
 
         const result = await response.json()
@@ -212,17 +220,32 @@ function CommandDeckContent() {
     } catch (err: any) {
       console.error('Error:', err)
       
-      // Detect specific error types
+      // Detect specific error types - only show hibernation for actual timeouts/network failures
       let errorMessage = err.message || 'Failed to connect to backend'
       let isHibernation = false
       
-      // Check if it's a network/timeout error (likely hibernation)
-      if (err.name === 'AbortError' || 
-          err.message?.includes('aborted') ||
-          err.message?.includes('timeout') ||
-          (err.message?.includes('Failed to fetch') && !err.message?.includes('400') && !err.message?.includes('401') && !err.message?.includes('403') && !err.message?.includes('404') && !err.message?.includes('500'))) {
+      // Only show hibernation message for:
+      // 1. AbortError (timeout) - request took too long
+      // 2. Network errors that aren't HTTP status codes (actual connection failures)
+      // 3. NOT for HTTP errors (400, 401, 403, 404, 500) - those mean backend is awake
+      if (err.name === 'AbortError') {
+        // Request timed out - likely hibernation
         isHibernation = true
-        errorMessage = 'Backend is waking up (Render free tier hibernates after 15 min). Please wait 30-60 seconds and try again.'
+        errorMessage = 'Backend is waking up (took too long to respond). Please wait 30-60 seconds and try again.'
+      } else if (err.message?.includes('Failed to fetch') && 
+                 !err.message?.includes('API error') && 
+                 !err.message?.includes('400') && 
+                 !err.message?.includes('401') && 
+                 !err.message?.includes('403') && 
+                 !err.message?.includes('404') && 
+                 !err.message?.includes('500')) {
+        // Network error without HTTP status - likely connection issue or hibernation
+        isHibernation = true
+        errorMessage = 'Backend is waking up (connection failed). Please wait 30-60 seconds and try again.'
+      } else if (err.message?.includes('Backend is awake but returned an error')) {
+        // Backend responded quickly but with an error - NOT hibernation
+        isHibernation = false
+        errorMessage = err.message.replace('Backend is awake but returned an error - ', '')
       }
       
       setError(errorMessage)

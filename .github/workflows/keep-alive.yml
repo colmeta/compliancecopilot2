@@ -2,9 +2,9 @@ name: Keep Backend Alive
 
 on:
   schedule:
-    # Run every 10 minutes to prevent Render hibernation (safer than 14 min)
-    # Render hibernates after 15 minutes, so 10 min ensures we're always ahead
-    - cron: '*/10 * * * *'
+    # Run every 5 minutes to prevent Render hibernation (12 times per hour)
+    # Render hibernates after 15 minutes, so 5 min ensures we're always ahead
+    - cron: '*/5 * * * *'
   workflow_dispatch:  # Allow manual trigger from GitHub Actions UI
 
 jobs:
