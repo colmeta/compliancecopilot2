@@ -153,9 +153,10 @@ def check_indexing_status(job_id):
     """
     try:
         from celery.result import AsyncResult
-        from celery_worker import celery
+        # Lazy import to avoid circular dependency
+        from celery_worker import celery as celery_app
         
-        task = AsyncResult(job_id, app=celery)
+        task = AsyncResult(job_id, app=celery_app)
         
         if task.state == 'PENDING':
             response = {

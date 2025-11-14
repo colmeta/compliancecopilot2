@@ -12,7 +12,7 @@ import json
 import re
 import logging
 
-from celery_worker import celery_app
+from celery_worker import celery as celery_app
 import google.generativeai as genai
 
 # Document Processing Libraries
