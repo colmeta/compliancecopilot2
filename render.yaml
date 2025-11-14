@@ -9,15 +9,9 @@ services:
     plan: free
     
     # Build configuration
-    # Note: If using Dockerfile, this buildCommand is ignored
-    # If not using Dockerfile, ensure this runs:
+    # Note: System packages (Tesseract) are installed via Aptfile
+    # Render automatically reads Aptfile and installs packages
     buildCommand: |
-      set -e
-      echo "📦 Installing system dependencies..."
-      apt-get update -qq
-      apt-get install -y tesseract-ocr tesseract-ocr-eng libtesseract-dev poppler-utils
-      echo "✅ System packages installed"
-      tesseract --version || echo "⚠️ Tesseract verification failed"
       pip install --upgrade pip
       pip install -r requirements.txt
       export FLASK_APP=run.py
