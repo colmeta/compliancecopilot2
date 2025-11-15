@@ -100,7 +100,7 @@ function CommandDeckContent() {
           requestBody.files = filesData
         }
         
-        const response = await fetch(`${BACKEND_URL}/instant/analyze`, {
+        const response = await fetch(`${BACKEND_URL}/real/analyze`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
