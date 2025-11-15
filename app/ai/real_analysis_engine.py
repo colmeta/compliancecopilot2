@@ -27,10 +27,28 @@ class RealAnalysisEngine:
         
         try:
             genai.configure(api_key=self.api_key)
-            # Use gemini-pro (stable, widely available)
-            self.model = genai.GenerativeModel('gemini-pro')
+            # List available models and use the first one that works
+            # Common model names: gemini-1.5-flash, gemini-1.5-pro, gemini-pro-vision
+            model_names = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+            self.model = None
+            self.model_name = None
+            
+            for model_name in model_names:
+                try:
+                    # Test if model exists by trying to create it
+                    test_model = genai.GenerativeModel(model_name)
+                    self.model = test_model
+                    self.model_name = model_name
+                    logger.info(f"✅ Real AI Analysis Engine initialized with {model_name}")
+                    break
+                except Exception as e:
+                    logger.debug(f"Model {model_name} not available: {e}")
+                    continue
+            
+            if not self.model:
+                raise Exception(f"None of the models are available: {model_names}")
+            
             self.enabled = True
-            logger.info("✅ Real AI Analysis Engine initialized (Gemini Pro)")
         except Exception as e:
             logger.error(f"❌ Failed to initialize Gemini: {e}")
             self.enabled = False
@@ -119,7 +137,7 @@ Be specific, cite evidence, and provide actionable insights. Use the exact secti
                 'directive': directive,
                 'analysis': parsed,
                 'raw_response': ai_response,
-                'model': 'gemini-pro',
+                'model': self.model_name if hasattr(self, 'model_name') else 'gemini-1.5-flash',
                 'status': 'completed'
             }
             
