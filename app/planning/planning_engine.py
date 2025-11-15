@@ -119,10 +119,33 @@ class PlanningEngine:
     def __init__(self):
         """Initialize the Planning Engine."""
         try:
-            genai.configure(api_key=os.environ.get('GOOGLE_API_KEY'))
-            self.model = genai.GenerativeModel('gemini-1.5-pro')
+            api_key = os.environ.get('GOOGLE_API_KEY')
+            if not api_key:
+                logger.error("❌ GOOGLE_API_KEY not set! Planning engine will fail.")
+                self.initialized = False
+                return
+            
+            genai.configure(api_key=api_key)
+            # Try available models in order of preference
+            model_names = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+            self.model = None
+            self.model_name = None
+            
+            for model_name in model_names:
+                try:
+                    test_model = genai.GenerativeModel(model_name)
+                    self.model = test_model
+                    self.model_name = model_name
+                    logger.info(f"✅ PlanningEngine initialized with {model_name}")
+                    break
+                except Exception as e:
+                    logger.debug(f"Model {model_name} not available: {e}")
+                    continue
+            
+            if not self.model:
+                raise Exception(f"None of the models are available: {model_names}")
+            
             self.initialized = True
-            logger.info("PlanningEngine initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize PlanningEngine: {e}")
             self.initialized = False

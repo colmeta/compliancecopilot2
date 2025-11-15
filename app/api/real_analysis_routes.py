@@ -3,7 +3,7 @@ REAL ANALYSIS ROUTES - No More Simulations
 Uses actual Google Gemini AI for all analysis
 """
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 import uuid
 from datetime import datetime
 import base64
@@ -93,6 +93,17 @@ def analyze_with_real_ai():
         if not result.get('success'):
             return jsonify(result), 500
         
+        # Ensure analysis data exists
+        analysis_data = result.get('analysis', {})
+        if not analysis_data:
+            logger.warning(f"Analysis completed but no analysis data returned. Result keys: {result.keys()}")
+            analysis_data = {
+                'summary': 'Analysis completed but no structured results returned',
+                'findings': ['Please check backend logs for details'],
+                'recommendations': [],
+                'confidence_score': 0.0
+            }
+        
         # Return real AI results
         return jsonify({
             'success': True,
@@ -100,8 +111,8 @@ def analyze_with_real_ai():
             'domain': domain,
             'directive': directive,
             'timestamp': datetime.utcnow().isoformat(),
-            'analysis': result['analysis'],
-            'model': result.get('model', 'gemini-pro'),
+            'analysis': analysis_data,
+            'model': result.get('model', 'unknown'),
             'status': 'completed',
             'note': '✅ REAL AI ANALYSIS (not simulated)',
             'processing_time': 'Real-time'
@@ -117,7 +128,7 @@ def analyze_with_real_ai():
             'message': 'AI analysis failed. Check server logs for details.',
             'task_id': task_id,
             'status': 'failed',
-            'details': error_trace if app.debug else None
+            'details': error_trace if current_app.debug else None
         }), 500
 
 
@@ -130,7 +141,7 @@ def check_real_ai_health():
         'service': 'Real AI Analysis Engine',
         'status': 'configured' if engine.enabled else 'not_configured',
         'api_key_set': bool(engine.api_key),
-        'model': 'gemini-pro' if engine.enabled else None,
+        'model': getattr(engine, 'model_name', 'unknown') if engine.enabled else None,
         'ready': engine.enabled,
         'message': '✅ Ready for real AI analysis' if engine.enabled else '❌ GOOGLE_API_KEY not set',
         'instructions': {
