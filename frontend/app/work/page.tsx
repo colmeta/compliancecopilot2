@@ -295,23 +295,27 @@ function CommandDeckContent() {
           isHibernation = true
           errorMessage = 'Backend is waking up (took too long to respond). Please wait 30-60 seconds and try again.'
         }
-      } else if (err.message?.includes('Failed to fetch') && 
-                 !err.message?.includes('Backend error') && 
-                 !err.message?.includes('API error')) {
-        // Network error - could be hibernation or connection issue
-        // Check response time to determine
-        if (responseTime && responseTime > 25000) {
+      } else if (err.message?.includes('Failed to fetch')) {
+        // Network error - try to determine the actual cause
+        // First, check if we got any response at all
+        if (responseTime === null) {
+          // No response received - could be CORS, network, or hibernation
+          // Since backend is confirmed awake, it's likely CORS or network issue
+          isHibernation = false
+          errorMessage = 'Failed to connect to backend. This might be a CORS issue or network problem. Please check the browser console (F12) for details.'
+        } else if (responseTime > 25000) {
           // Very slow - likely hibernation
           isHibernation = true
           errorMessage = 'Backend is waking up (connection failed). Please wait 30-60 seconds and try again.'
         } else {
           // Fast failure - connection issue, not hibernation
           isHibernation = false
-          errorMessage = 'Connection failed. Please check your internet connection and try again.'
+          errorMessage = 'Connection failed. Please check your internet connection and try again. If this persists, check browser console (F12) for CORS errors.'
         }
       } else {
         // Any other error - backend is awake, just has an issue
         isHibernation = false
+        // Keep the original error message
       }
       
       setError(errorMessage)

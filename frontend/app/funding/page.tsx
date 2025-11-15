@@ -262,7 +262,19 @@ export default function FundingEngine() {
       })
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`)
+        // Try to get error message from response
+        let errorMsg = `API error: ${response.status}`
+        try {
+          const errorData = await response.json()
+          if (errorData.error) {
+            errorMsg = `Backend error: ${errorData.error}`
+          } else if (errorData.message) {
+            errorMsg = `Backend error: ${errorData.message}`
+          }
+        } catch (e) {
+          // Couldn't parse error response, use status code
+        }
+        throw new Error(errorMsg)
       }
 
       const result = await response.json()
@@ -337,11 +349,40 @@ export default function FundingEngine() {
     } catch (err: any) {
       console.error('Generation error:', err)
       
-      // Detect network/fetch errors (likely Render hibernation)
+      // Detect specific error types - only show hibernation for actual timeouts
       let errorMessage = err.message || 'Failed to connect to backend. Please try again.'
+      let isHibernation = false
       
-      if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError') || err.name === 'TypeError') {
-        errorMessage = 'Backend is waking up (Render free tier hibernates after 15 min). Please wait 30-60 seconds and try again.'
+      // Check if we got a response from backend (means it's awake)
+      if (err.message?.includes('Backend error:')) {
+        // Backend responded with an error - NOT hibernation
+        isHibernation = false
+        errorMessage = err.message.replace('Backend error: ', '')
+      } else if (err.message?.includes('API error:')) {
+        // HTTP error response - backend is awake
+        isHibernation = false
+        const statusMatch = err.message.match(/API error: (\d+)/)
+        if (statusMatch) {
+          const status = statusMatch[1]
+          if (status === '400') {
+            errorMessage = 'Invalid request. Please check your input and try again.'
+          } else if (status === '500') {
+            errorMessage = 'Server error. The backend encountered an issue. Please try again.'
+          } else {
+            errorMessage = `Server returned error ${status}. Please try again.`
+          }
+        }
+      } else if (err.name === 'AbortError') {
+        // Request timed out - could be hibernation or slow processing
+        isHibernation = true
+        errorMessage = 'Request timed out. The backend may be processing or waking up. Please wait 30-60 seconds and try again.'
+      } else if (err.message?.includes('Failed to fetch')) {
+        // Network error - likely CORS or connection issue, not hibernation
+        isHibernation = false
+        errorMessage = 'Failed to connect to backend. This might be a CORS issue or network problem. Please check the browser console (F12) for details.'
+      } else {
+        // Any other error - backend is awake, just has an issue
+        isHibernation = false
       }
       
       setError(errorMessage)
@@ -395,7 +436,19 @@ export default function FundingEngine() {
       })
       
       if (!response.ok) {
-        throw new Error(`Analysis failed: ${response.status}`)
+        // Try to get error message from response
+        let errorMsg = `API error: ${response.status}`
+        try {
+          const errorData = await response.json()
+          if (errorData.error) {
+            errorMsg = `Backend error: ${errorData.error}`
+          } else if (errorData.message) {
+            errorMsg = `Backend error: ${errorData.message}`
+          }
+        } catch (e) {
+          // Couldn't parse error response, use status code
+        }
+        throw new Error(errorMsg)
       }
       
       const result = await response.json()
@@ -418,11 +471,40 @@ export default function FundingEngine() {
     } catch (err: any) {
       console.error('Document analysis error:', err)
       
-      // Detect network/fetch errors (likely Render hibernation)
+      // Detect specific error types - only show hibernation for actual timeouts
       let errorMessage = err.message || 'Failed to analyze documents'
+      let isHibernation = false
       
-      if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError') || err.name === 'TypeError') {
-        errorMessage = 'Backend is waking up (Render free tier hibernates after 15 min). Please wait 30-60 seconds and try again.'
+      // Check if we got a response from backend (means it's awake)
+      if (err.message?.includes('Backend error:')) {
+        // Backend responded with an error - NOT hibernation
+        isHibernation = false
+        errorMessage = err.message.replace('Backend error: ', '')
+      } else if (err.message?.includes('API error:')) {
+        // HTTP error response - backend is awake
+        isHibernation = false
+        const statusMatch = err.message.match(/API error: (\d+)/)
+        if (statusMatch) {
+          const status = statusMatch[1]
+          if (status === '400') {
+            errorMessage = 'Invalid request. Please check your document format and try again.'
+          } else if (status === '500') {
+            errorMessage = 'Server error. The backend encountered an issue processing your document. Please try again.'
+          } else {
+            errorMessage = `Server returned error ${status}. Please try again.`
+          }
+        }
+      } else if (err.name === 'AbortError') {
+        // Request timed out - document processing can take time
+        isHibernation = false
+        errorMessage = 'Document analysis timed out. The file may be too large or the backend is processing. Please try again or use a smaller file.'
+      } else if (err.message?.includes('Failed to fetch')) {
+        // Network error - likely CORS or connection issue, not hibernation
+        isHibernation = false
+        errorMessage = 'Failed to connect to backend. This might be a CORS issue or network problem. Please check the browser console (F12) for details.'
+      } else {
+        // Any other error - backend is awake, just has an issue
+        isHibernation = false
       }
       
       setError(errorMessage)
