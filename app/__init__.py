@@ -84,21 +84,22 @@ def create_app(config_class=Config):
     socketio.init_app(app, cors_allowed_origins="*")
     
     # CORS configuration for Vercel frontend
-    CORS(app, resources={
-        r"/*": {
-            "origins": [
-                "http://localhost:3000",  # Local development
-                "https://*.vercel.app",    # Vercel deployments
-                "https://clarity-frontend.vercel.app",  # Production frontend
-                "https://clarity-engine-auto.vercel.app",  # Vercel auto-deployment
-            ],
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"],
-            "expose_headers": ["Content-Range", "X-Content-Range"],
-            "supports_credentials": True,
-            "max_age": 3600
-        }
-    })
+    # Flask-CORS: Use origin_regex for wildcard matching
+    CORS(app, 
+         resources={r"/*": {
+             "origins": [
+                 "http://localhost:3000",
+                 "https://clarity-engine-auto.vercel.app",
+                 "https://clarity-frontend.vercel.app",
+             ],
+             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+             "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+             "expose_headers": ["Content-Range", "X-Content-Range"],
+             "supports_credentials": True,
+             "max_age": 3600
+         }},
+         origins=[r"https://.*\.vercel\.app"],  # Allow all Vercel subdomains via regex
+         supports_credentials=True)
     
     # --- Configure Logging ---
     if not app.debug and not app.testing:

@@ -56,7 +56,16 @@ def analyze_with_real_ai():
     task_id = str(uuid.uuid4())
     
     # Get AI engine
-    engine = get_analysis_engine()
+    try:
+        engine = get_analysis_engine()
+    except Exception as e:
+        logger.error(f"Failed to get analysis engine: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'AI Engine initialization failed',
+            'message': str(e),
+            'status': 'error'
+        }), 500
     
     if not engine.enabled:
         return jsonify({
@@ -99,13 +108,16 @@ def analyze_with_real_ai():
         }), 200
         
     except Exception as e:
-        logger.error(f"Real analysis failed: {e}")
+        import traceback
+        error_trace = traceback.format_exc()
+        logger.error(f"Real analysis failed: {e}\n{error_trace}")
         return jsonify({
             'success': False,
             'error': str(e),
-            'message': 'AI analysis failed. Check server logs.',
+            'message': 'AI analysis failed. Check server logs for details.',
             'task_id': task_id,
-            'status': 'failed'
+            'status': 'failed',
+            'details': error_trace if app.debug else None
         }), 500
 
 
