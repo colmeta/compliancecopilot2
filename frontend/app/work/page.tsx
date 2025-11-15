@@ -605,7 +605,7 @@ function CommandDeckContent() {
               Analysis Complete!
             </h1>
             <p className="text-xl text-slate-300">
-              <span className="text-amber-400 font-bold">{currentDomain.name}</span> instant preview is ready
+              <span className="text-amber-400 font-bold">{currentDomain.name}</span> analysis complete
             </p>
           </div>
 
@@ -615,72 +615,75 @@ function CommandDeckContent() {
               {/* Header */}
               <div className="flex items-start justify-between mb-6 pb-6 border-b border-white/10">
                 <div className="flex-1">
-                  <h2 className="text-3xl font-bold text-white mb-3">{analysis.summary}</h2>
-                  <div className="flex items-center gap-4">
-                    <span className="text-slate-400">Confidence Score:</span>
-                    <span className="text-green-400 font-bold text-xl">{Math.round(analysis.confidence * 100)}%</span>
-                    <div className="flex-1 max-w-xs h-2 bg-slate-700 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-green-500 rounded-full transition-all duration-500"
-                        style={{ width: `${analysis.confidence * 100}%` }}
-                      />
+                  <h2 className="text-3xl font-bold text-white mb-3">
+                    {analysis.summary || 'Analysis Results'}
+                  </h2>
+                  {analysis.confidence && (
+                    <div className="flex items-center gap-4">
+                      <span className="text-slate-400">Confidence Score:</span>
+                      <span className="text-green-400 font-bold text-xl">{Math.round((analysis.confidence || 0) * 100)}%</span>
+                      <div className="flex-1 max-w-xs h-2 bg-slate-700 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-green-500 rounded-full transition-all duration-500"
+                          style={{ width: `${(analysis.confidence || 0) * 100}%` }}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
               {/* Findings */}
-              <div className="mb-8">
-                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                  <span>🔍</span> Key Findings
-                </h3>
-                <ul className="space-y-3">
-                  {analysis.findings.map((finding: string, index: number) => (
-                    <li key={index} className="flex items-start gap-3 p-4 rounded-lg bg-slate-900/50">
-                      <span className="text-blue-400 text-xl mt-0.5">•</span>
-                      <span className="text-slate-300">{finding}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Next Steps */}
-              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6 mb-8">
-                <h3 className="text-lg font-bold text-blue-300 mb-2 flex items-center gap-2">
-                  <span>📋</span> Recommended Next Steps
-                </h3>
-                <p className="text-slate-300">{analysis.next_steps}</p>
-              </div>
-
-              {/* Upgrade CTA */}
-              <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-xl p-8">
-                <div className="flex items-start gap-4">
-                  <div className="text-4xl">💎</div>
-                  <div className="flex-1">
-                    <h3 className="text-2xl font-bold text-white mb-3">Upgrade for Full AI Analysis</h3>
-                    <p className="text-slate-300 mb-6">
-                      This is an <strong>instant preview</strong>. Get the full power of CLARITY with:
-                    </p>
-                    <div className="grid md:grid-cols-2 gap-3 mb-6">
-                      <div className="flex items-center gap-2 text-slate-300">
-                        <span className="text-green-400">✓</span> Real Google Gemini AI processing
-                      </div>
-                      <div className="flex items-center gap-2 text-slate-300">
-                        <span className="text-green-400">✓</span> Document upload & OCR
-                      </div>
-                      <div className="flex items-center gap-2 text-slate-300">
-                        <span className="text-green-400">✓</span> Email delivery of results
-                      </div>
-                      <div className="flex items-center gap-2 text-slate-300">
-                        <span className="text-green-400">✓</span> Detailed reports & citations
-                      </div>
-                    </div>
-                    <button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg">
-                      Upgrade to Paid Tier →
-                    </button>
-                  </div>
+              {analysis.findings && analysis.findings.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <span>🔍</span> Key Findings
+                  </h3>
+                  <ul className="space-y-3">
+                    {analysis.findings.map((finding: string, index: number) => (
+                      <li key={index} className="flex items-start gap-3 p-4 rounded-lg bg-slate-900/50">
+                        <span className="text-blue-400 text-xl mt-0.5">•</span>
+                        <span className="text-slate-300">{finding}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              </div>
+              )}
+
+              {/* Recommendations */}
+              {analysis.recommendations && analysis.recommendations.length > 0 && (
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6 mb-8">
+                  <h3 className="text-lg font-bold text-blue-300 mb-2 flex items-center gap-2">
+                    <span>📋</span> Recommendations
+                  </h3>
+                  <ul className="space-y-2">
+                    {analysis.recommendations.map((rec: string, index: number) => (
+                      <li key={index} className="text-slate-300 flex items-start gap-2">
+                        <span className="text-blue-400">•</span>
+                        <span>{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Next Steps (if exists) */}
+              {analysis.next_steps && (
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6 mb-8">
+                  <h3 className="text-lg font-bold text-blue-300 mb-2 flex items-center gap-2">
+                    <span>📋</span> Recommended Next Steps
+                  </h3>
+                  <p className="text-slate-300">{analysis.next_steps}</p>
+                </div>
+              )}
+
+              {/* Raw Analysis (if structured differently) */}
+              {!analysis.findings && !analysis.recommendations && analysis.raw_response && (
+                <div className="bg-slate-900/50 rounded-xl p-6 mb-8">
+                  <h3 className="text-lg font-bold text-white mb-4">Analysis Results</h3>
+                  <div className="text-slate-300 whitespace-pre-wrap">{analysis.raw_response}</div>
+                </div>
+              )}
             </div>
           )}
 
