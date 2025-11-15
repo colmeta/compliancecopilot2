@@ -124,9 +124,19 @@ function CommandDeckContent() {
 
         const result = await response.json()
         
+        console.log('Backend response:', result) // Debug log
+        
         if (result.success) {
-          setTaskId(result.task_id)
-          setAnalysis(result.analysis)
+          setTaskId(result.task_id || result.taskId || '')
+          // Handle different response formats
+          if (result.analysis) {
+            setAnalysis(result.analysis)
+          } else if (result.data) {
+            setAnalysis(result.data)
+          } else {
+            // If no analysis field, use the whole result
+            setAnalysis(result)
+          }
           setSubmitted(true)
         } else {
           // Backend responded with an error - show the actual error message
@@ -610,13 +620,13 @@ function CommandDeckContent() {
           </div>
 
           {/* Analysis Results */}
-          {analysis && (
+          {analysis ? (
             <div className="bg-slate-800/50 rounded-2xl p-8 border border-white/10 backdrop-blur-xl mb-8">
               {/* Header */}
               <div className="flex items-start justify-between mb-6 pb-6 border-b border-white/10">
                 <div className="flex-1">
                   <h2 className="text-3xl font-bold text-white mb-3">
-                    {analysis.summary || 'Analysis Results'}
+                    {analysis.summary || analysis.domain || 'Analysis Results'}
                   </h2>
                   {analysis.confidence && (
                     <div className="flex items-center gap-4">
@@ -677,13 +687,39 @@ function CommandDeckContent() {
                 </div>
               )}
 
-              {/* Raw Analysis (if structured differently) */}
-              {!analysis.findings && !analysis.recommendations && analysis.raw_response && (
+              {/* Raw Analysis (if structured data not available) */}
+              {(!analysis.findings || analysis.findings.length === 0) && 
+               (!analysis.recommendations || analysis.recommendations.length === 0) && 
+               (analysis.raw_response || typeof analysis === 'string') && (
                 <div className="bg-slate-900/50 rounded-xl p-6 mb-8">
                   <h3 className="text-lg font-bold text-white mb-4">Analysis Results</h3>
-                  <div className="text-slate-300 whitespace-pre-wrap">{analysis.raw_response}</div>
+                  <div className="text-slate-300 whitespace-pre-wrap">
+                    {analysis.raw_response || (typeof analysis === 'string' ? analysis : JSON.stringify(analysis, null, 2))}
+                  </div>
                 </div>
               )}
+
+              {/* Debug: Show full analysis object if nothing else displays */}
+              {(!analysis.summary || analysis.summary.length < 10) && 
+               (!analysis.findings || analysis.findings.length === 0) && 
+               (!analysis.recommendations || analysis.recommendations.length === 0) && 
+               !analysis.raw_response && (
+                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-6 mb-8">
+                  <h3 className="text-lg font-bold text-yellow-300 mb-2">Analysis Received</h3>
+                  <p className="text-slate-300 mb-4">The analysis completed but the response format was unexpected. Showing raw data:</p>
+                  <pre className="text-xs text-slate-400 bg-slate-900/50 p-4 rounded overflow-auto max-h-96">
+                    {JSON.stringify(analysis, null, 2)}
+                  </pre>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="bg-slate-800/50 rounded-2xl p-8 border border-white/10 backdrop-blur-xl mb-8">
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">⚠️</div>
+                <h3 className="text-2xl font-bold text-white mb-2">No Analysis Data</h3>
+                <p className="text-slate-400">The analysis completed but no results were returned. Please check the backend logs.</p>
+              </div>
             </div>
           )}
 
