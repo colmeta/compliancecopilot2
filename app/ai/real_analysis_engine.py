@@ -72,14 +72,26 @@ DIRECTIVE: {directive}
 
 DOMAIN: {domain}
 
-{doc_section}Please provide a comprehensive analysis with:
-1. Executive Summary (2-3 sentences)
-2. Key Findings (bullet points, specific and actionable)
-3. Risk Assessment (if applicable)
-4. Recommendations (concrete next steps)
-5. Confidence Score (0-100%, based on information quality)
+{doc_section}Please provide a comprehensive analysis in the following EXACT format:
 
-Be specific, cite evidence, and provide actionable insights.
+EXECUTIVE SUMMARY:
+[2-3 sentence summary here]
+
+KEY FINDINGS:
+- [Finding 1]
+- [Finding 2]
+- [Finding 3]
+[Add more findings as needed]
+
+RECOMMENDATIONS:
+- [Recommendation 1]
+- [Recommendation 2]
+- [Recommendation 3]
+[Add more recommendations as needed]
+
+CONFIDENCE SCORE: [XX]%
+
+Be specific, cite evidence, and provide actionable insights. Use the exact section headers above.
 """
         
         try:
@@ -225,17 +237,18 @@ Think like you're advising C-suite executives.""")
             if not line:
                 continue
             
-            # Detect sections
-            if 'summary' in line.lower() or 'executive' in line.lower():
+            # Detect sections (case-insensitive, look for exact headers)
+            line_lower = line.lower()
+            if 'executive summary' in line_lower or (line_lower.startswith('executive') and 'summary' in line_lower):
                 current_section = 'summary'
                 continue
-            elif 'finding' in line.lower() or 'key point' in line.lower():
+            elif 'key findings' in line_lower or (line_lower.startswith('key') and 'finding' in line_lower):
                 current_section = 'findings'
                 continue
-            elif 'recommendation' in line.lower() or 'next step' in line.lower():
+            elif 'recommendations' in line_lower or (line_lower.startswith('recommendation')):
                 current_section = 'recommendations'
                 continue
-            elif 'confidence' in line.lower():
+            elif 'confidence score' in line_lower or (line_lower.startswith('confidence')):
                 # Extract confidence score
                 import re
                 match = re.search(r'(\d+)%', line)
@@ -243,23 +256,56 @@ Think like you're advising C-suite executives.""")
                     confidence = int(match.group(1)) / 100.0
                 continue
             
+            # Skip empty lines and section headers
+            if not line or line.strip() == '' or ':' in line and len(line.split(':')) == 2 and len(line.split(':')[1].strip()) < 5:
+                continue
+            
             # Add to appropriate section
-            if current_section == 'summary' and len(line) > 20:
-                summary += line + " "
-            elif current_section == 'findings' and line.startswith(('-', '•', '*', '1', '2', '3')):
-                findings.append(line.lstrip('-•*123456789. '))
-            elif current_section == 'recommendations' and line.startswith(('-', '•', '*', '1', '2', '3')):
-                recommendations.append(line.lstrip('-•*123456789. '))
+            if current_section == 'summary' and len(line.strip()) > 10:
+                summary += line.strip() + " "
+            elif current_section == 'findings':
+                # Accept any line that looks like a finding (starts with bullet, number, or is a sentence)
+                cleaned = line.lstrip('-•*123456789. ').strip()
+                if cleaned and len(cleaned) > 5:
+                    findings.append(cleaned)
+            elif current_section == 'recommendations':
+                # Accept any line that looks like a recommendation
+                cleaned = line.lstrip('-•*123456789. ').strip()
+                if cleaned and len(cleaned) > 5:
+                    recommendations.append(cleaned)
         
-        # Fallback if parsing fails
-        if not summary:
-            summary = ai_text[:300] + "..." if len(ai_text) > 300 else ai_text
+        # Fallback if parsing fails - try to extract from raw text
+        if not summary or len(summary.strip()) < 20:
+            # Try to get first paragraph as summary
+            paragraphs = ai_text.split('\n\n')
+            for para in paragraphs:
+                if len(para.strip()) > 50 and not para.strip().startswith(('KEY', 'EXECUTIVE', 'RECOMMENDATION', 'CONFIDENCE')):
+                    summary = para.strip()[:500]
+                    break
+            if not summary or len(summary.strip()) < 20:
+                summary = ai_text[:500] + "..." if len(ai_text) > 500 else ai_text
         
-        if not findings:
-            findings = ["Analysis completed. See full response for details."]
+        if not findings or len(findings) == 0:
+            # Try to extract findings from text
+            lines = ai_text.split('\n')
+            for line in lines:
+                line = line.strip()
+                if line.startswith(('-', '•', '*')) and len(line) > 10:
+                    findings.append(line.lstrip('-•* '))
+            if not findings:
+                findings = ["Analysis completed successfully. Review the summary for key insights."]
         
-        if not recommendations:
-            recommendations = ["Review full analysis for recommended actions."]
+        if not recommendations or len(recommendations) == 0:
+            # Try to extract recommendations
+            in_rec_section = False
+            for line in ai_text.split('\n'):
+                if 'recommendation' in line.lower():
+                    in_rec_section = True
+                    continue
+                if in_rec_section and line.strip().startswith(('-', '•', '*')):
+                    recommendations.append(line.lstrip('-•* ').strip())
+            if not recommendations:
+                recommendations = ["Review the analysis findings and take appropriate action based on your specific needs."]
         
         return {
             'summary': summary.strip(),
