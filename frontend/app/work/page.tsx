@@ -57,11 +57,14 @@ function CommandDeckContent() {
     setSubmitting(true)
     setError('')
     
+    // Track response time for error detection
+    let responseTime: number | null = null
+    const startTime = Date.now()
+    
     try {
       if (mode === 'ask') {
         // Ask mode: Direct execution
         // Track response time to detect hibernation (slow = hibernating, fast = awake)
-        const startTime = Date.now()
         const controller = new AbortController()
         // Longer timeout for document processing (60 seconds if files, 30 if not)
         const timeout = files.length > 0 ? 60000 : 30000
@@ -107,7 +110,7 @@ function CommandDeckContent() {
         })
         
         clearTimeout(timeoutId)
-        const responseTime = Date.now() - startTime
+        responseTime = Date.now() - startTime
 
         if (!response.ok) {
           // If response was fast (< 5 seconds), backend is awake but has an error
@@ -126,7 +129,9 @@ function CommandDeckContent() {
           setAnalysis(result.analysis)
           setSubmitted(true)
         } else {
-          throw new Error(result.error || 'Analysis failed')
+          // Backend responded with an error - show the actual error message
+          const backendError = result.error || result.message || 'Analysis failed'
+          throw new Error(`Backend error: ${backendError}`)
         }
       } else if (mode === 'plan') {
         // Plan mode: Create plan first
@@ -253,12 +258,33 @@ function CommandDeckContent() {
       let errorMessage = err.message || 'Failed to connect to backend'
       let isHibernation = false
       
-      // Only show hibernation message for:
-      // 1. AbortError (timeout) - BUT only if response was very slow (> 25 seconds) indicating hibernation
-      // 2. Network errors that aren't HTTP status codes (actual connection failures)
-      // 3. NOT for HTTP errors (400, 401, 403, 404, 500) - those mean backend is awake
-      // 4. NOT for document processing timeouts - those are normal for large files
-      if (err.name === 'AbortError') {
+      // Check if we got a response from backend (means it's awake)
+      if (err.message?.includes('Backend error:')) {
+        // Backend responded with an error - NOT hibernation, show actual error
+        isHibernation = false
+        errorMessage = err.message.replace('Backend error: ', '')
+      } else if (err.message?.includes('API error:')) {
+        // HTTP error response - backend is awake
+        isHibernation = false
+        // Extract status code if available
+        const statusMatch = err.message.match(/API error: (\d+)/)
+        if (statusMatch) {
+          const status = statusMatch[1]
+          if (status === '400') {
+            errorMessage = 'Invalid request. Please check your input and try again.'
+          } else if (status === '401' || status === '403') {
+            errorMessage = 'Authentication error. Please check your API key.'
+          } else if (status === '404') {
+            errorMessage = 'Endpoint not found. Please check the API URL.'
+          } else if (status === '500') {
+            errorMessage = 'Server error. The backend encountered an issue. Please try again.'
+          } else {
+            errorMessage = `Server returned error ${status}. Please try again.`
+          }
+        } else {
+          errorMessage = err.message.replace('API error: ', '')
+        }
+      } else if (err.name === 'AbortError') {
         // Request timed out - check if it's hibernation or just slow processing
         if (files.length > 0) {
           // Document processing can take time - not necessarily hibernation
@@ -270,19 +296,19 @@ function CommandDeckContent() {
           errorMessage = 'Backend is waking up (took too long to respond). Please wait 30-60 seconds and try again.'
         }
       } else if (err.message?.includes('Failed to fetch') && 
-                 !err.message?.includes('API error') && 
-                 !err.message?.includes('400') && 
-                 !err.message?.includes('401') && 
-                 !err.message?.includes('403') && 
-                 !err.message?.includes('404') && 
-                 !err.message?.includes('500')) {
-        // Network error without HTTP status - likely connection issue or hibernation
-        isHibernation = true
-        errorMessage = 'Backend is waking up (connection failed). Please wait 30-60 seconds and try again.'
-      } else if (err.message?.includes('Backend is awake but returned an error')) {
-        // Backend responded quickly but with an error - NOT hibernation
-        isHibernation = false
-        errorMessage = err.message.replace('Backend is awake but returned an error - ', '')
+                 !err.message?.includes('Backend error') && 
+                 !err.message?.includes('API error')) {
+        // Network error - could be hibernation or connection issue
+        // Check response time to determine
+        if (responseTime && responseTime > 25000) {
+          // Very slow - likely hibernation
+          isHibernation = true
+          errorMessage = 'Backend is waking up (connection failed). Please wait 30-60 seconds and try again.'
+        } else {
+          // Fast failure - connection issue, not hibernation
+          isHibernation = false
+          errorMessage = 'Connection failed. Please check your internet connection and try again.'
+        }
       } else {
         // Any other error - backend is awake, just has an issue
         isHibernation = false
