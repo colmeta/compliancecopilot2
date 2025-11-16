@@ -1,72 +1,57 @@
 """
-REAL AI ANALYSIS ENGINE - No More Simulations
-Connects to Google Gemini API for actual AI processing
+REAL AI ANALYSIS ENGINE - Multi-Provider Support
+Supports Groq, Anthropic, OpenAI, and Gemini with automatic fallback
+Prioritizes Groq (fastest, generous free tier)
 """
 
 import os
 import logging
 from typing import Dict, List, Optional, Any
-import google.generativeai as genai
+from app.ai.multi_provider_engine import get_multi_provider
 
 logger = logging.getLogger(__name__)
 
 class RealAnalysisEngine:
     """
-    Real AI-powered analysis engine using Google Gemini
-    Replaces all simulated/fake responses with actual AI processing
+    Real AI-powered analysis engine using multi-provider system
+    Automatically uses Groq, Anthropic, OpenAI, or Gemini based on availability
     """
     
     def __init__(self):
-        """Initialize with Google Gemini API"""
-        self.api_key = os.getenv('GOOGLE_API_KEY')
-        
-        if not self.api_key:
-            logger.error("❌ GOOGLE_API_KEY not set! AI analysis will fail.")
-            self.enabled = False
-            return
-        
+        """Initialize with multi-provider AI system"""
         try:
-            genai.configure(api_key=self.api_key)
+            self.multi_provider = get_multi_provider()
             
-            # First, try to list available models
-            available_models = []
-            try:
-                for model in genai.list_models():
-                    if 'generateContent' in model.supported_generation_methods:
-                        model_name = model.name.replace('models/', '')
-                        available_models.append(model_name)
-                        logger.debug(f"Found available model: {model_name}")
-            except Exception as e:
-                logger.warning(f"Could not list models: {e}, will try common names")
+            # Check if any providers are available
+            available = self.multi_provider.get_available_providers()
             
-            # Try common model names if listing failed
-            if not available_models:
-                available_models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+            if not available:
+                logger.error("❌ No AI providers available! Set at least one: GROQ_API_KEY, ANTHROPIC_API_KEY, OPENAI_API_KEY, or GOOGLE_API_KEY")
+                self.enabled = False
+                return
             
-            # Test each model by actually calling it
-            self.model = None
-            self.model_name = None
+            # Log which providers are available
+            provider_info = self.multi_provider.get_provider_info()
+            provider_names = [p['name'] for p in provider_info]
+            logger.info(f"✅ Real AI Analysis Engine initialized with providers: {', '.join(provider_names)}")
             
-            for model_name in available_models:
-                try:
-                    test_model = genai.GenerativeModel(model_name)
-                    # Actually test the model with a tiny call
-                    test_response = test_model.generate_content("test", generation_config={'max_output_tokens': 1})
-                    # If we get here, the model works
-                    self.model = test_model
-                    self.model_name = model_name
-                    logger.info(f"✅ Real AI Analysis Engine initialized with {model_name}")
-                    break
-                except Exception as e:
-                    logger.debug(f"Model {model_name} not available or failed test: {e}")
-                    continue
-            
-            if not self.model:
-                raise Exception(f"None of the models are available. Tried: {available_models}")
+            # Determine preferred provider (prioritize Groq if available)
+            if 'groq' in provider_names:
+                self.preferred_provider = 'groq'
+                logger.info("🎯 Using Groq as preferred provider (fastest, generous free tier)")
+            elif 'anthropic' in provider_names:
+                self.preferred_provider = 'anthropic'
+                logger.info("🎯 Using Anthropic Claude as preferred provider (best quality)")
+            elif 'openai' in provider_names:
+                self.preferred_provider = 'openai'
+                logger.info("🎯 Using OpenAI as preferred provider")
+            else:
+                self.preferred_provider = None  # Will use default priority
+                logger.info("🎯 Using default provider priority")
             
             self.enabled = True
         except Exception as e:
-            logger.error(f"❌ Failed to initialize Gemini: {e}")
+            logger.error(f"❌ Failed to initialize AI engine: {e}")
             self.enabled = False
     
     def analyze(self, 
@@ -89,7 +74,7 @@ class RealAnalysisEngine:
         if not self.enabled:
             return {
                 'error': 'AI Engine not configured',
-                'message': 'GOOGLE_API_KEY not set. Add to .env file.',
+                'message': 'No AI providers available. Set at least one: GROQ_API_KEY, ANTHROPIC_API_KEY, OPENAI_API_KEY, or GOOGLE_API_KEY',
                 'status': 'not_configured'
             }
         
@@ -129,20 +114,16 @@ Be specific, cite evidence, and provide actionable insights. Use the exact secti
 """
         
         try:
-            # Call Gemini API
+            # Build full prompt
             full_prompt = system_prompt + "\n\n" + user_prompt
-            response = self.model.generate_content(
-                full_prompt,
-                generation_config={
-                    'temperature': 0.3,  # Lower = more focused
-                    'top_p': 0.8,
-                    'top_k': 40,
-                    'max_output_tokens': 2048,
-                }
-            )
             
-            # Extract response
-            ai_response = response.text
+            # Call multi-provider AI (will automatically fallback if preferred fails)
+            ai_response, metadata = self.multi_provider.generate(
+                prompt=full_prompt,
+                max_tokens=2048,
+                temperature=0.3,  # Lower = more focused
+                preferred_provider=self.preferred_provider
+            )
             
             # Parse response into structured format
             parsed = self._parse_ai_response(ai_response, domain)
@@ -153,7 +134,8 @@ Be specific, cite evidence, and provide actionable insights. Use the exact secti
                 'directive': directive,
                 'analysis': parsed,
                 'raw_response': ai_response,
-                'model': self.model_name if hasattr(self, 'model_name') else 'gemini-1.5-flash',
+                'model': metadata.get('model', 'unknown'),
+                'provider': metadata.get('provider', 'unknown'),
                 'status': 'completed'
             }
             
@@ -162,7 +144,7 @@ Be specific, cite evidence, and provide actionable insights. Use the exact secti
             return {
                 'success': False,
                 'error': str(e),
-                'message': 'AI analysis failed. Check API key and quota.',
+                'message': 'AI analysis failed. Check API keys and quota.',
                 'status': 'failed'
             }
     

@@ -23,7 +23,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import json
 import os
-import google.generativeai as genai
+# Multi-provider support - no direct genai import needed
 
 logger = logging.getLogger(__name__)
 
@@ -117,51 +117,38 @@ class PlanningEngine:
     """
     
     def __init__(self):
-        """Initialize the Planning Engine."""
+        """Initialize the Planning Engine with multi-provider support."""
         try:
-            api_key = os.environ.get('GOOGLE_API_KEY')
-            if not api_key:
-                logger.error("❌ GOOGLE_API_KEY not set! Planning engine will fail.")
+            from app.ai.multi_provider_engine import get_multi_provider
+            
+            self.multi_provider = get_multi_provider()
+            
+            # Check if any providers are available
+            available = self.multi_provider.get_available_providers()
+            
+            if not available:
+                logger.error("❌ No AI providers available! Set at least one: GROQ_API_KEY, ANTHROPIC_API_KEY, OPENAI_API_KEY, or GOOGLE_API_KEY")
                 self.initialized = False
                 return
             
-            genai.configure(api_key=api_key)
+            # Log which providers are available
+            provider_info = self.multi_provider.get_provider_info()
+            provider_names = [p['name'] for p in provider_info]
+            logger.info(f"✅ PlanningEngine initialized with providers: {', '.join(provider_names)}")
             
-            # First, try to list available models
-            available_models = []
-            try:
-                for model in genai.list_models():
-                    if 'generateContent' in model.supported_generation_methods:
-                        model_name = model.name.replace('models/', '')
-                        available_models.append(model_name)
-                        logger.debug(f"Found available model: {model_name}")
-            except Exception as e:
-                logger.warning(f"Could not list models: {e}, will try common names")
-            
-            # Try common model names if listing failed
-            if not available_models:
-                available_models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
-            
-            # Test each model by actually calling it
-            self.model = None
-            self.model_name = None
-            
-            for model_name in available_models:
-                try:
-                    test_model = genai.GenerativeModel(model_name)
-                    # Actually test the model with a tiny call
-                    test_response = test_model.generate_content("test", generation_config={'max_output_tokens': 1})
-                    # If we get here, the model works
-                    self.model = test_model
-                    self.model_name = model_name
-                    logger.info(f"✅ PlanningEngine initialized with {model_name}")
-                    break
-                except Exception as e:
-                    logger.debug(f"Model {model_name} not available or failed test: {e}")
-                    continue
-            
-            if not self.model:
-                raise Exception(f"None of the models are available. Tried: {available_models}")
+            # Determine preferred provider (prioritize Groq if available)
+            if 'groq' in provider_names:
+                self.preferred_provider = 'groq'
+                logger.info("🎯 Using Groq as preferred provider for planning")
+            elif 'anthropic' in provider_names:
+                self.preferred_provider = 'anthropic'
+                logger.info("🎯 Using Anthropic Claude as preferred provider for planning")
+            elif 'openai' in provider_names:
+                self.preferred_provider = 'openai'
+                logger.info("🎯 Using OpenAI as preferred provider for planning")
+            else:
+                self.preferred_provider = None  # Will use default priority
+                logger.info("🎯 Using default provider priority for planning")
             
             self.initialized = True
         except Exception as e:
@@ -192,12 +179,17 @@ class PlanningEngine:
             # Build planning prompt
             prompt = self._build_planning_prompt(task_description, task_type, context)
             
-            # Call LLM to create plan
-            response = self.model.generate_content(prompt)
+            # Call multi-provider AI to create plan
+            response_text, metadata = self.multi_provider.generate(
+                prompt=prompt,
+                max_tokens=2048,
+                temperature=0.7,
+                preferred_provider=self.preferred_provider
+            )
             
             # Parse response into ExecutionPlan
             plan = self._parse_plan_response(
-                response.text,
+                response_text,
                 task_description,
                 task_type
             )
