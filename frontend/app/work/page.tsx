@@ -717,8 +717,14 @@ function CommandDeckContent() {
             <div className="bg-slate-800/50 rounded-2xl p-8 border border-white/10 backdrop-blur-xl mb-8">
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">⚠️</div>
-                <h3 className="text-2xl font-bold text-white mb-2">No Analysis Data</h3>
-                <p className="text-slate-400">The analysis completed but no results were returned. Please check the backend logs.</p>
+                <h3 className="text-2xl font-bold text-white mb-2">Analysis Incomplete</h3>
+                <p className="text-slate-400 mb-4">The analysis request was processed, but the results could not be generated.</p>
+                <p className="text-slate-500 text-sm">This may be due to an issue with the AI service. Please try again in a moment.</p>
+                {error && (
+                  <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+                    <p className="text-red-300 text-sm">{error}</p>
+                  </div>
+                )}
               </div>
             </div>
           )}

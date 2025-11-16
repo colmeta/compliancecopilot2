@@ -126,24 +126,42 @@ class PlanningEngine:
                 return
             
             genai.configure(api_key=api_key)
-            # Try available models in order of preference
-            model_names = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+            
+            # First, try to list available models
+            available_models = []
+            try:
+                for model in genai.list_models():
+                    if 'generateContent' in model.supported_generation_methods:
+                        model_name = model.name.replace('models/', '')
+                        available_models.append(model_name)
+                        logger.debug(f"Found available model: {model_name}")
+            except Exception as e:
+                logger.warning(f"Could not list models: {e}, will try common names")
+            
+            # Try common model names if listing failed
+            if not available_models:
+                available_models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro']
+            
+            # Test each model by actually calling it
             self.model = None
             self.model_name = None
             
-            for model_name in model_names:
+            for model_name in available_models:
                 try:
                     test_model = genai.GenerativeModel(model_name)
+                    # Actually test the model with a tiny call
+                    test_response = test_model.generate_content("test", generation_config={'max_output_tokens': 1})
+                    # If we get here, the model works
                     self.model = test_model
                     self.model_name = model_name
                     logger.info(f"✅ PlanningEngine initialized with {model_name}")
                     break
                 except Exception as e:
-                    logger.debug(f"Model {model_name} not available: {e}")
+                    logger.debug(f"Model {model_name} not available or failed test: {e}")
                     continue
             
             if not self.model:
-                raise Exception(f"None of the models are available: {model_names}")
+                raise Exception(f"None of the models are available. Tried: {available_models}")
             
             self.initialized = True
         except Exception as e:
